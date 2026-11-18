@@ -17,6 +17,11 @@ class SchoolPolicy
         return $user->isSuperAdmin();
     }
 
+    public function moderateListings(User $user): bool
+    {
+        return $user->is_active && $user->isSuperAdmin();
+    }
+
     public function view(User $user, School $school): bool
     {
         return $user->isSuperAdmin() || $user->activeSchools()->whereKey($school->id)->exists();

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\AdminListingController;
+use App\Http\Controllers\Api\AdminLocationController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\FamilyFeeReceiptController;
@@ -26,11 +28,24 @@ use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\SchoolUserController;
 use App\Http\Middleware\RequireSchoolPermission;
 use App\Http\Middleware\ResolveSchoolPermissionTeam;
+use App\Models\School;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', HealthController::class);
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
+Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:6,1');
+
+Route::prefix('admin')->middleware(['auth:sanctum', 'can:moderateListings,'.School::class])->group(function () {
+    Route::get('cities', [AdminLocationController::class, 'cities']);
+    Route::post('cities', [AdminLocationController::class, 'storeCity']);
+    Route::get('cities/{city}/areas', [AdminLocationController::class, 'areas'])->whereNumber('city');
+    Route::post('cities/{city}/areas', [AdminLocationController::class, 'storeArea'])->whereNumber('city');
+    Route::apiResource('listings', AdminListingController::class)->only(['index', 'store', 'show', 'update']);
+    Route::post('listings/{listing}/verify', [AdminListingController::class, 'verify']);
+    Route::post('listings/{listing}/publish', [AdminListingController::class, 'publish']);
+    Route::post('listings/{listing}/suspend', [AdminListingController::class, 'suspend']);
+});
 
 Route::middleware(['auth:sanctum', ResolveSchoolPermissionTeam::class, RequireSchoolPermission::class])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

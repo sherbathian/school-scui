@@ -14,6 +14,14 @@ class School extends Model
 
     protected $fillable = ['name', 'slug', 'status'];
 
+    protected function casts(): array
+    {
+        return [
+            'verified_at' => 'datetime',
+            'published_at' => 'datetime',
+        ];
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)

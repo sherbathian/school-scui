@@ -2,16 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\School;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     public function login(Request $request): JsonResponse
+    {
+        return $this->authenticate($request, false);
+    }
+
+    public function adminLogin(Request $request): JsonResponse
+    {
+        return $this->authenticate($request, true);
+    }
+
+    private function authenticate(Request $request, bool $adminOnly): JsonResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -24,7 +36,10 @@ class AuthController extends Controller
 
         $user = User::query()->where('email', $credentials['email'])->first();
 
-        if (! $user || ! $user->is_active || ! Hash::check($credentials['password'], $user->password) || ! Auth::guard('web')->attempt($credentials, $remember)) {
+        if (! $user || ! $user->is_active
+            || ! Hash::check($credentials['password'], $user->password)
+            || ($adminOnly && Gate::forUser($user)->denies('moderateListings', School::class))
+            || ! Auth::guard('web')->attempt($credentials, $remember)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);

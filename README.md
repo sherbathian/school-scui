@@ -9,6 +9,8 @@ Schoolhouse is the Laravel 13 application that powers the TaleemFinder public ed
 | Public directory | Homepage, school, college, university, and training institute directories, city and neighbourhood pages, keyword search, filters, sorting, and list/grid layouts. |
 | Institution profiles | Public profile and contact details, browser-session saved listings, side-by-side comparison for up to three institutions, and an XML sitemap. |
 | Listing administration | Platform-admin sign-in, sidebar and breadcrumbs, listing search and review totals, full-page creation and editing, and draft, verify, publish, and suspend actions. |
+| Institute registration and claims | Create an account, submit an institution or claim a public profile. Super Admin approves claims and grants organisation ownership. |
+| Branch controls | Super Admin manages branch module switches from the listings workspace. Disabled modules are blocked on the server. |
 | Location administration | Separate **Cities** and **Areas** screens with create, list, edit, and delete. Areas can be filtered by city. Renaming preserves URL slugs, and the database blocks deletion of locations in use. |
 | School-management backend | Reused school membership, student enrollment, attendance, and fee APIs. Added default branch role provisioning and fixed enrollment persistence. |
 
@@ -56,10 +58,12 @@ Run the full suite from `backend` on isolated SQLite:
 APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=:memory: SESSION_DRIVER=array CACHE_STORE=array QUEUE_CONNECTION=sync vendor/bin/phpunit
 ```
 
-To test on MySQL, set `DB_CONNECTION=mysql` and point `DB_DATABASE` and the connection variables to a **disposable test database**. The suite migrates and resets the selected test database. The latest verified run passed all 74 tests on both SQLite and MySQL, and the frontend build passed.
+To test on MySQL, set `DB_CONNECTION=mysql` and point `DB_DATABASE` and the connection variables to a **disposable test database**. The suite migrates and resets the selected test database. The latest verified run passed all 79 tests on both SQLite and MySQL, and the frontend build passed.
 
 ## Still planned
 
-- Institute registration and listing claims
-- Branch management dashboards and module switches managed by platform admins
+- OTP verification, plans, add-ons, quotas, and subscription entitlements
+- Role-based branch management dashboard
 - CMS publishing, parent guides, and the remaining content and community pages
+
+Current planning references and status are in [docs/PROGRESS.md](docs/PROGRESS.md) and [docs/DECISIONS.md](docs/DECISIONS.md).

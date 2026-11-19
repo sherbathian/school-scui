@@ -1,0 +1,2975 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taleem Finder (taleemfinder.pk) — Schools, Colleges, Universities & Courses in Islamabad & Rawalpindi</title>
+  <meta name="description" content="Discover, compare, and explore schools, colleges, universities, training institutes, admissions, and educational resources across Islamabad and Rawalpindi on Taleem Finder." />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN & Configuration -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'Inter', 'sans-serif']
+          },
+          colors: {
+            navy: {
+              50: '#F0F4F8',
+              100: '#D9E2EC',
+              200: '#BCCCDC',
+              300: '#9FB3C8',
+              400: '#829AB1',
+              500: '#627D98',
+              600: '#486581',
+              700: '#334E68',
+              800: '#1B3A54',
+              900: '#0F2537',
+              950: '#091824'
+            }
+          },
+          boxShadow: {
+            'card': '0 1px 3px rgba(15, 37, 55, 0.06), 0 8px 24px -4px rgba(15, 37, 55, 0.07)',
+            'card-hover': '0 14px 32px -4px rgba(15, 37, 55, 0.12), 0 4px 12px -2px rgba(13, 148, 136, 0.08)',
+            'nav': '0 4px 20px -2px rgba(15, 37, 55, 0.06)',
+            'dropdown': '0 20px 44px -10px rgba(9, 24, 36, 0.16), 0 4px 16px -2px rgba(15, 37, 55, 0.08)'
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Lucide Icons UMD Bundle -->
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --tf-navy: #0F2537;
+      --tf-navy-deep: #091824;
+      --tf-teal: #0D9488;
+      --tf-amber: #D97706;
+      --tf-bg: #F8FAFC;
+    }
+
+    body {
+      background-color: var(--tf-bg);
+      color: #1E293B;
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    }
+
+    /* Architectural EdTech Hero Gradient & Grid */
+    .hero-mesh {
+      background-color: #0F2537;
+      background-image:
+        radial-gradient(at 88% 12%, rgba(13, 148, 136, 0.28) 0px, transparent 52%),
+        radial-gradient(at 10% 85%, rgba(217, 119, 6, 0.16) 0px, transparent 48%),
+        linear-gradient(180deg, #0F2537 0%, #15344E 100%);
+    }
+
+    .dot-grid {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* ===================================================================== */
+    /* RELIABLE DESKTOP DROPDOWN INTERACTION & HOVER BRIDGE                  */
+    /* ===================================================================== */
+    .nav-item-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .nav-dropdown {
+      position: absolute;
+      left: 0;
+      top: 100%;
+      padding-top: 0.625rem; /* Seamless hover bridge eliminating accidental close gaps */
+      z-index: 60;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition:
+        opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0s linear 0.14s;
+    }
+
+    /* Invisible diagonal/vertical safe-zone bridge behind top padding */
+    .nav-dropdown::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: -12px;
+      right: -12px;
+      height: 22px;
+      background: transparent;
+    }
+
+    .nav-item-wrapper:hover > .nav-dropdown,
+    .nav-item-wrapper:focus-within > .nav-dropdown,
+    .nav-item-wrapper.is-open > .nav-dropdown {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+      transition:
+        opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0s linear 0s;
+    }
+
+    .nav-item-wrapper:hover .nav-chevron,
+    .nav-item-wrapper:focus-within .nav-chevron,
+    .nav-item-wrapper.is-open .nav-chevron {
+      transform: rotate(180deg);
+      color: #0D9488;
+    }
+
+    .nav-item-wrapper:hover > .nav-trigger,
+    .nav-item-wrapper:focus-within > .nav-trigger,
+    .nav-item-wrapper.is-open > .nav-trigger {
+      color: #0F2537;
+      background-color: #F1F5F9;
+    }
+
+    /* Mobile Drawer Smooth Transitions */
+    #mobile-drawer-backdrop {
+      transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #mobile-drawer {
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
+    /* Subtle Page Entrance */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .view-animate {
+      animation: fadeSlideUp 0.24s ease-out forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-teal-600 selection:text-white">
+
+  <!-- ===================================================================== -->
+  <!-- 1. TOP UTILITY & DATA INTEGRITY NOTICE BAR                            -->
+  <!-- ===================================================================== -->
+  <div class="bg-[#091824] text-slate-300 text-xs border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3">
+      <!-- Left: Twin Cities Location Pill & Platform Descriptor -->
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/15 text-teal-300 font-semibold border border-teal-400/25 shrink-0 tracking-tight">
+          <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+          <i data-lucide="map-pin" class="w-3 h-3 text-teal-400 shrink-0"></i>
+          <span>Islamabad &amp; Rawalpindi</span>
+        </span>
+        <span class="hidden lg:inline-block h-3.5 w-px bg-white/10 shrink-0" aria-hidden="true"></span>
+        <span class="hidden lg:inline text-slate-400 truncate">
+          Education Discovery, Institutional Comparison &amp; Admissions Portal
+        </span>
+      </div>
+
+      <!-- Right: Subtle Data-Integrity Notice & Institutional Link -->
+      <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white/[0.04] border border-white/10 text-slate-300" title="Sample Schema Demonstration — Zero Fabricated Claims">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+          <span class="hidden sm:inline text-[11px] font-medium text-slate-300">
+            Sample Schema Demonstration <span class="text-slate-500 mx-1">&bull;</span> <span class="text-amber-300/90">Zero Fabricated Claims</span>
+          </span>
+          <span class="sm:hidden text-[11px] font-medium text-amber-300/90">
+            Sample Schema
+          </span>
+        </div>
+
+        <span class="hidden md:inline-block h-3.5 w-px bg-white/10" aria-hidden="true"></span>
+
+        <button
+          type="button"
+          onclick="navigate('add-school')"
+          class="hidden md:inline-flex items-center gap-1 text-slate-200 hover:text-teal-300 font-semibold transition-colors group"
+        >
+          <span>For Institutions</span>
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-teal-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 2. MAIN STICKY NAVIGATION HEADER                                      -->
+  <!-- ===================================================================== -->
+  <header id="main-header" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 lg:h-[72px] gap-4">
+
+        <!-- Brand Logo -->
+        <a
+          href="#home"
+          onclick="navigate('home'); return false;"
+          class="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded-xl shrink-0"
+        >
+          <div class="relative w-10 h-10 rounded-xl bg-[#0F2537] flex items-center justify-center text-white shadow-sm ring-1 ring-inset ring-white/10 group-hover:bg-teal-600 transition-colors duration-200">
+            <i data-lucide="graduation-cap" class="w-5 h-5 text-teal-400 group-hover:text-white transition-colors duration-200"></i>
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-teal-500 ring-2 ring-white"></span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-display font-extrabold text-[19px] sm:text-xl tracking-tight text-[#0F2537] leading-none">
+              Taleem<span class="text-teal-600">Finder</span>
+            </span>
+            <span class="text-[11px] font-medium text-slate-500 tracking-wide mt-1 leading-none">
+              taleemfinder.pk
+            </span>
+          </div>
+        </a>
+
+        <!-- Desktop Primary Navigation (lg and above) -->
+        <nav class="hidden lg:flex items-center gap-0.5 xl:gap-1" aria-label="Main Navigation">
+
+          <!-- 1. Find Schools Dropdown -->
+          <div class="nav-item-wrapper" data-dropdown>
+            <button
+              type="button"
+              data-nav-route="schools"
+              onclick="navigate('schools')"
+              aria-haspopup="true"
+              aria-expanded="false"
+              class="nav-trigger inline-flex items-center gap-1.5 px-2.5 xl:px-3.5 py-2 rounded-xl text-[13.5px] xl:text-sm font-semibold text-slate-700 hover:text-[#0F2537] hover:bg-slate-100/90 transition-colors whitespace-nowrap"
+            >
+              <span>Find Schools</span>
+              <i data-lucide="chevron-down" class="nav-chevron w-4 h-4 text-slate-400 transition-transform duration-200"></i>
+            </button>
+
+            <div class="nav-dropdown w-[540px]" role="menu">
+              <div class="bg-white rounded-2xl border border-slate-200/95 shadow-dropdown p-5 grid grid-cols-2 gap-5">
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2.5 mb-2">
+                    By City &amp; Sector
+                  </p>
+                  <ul class="space-y-1 text-sm">
+                    <li>
+                      <button type="button" onclick="closeAllDropdowns(); filterAndGoSchools({city:'Islamabad'})" class="w-full text-left px-2.5 py-2 rounded-xl hover:bg-teal-50/80 text-slate-700 hover:text-teal-700 font-medium flex items-center justify-between transition-colors">
+                        <span>Schools in Islamabad</span>
+                        <span class="text-[11px] font-normal text-slate-400">F/G/E/I Sectors</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button type="button" onclick="closeAllDropdowns(); filterAndGoSchools({city:'Rawalpindi'})" class="w-full text-left px-2.5 py-2 rounded-xl hover:bg-teal-50/80 text-slate-700 hover:text-teal-700 font-medium flex items-center justify-between transition-colors">
+                        <span>Schools in Rawalpindi</span>
+                        <span class="text-[11px] font-normal text-slate-400">Bahria, DHA, Cantt</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button type="button" onclick="closeAllDropdowns(); filterAndGoSchools({sector:'F-7 / F-8'})" class="w-full text-left px-2.5 py-2 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-[#0F2537] transition-colors">
+                        Sector F-6, F-7 &amp; F-8
+                      </button>
+                    </li>
+                    <li>
+                      <button type="button" onclick="closeAllDropdowns(); filterAndGoSchools({sector:'Bahria Town'})" class="w-full text-left px-2.5 py-2 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-[#0F2537] transition-colors">
+                        Bahria Town &amp; DHA
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="border-l border-slate-100 pl-5 flex flex-col justify-between">
+                  <div>
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2.5 mb-2">
+                      By Curriculum &amp; Level
+                    </p>
+                    <ul class="space-y-1 text-sm">
+                      <li>
+                        <button type="button" onclick="closeAllDropdowns(); filterAndGoSchools({curriculum:'Cambridge (O/A Levels)'})" class="w-full text-left px-2.5 py-2 rounded-xl hover:bg-teal-50/80 text-slate-700 hover:text-teal-700 font-medium transition-colors">
+                          Cambridge O / A Levels
+                        </button>
+                      </li>
+                      <li>
+                        <button type="button" onclick="closeAllDropdowns(); filterAndGoSchools({curriculum:'FBISE (Matric / HSSC)'})" class="w-full text-left px-2.5 py-2 rounded-xl hover:bg-teal-50/80 text-slate-700 hover:text-teal-700 font-medium transition-colors">
+                          FBISE Federal Board
+                        </button>
+                      </li>
+                      <li>
+                        <button type="button" onclick="closeAllDropdowns(); filterAndGoSchools({level:'Montessori / Early Years'})" class="w-full text-left px-2.5 py-2 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-[#0F2537] transition-colors">
+                          Montessori &amp; Early Years
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <button type="button" onclick="closeAllDropdowns(); navigate('schools')" class="w-full text-left px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-[#0F2537] text-[#0F2537] hover:text-white text-xs font-bold mt-2 flex items-center justify-between transition-colors group/all">
+                    <span>Browse All Schools</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-teal-600 group-hover/all:text-teal-300 transition-colors"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Higher Ed & Skills Dropdown -->
+          <div class="nav-item-wrapper" data-dropdown>
+            <button
+              type="button"
+              data-nav-route="colleges,universities,institutes,courses"
+              onclick="navigate('colleges')"
+              aria-haspopup="true"
+              aria-expanded="false"
+              class="nav-trigger inline-flex items-center gap-1.5 px-2.5 xl:px-3.5 py-2 rounded-xl text-[13.5px] xl:text-sm font-semibold text-slate-700 hover:text-[#0F2537] hover:bg-slate-100/90 transition-colors whitespace-nowrap"
+            >
+              <span>Higher Ed &amp; Skills</span>
+              <i data-lucide="chevron-down" class="nav-chevron w-4 h-4 text-slate-400 transition-transform duration-200"></i>
+            </button>
+
+            <div class="nav-dropdown w-80" role="menu">
+              <div class="bg-white rounded-2xl border border-slate-200/95 shadow-dropdown p-2.5 space-y-1">
+                <button type="button" onclick="closeAllDropdowns(); navigate('colleges')" class="w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors group/item">
+                  <div class="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 group-hover/item:bg-teal-600 group-hover/item:text-white flex items-center justify-center shrink-0 transition-colors">
+                    <i data-lucide="building-2" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-[#0F2537] group-hover/item:text-teal-700 transition-colors">Colleges &amp; Entry Prep</p>
+                    <p class="text-xs text-slate-500 mt-0.5">FSc, ICS, MDCAT &amp; ECAT centers</p>
+                  </div>
+                </button>
+
+                <button type="button" onclick="closeAllDropdowns(); navigate('universities')" class="w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors group/item">
+                  <div class="w-9 h-9 rounded-xl bg-slate-100 text-[#0F2537] group-hover/item:bg-[#0F2537] group-hover/item:text-white flex items-center justify-center shrink-0 transition-colors">
+                    <i data-lucide="landmark" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-[#0F2537] group-hover/item:text-teal-700 transition-colors">Universities Directory</p>
+                    <p class="text-xs text-slate-500 mt-0.5">UG/PG degrees &amp; scholarships</p>
+                  </div>
+                </button>
+
+                <button type="button" onclick="closeAllDropdowns(); navigate('institutes')" class="w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors group/item">
+                  <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 group-hover/item:bg-amber-500 group-hover/item:text-white flex items-center justify-center shrink-0 transition-colors">
+                    <i data-lucide="cpu" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-[#0F2537] group-hover/item:text-teal-700 transition-colors">Training Institutes</p>
+                    <p class="text-xs text-slate-500 mt-0.5">IT, Languages &amp; Vocational</p>
+                  </div>
+                </button>
+
+                <button type="button" onclick="closeAllDropdowns(); navigate('courses')" class="w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors group/item">
+                  <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 group-hover/item:bg-emerald-600 group-hover/item:text-white flex items-center justify-center shrink-0 transition-colors">
+                    <i data-lucide="play-circle" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-[#0F2537] group-hover/item:text-teal-700 transition-colors">Courses Directory</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Online, free &amp; career tracks</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Admissions Direct Link -->
+          <button
+            type="button"
+            data-nav-route="admissions"
+            onclick="navigate('admissions')"
+            class="nav-trigger px-2.5 xl:px-3.5 py-2 rounded-xl text-[13.5px] xl:text-sm font-semibold text-slate-700 hover:text-[#0F2537] hover:bg-slate-100/90 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+          >
+            <span>Admissions</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-teal-500" aria-hidden="true"></span>
+          </button>
+
+          <!-- 4. Community Dropdown -->
+          <div class="nav-item-wrapper" data-dropdown>
+            <button
+              type="button"
+              data-nav-route="books,events,guides"
+              onclick="navigate('books')"
+              aria-haspopup="true"
+              aria-expanded="false"
+              class="nav-trigger inline-flex items-center gap-1.5 px-2.5 xl:px-3.5 py-2 rounded-xl text-[13.5px] xl:text-sm font-semibold text-slate-700 hover:text-[#0F2537] hover:bg-slate-100/90 transition-colors whitespace-nowrap"
+            >
+              <span>Community</span>
+              <i data-lucide="chevron-down" class="nav-chevron w-4 h-4 text-slate-400 transition-transform duration-200"></i>
+            </button>
+
+            <div class="nav-dropdown w-64" role="menu">
+              <div class="bg-white rounded-2xl border border-slate-200/95 shadow-dropdown p-2 space-y-1">
+                <button type="button" onclick="closeAllDropdowns(); navigate('books')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-700 hover:text-[#0F2537] transition-colors">
+                  <span class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                  </span>
+                  <span>Book Exchange Hub</span>
+                </button>
+                <button type="button" onclick="closeAllDropdowns(); navigate('events')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-700 hover:text-[#0F2537] transition-colors">
+                  <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                  </span>
+                  <span>Open Houses &amp; Events</span>
+                </button>
+                <button type="button" onclick="closeAllDropdowns(); navigate('guides')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-700 hover:text-[#0F2537] transition-colors">
+                  <span class="w-7 h-7 rounded-lg bg-slate-100 text-[#0F2537] flex items-center justify-center shrink-0">
+                    <i data-lucide="compass" class="w-4 h-4"></i>
+                  </span>
+                  <span>Parent Guides</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Compare Direct Link -->
+          <button
+            type="button"
+            data-nav-route="compare"
+            onclick="navigate('compare')"
+            class="nav-trigger px-2.5 xl:px-3.5 py-2 rounded-xl text-[13.5px] xl:text-sm font-semibold text-slate-700 hover:text-[#0F2537] hover:bg-slate-100/90 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+          >
+            <i data-lucide="columns-3" class="w-4 h-4 text-teal-600 shrink-0"></i>
+            <span>Compare</span>
+            <span id="nav-compare-badge" class="px-1.5 py-0.5 text-[11px] font-bold rounded-full bg-teal-100 text-teal-800 leading-none">2</span>
+          </button>
+        </nav>
+
+        <!-- Right Action Controls (Desktop & Tablet) -->
+        <div class="hidden md:flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onclick="navigate('dashboard')"
+            title="Saved Schools & Dashboard"
+            aria-label="Saved Schools and Dashboard"
+            class="relative p-2.5 rounded-xl text-slate-600 hover:text-[#0F2537] hover:bg-slate-100 transition-colors"
+          >
+            <i data-lucide="bookmark" class="w-5 h-5"></i>
+            <span id="nav-saved-badge" class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">1</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="navigate('add-school')"
+            class="hidden xl:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold text-teal-700 bg-teal-50/90 hover:bg-teal-100 border border-teal-200/80 transition-colors whitespace-nowrap"
+          >
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Add Your School</span>
+          </button>
+
+          <div id="auth-header-actions" class="flex items-center gap-1.5 xl:gap-2">
+            <button
+              type="button"
+              onclick="navigate('signin')"
+              class="px-3 xl:px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors whitespace-nowrap"
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onclick="navigate('signup')"
+              class="px-3.5 xl:px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#0F2537] hover:bg-[#1B3A54] shadow-xs transition-colors whitespace-nowrap"
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <!-- Tablet Hamburger Trigger (768px - 1023px) -->
+          <button
+            type="button"
+            onclick="toggleMobileDrawer(true)"
+            class="lg:hidden ml-1 p-2.5 rounded-xl bg-[#0F2537] text-white hover:bg-[#1B3A54] transition-colors"
+            aria-label="Open Navigation Menu"
+            aria-controls="mobile-drawer"
+          >
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Mobile Quick Compare & Drawer Trigger (<768px) -->
+        <div class="flex items-center gap-2 md:hidden shrink-0">
+          <button
+            type="button"
+            onclick="navigate('dashboard')"
+            aria-label="Saved Schools"
+            class="relative p-2 rounded-xl bg-slate-100 text-slate-700 hover:text-[#0F2537] transition-colors"
+          >
+            <i data-lucide="bookmark" class="w-5 h-5"></i>
+            <span id="mobile-saved-badge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">1</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="navigate('compare')"
+            aria-label="Compare Schools"
+            class="relative p-2 rounded-xl bg-slate-100 text-[#0F2537] hover:bg-slate-200/70 transition-colors"
+          >
+            <i data-lucide="columns-3" class="w-5 h-5"></i>
+            <span id="mobile-compare-badge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-teal-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">2</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="toggleMobileDrawer(true)"
+            class="p-2.5 rounded-xl bg-[#0F2537] text-white hover:bg-[#1B3A54] transition-colors"
+            aria-label="Open Navigation Menu"
+            aria-controls="mobile-drawer"
+          >
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 4. MOBILE & TABLET SLIDE-OUT NAVIGATION DRAWER                        -->
+  <!-- ===================================================================== -->
+  <div
+    id="mobile-drawer-backdrop"
+    onclick="toggleMobileDrawer(false)"
+    class="fixed inset-0 bg-[#091824]/65 backdrop-blur-xs z-50 hidden opacity-0"
+    aria-hidden="true"
+  ></div>
+
+  <aside
+    id="mobile-drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Mobile Navigation"
+    class="fixed top-0 right-0 bottom-0 w-[88vw] max-w-[340px] bg-white z-50 shadow-2xl border-l border-slate-200 transform translate-x-full flex flex-col"
+  >
+    <!-- Drawer Header -->
+    <div class="px-5 py-4 border-b border-slate-200/90 flex items-center justify-between bg-slate-50/60 shrink-0">
+      <a href="#home" onclick="mobileNav('home'); return false;" class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-[#0F2537] text-white flex items-center justify-center shadow-xs">
+          <i data-lucide="graduation-cap" class="w-4 h-4 text-teal-400"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display font-extrabold text-base text-[#0F2537] leading-none">
+            Taleem<span class="text-teal-600">Finder</span>
+          </span>
+          <span class="text-[10px] font-medium text-slate-500 mt-0.5 leading-none">taleemfinder.pk</span>
+        </div>
+      </a>
+
+      <button
+        type="button"
+        id="mobile-drawer-close"
+        onclick="toggleMobileDrawer(false)"
+        class="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-[#0F2537] hover:bg-slate-100 active:scale-95 flex items-center justify-center transition-all shadow-2xs"
+        aria-label="Close Navigation Menu"
+      >
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Drawer Location Sub-strip -->
+    <div class="px-5 py-2.5 bg-[#091824] text-slate-300 text-[11px] flex items-center justify-between shrink-0">
+      <span class="inline-flex items-center gap-1.5 text-teal-300 font-semibold">
+        <i data-lucide="map-pin" class="w-3 h-3"></i>
+        <span>Islamabad &amp; Rawalpindi</span>
+      </span>
+      <span class="text-amber-300/90 font-medium">Sample Schema</span>
+    </div>
+
+    <!-- Independent Scrollable Menu Body -->
+    <div class="flex-1 overflow-y-auto overscroll-contain px-4 py-5 space-y-6">
+      <!-- Category 1: Explore Institutions -->
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">
+          Explore Institutions
+        </p>
+        <div class="space-y-1">
+          <button type="button" onclick="mobileNav('home')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+              <i data-lucide="home" class="w-4 h-4"></i>
+            </span>
+            <span>Home</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('schools')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+              <i data-lucide="school" class="w-4 h-4"></i>
+            </span>
+            <span>Schools Directory</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('colleges')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+              <i data-lucide="building-2" class="w-4 h-4"></i>
+            </span>
+            <span>Colleges &amp; Entry Prep</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('universities')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-slate-100 text-[#0F2537] flex items-center justify-center shrink-0">
+              <i data-lucide="landmark" class="w-4 h-4"></i>
+            </span>
+            <span>Universities</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('institutes')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <i data-lucide="cpu" class="w-4 h-4"></i>
+            </span>
+            <span>Training Institutes</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('courses')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <i data-lucide="play-circle" class="w-4 h-4"></i>
+            </span>
+            <span>Courses</span>
+          </button>
+        </div>
+      </div>
+
+      <hr class="border-slate-200/80" />
+
+      <!-- Category 2: Tools & Community -->
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">
+          Tools &amp; Community
+        </p>
+        <div class="space-y-1">
+          <button type="button" onclick="mobileNav('admissions')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <i data-lucide="calendar-check" class="w-4 h-4"></i>
+              </span>
+              <span>Admissions Open</span>
+            </span>
+            <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+          </button>
+
+          <button type="button" onclick="mobileNav('compare')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                <i data-lucide="columns-3" class="w-4 h-4"></i>
+              </span>
+              <span>Compare Schools</span>
+            </span>
+            <span id="drawer-compare-badge" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-teal-100 text-teal-800">2</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('books')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+            </span>
+            <span>Book Exchange</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('events')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+            </span>
+            <span>Events &amp; Open Houses</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('guides')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-slate-100 text-[#0F2537] flex items-center justify-center shrink-0">
+              <i data-lucide="compass" class="w-4 h-4"></i>
+            </span>
+            <span>Parent Guides</span>
+          </button>
+        </div>
+      </div>
+
+      <hr class="border-slate-200/80" />
+
+      <!-- Category 3: Account & Institutions -->
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">
+          Account &amp; Institutions
+        </p>
+        <div class="space-y-1.5">
+          <button type="button" onclick="mobileNav('dashboard')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors">
+            <span class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-slate-100 text-[#0F2537] flex items-center justify-center shrink-0">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+              </span>
+              <span>User Dashboard</span>
+            </span>
+            <span id="drawer-saved-badge" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-amber-100 text-amber-800">1</span>
+          </button>
+
+          <button type="button" onclick="mobileNav('add-school')" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200/80 transition-colors">
+            <span class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shrink-0">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            </span>
+            <span>Add / Claim Your School</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer Footer Auth Controls -->
+    <div id="mobile-drawer-auth" class="p-4 border-t border-slate-200 bg-slate-50/70 grid grid-cols-2 gap-2.5 shrink-0">
+      <button type="button" onclick="mobileNav('signin')" class="py-2.5 px-3 rounded-xl text-sm font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors">
+        Sign In
+      </button>
+      <button type="button" onclick="mobileNav('signup')" class="py-2.5 px-3 rounded-xl text-sm font-semibold bg-[#0F2537] text-white hover:bg-[#1B3A54] transition-colors">
+        Sign Up
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===================================================================== -->
+  <!-- DYNAMIC APPLICATION VIEWPORT                                          -->
+  <!-- ===================================================================== -->
+  <main id="app-root" class="flex-1">
+    <!-- Rendered dynamically by Taleem Finder SPA Router -->
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- FLOATING COMPARISON DOCK                                              -->
+  <!-- ===================================================================== -->
+  <div id="compare-dock" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 hidden w-[94%] max-w-2xl">
+    <div class="bg-[#0F2537] text-white rounded-2xl shadow-2xl border border-white/15 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center shrink-0">
+          <i data-lucide="columns-3" class="w-4 h-4 text-white"></i>
+        </div>
+        <div>
+          <p class="text-sm font-semibold">School Comparison Tray (<span id="dock-count">0</span>/3)</p>
+          <p id="dock-names" class="text-xs text-slate-300 truncate max-w-[230px] sm:max-w-sm">Select up to 3 profiles to compare side by side</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <button onclick="clearCompareList()" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition">Clear</button>
+        <button onclick="navigate('compare')" class="px-4 py-2 rounded-xl text-xs font-bold bg-teal-500 hover:bg-teal-400 text-[#091824] transition shadow-sm">
+          Compare Now &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- GLOBAL TOAST NOTIFICATION CONTAINER                                   -->
+  <!-- ===================================================================== -->
+  <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- PROFESSIONAL ENTERPRISE FOOTER                                        -->
+  <!-- ===================================================================== -->
+  <footer class="bg-[#091824] text-slate-300 border-t border-white/10 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-white/10">
+
+        <!-- Brand & Mission -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white">
+              <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span class="font-display font-extrabold text-xl text-white">Taleem<span class="text-teal-400">Finder</span></span>
+              <p class="text-xs text-slate-400">taleemfinder.pk</p>
+            </div>
+          </div>
+          <p class="text-sm text-slate-400 leading-relaxed max-w-md">
+            Helping parents and students across Islamabad, Rawalpindi, and Pakistan discover verified educational institutions, compare academic programs, track admission timelines, and access community learning resources.
+          </p>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">Islamabad Capital Territory</span>
+            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">Rawalpindi District</span>
+          </div>
+        </div>
+
+        <!-- Directories -->
+        <div>
+          <h4 class="font-display font-bold text-white text-sm uppercase tracking-wider mb-4">Directories</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><button onclick="navigate('schools')" class="text-slate-400 hover:text-teal-400 transition">Schools Directory</button></li>
+            <li><button onclick="navigate('colleges')" class="text-slate-400 hover:text-teal-400 transition">Colleges &amp; Prep</button></li>
+            <li><button onclick="navigate('universities')" class="text-slate-400 hover:text-teal-400 transition">Universities</button></li>
+            <li><button onclick="navigate('institutes')" class="text-slate-400 hover:text-teal-400 transition">Training Institutes</button></li>
+            <li><button onclick="navigate('courses')" class="text-slate-400 hover:text-teal-400 transition">Online &amp; Skill Courses</button></li>
+            <li><button onclick="navigate('compare')" class="text-slate-400 hover:text-teal-400 transition">Compare Institutions</button></li>
+          </ul>
+        </div>
+
+        <!-- Resources -->
+        <div>
+          <h4 class="font-display font-bold text-white text-sm uppercase tracking-wider mb-4">Resources</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><button onclick="navigate('admissions')" class="text-slate-400 hover:text-teal-400 transition">Admissions Tracker</button></li>
+            <li><button onclick="navigate('books')" class="text-slate-400 hover:text-teal-400 transition">Book Exchange</button></li>
+            <li><button onclick="navigate('events')" class="text-slate-400 hover:text-teal-400 transition">Educational Events</button></li>
+            <li><button onclick="navigate('guides')" class="text-slate-400 hover:text-teal-400 transition">Parent Guides</button></li>
+            <li><button onclick="navigate('add-school')" class="text-slate-400 hover:text-teal-400 transition">Register / Claim Campus</button></li>
+            <li><button onclick="navigate('dashboard')" class="text-slate-400 hover:text-teal-400 transition">Parent Dashboard</button></li>
+          </ul>
+        </div>
+
+        <!-- Platform & Legal -->
+        <div>
+          <h4 class="font-display font-bold text-white text-sm uppercase tracking-wider mb-4">Platform &amp; Legal</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><button onclick="navigate('about')" class="text-slate-400 hover:text-teal-400 transition">About Taleem Finder</button></li>
+            <li><button onclick="navigate('contact')" class="text-slate-400 hover:text-teal-400 transition">Contact Support</button></li>
+            <li><button onclick="navigate('privacy')" class="text-slate-400 hover:text-teal-400 transition">Privacy Policy</button></li>
+            <li><button onclick="navigate('terms')" class="text-slate-400 hover:text-teal-400 transition">Terms of Use</button></li>
+            <li><button onclick="navigate('copyright')" class="text-slate-400 hover:text-teal-400 transition">Copyright &amp; Takedown</button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        <p>&copy; 2026 Taleem Finder (taleemfinder.pk). All rights reserved. Designed for Islamabad &amp; Rawalpindi families.</p>
+        <p class="text-slate-500">Demonstration UI Architecture — Connect verified institutional APIs for live records.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION DATA, ROUTER & COMPLETE MULTI-PAGE VIEWS                  -->
+  <!-- ===================================================================== -->
+  <script>
+    /**
+     * DATA INTEGRITY GUARANTEE:
+     * Zero fabricated real-world school names, fees, ratings, or deadlines are presented
+     * as factual records. All profiles below are clearly labeled Sample/Demonstration Schema
+     * records structured around Islamabad and Rawalpindi sectors and curricula.
+     */
+    const SAMPLE_SCHOOLS = [
+      {
+        id: 'sch-isb-01',
+        name: '[Sample Campus Profile #01 — Islamabad F-7 Campus]',
+        badge: 'Demonstration Schema',
+        city: 'Islamabad',
+        sector: 'F-7 / F-8',
+        address: 'Sector F-7/2, Islamabad (Sample Location Schema)',
+        curriculum: 'Cambridge (O/A Levels)',
+        levels: ['Montessori / Early Years', 'Primary (Grades 1–5)', 'Middle (Grades 6–8)', 'O Levels / IGCSE', 'A Levels'],
+        levelGroup: 'K-12 & A Levels',
+        gender: 'Co-Education',
+        feeDisplay: 'Fee Data: Connect Live Backend / Not Published',
+        admissionStatus: 'Admissions Schema Open',
+        facilities: ['Science Laboratories', 'Computer & Robotics Lab', 'Library', 'Sports Ground', 'Transport Service', 'CCTV Security'],
+        description: 'Structured demonstration profile illustrating how a Cambridge-affiliated K-12 campus in Sector F-7, Islamabad displays academic tracks, laboratory infrastructure, and admission schedules on Taleem Finder.',
+        phone: '+92 (051) 000-0000 [Sample]',
+        email: 'admissions.sample@taleemfinder.pk'
+      },
+      {
+        id: 'sch-isb-02',
+        name: '[Sample Campus Profile #02 — Islamabad G-11 Federal Campus]',
+        badge: 'Demonstration Schema',
+        city: 'Islamabad',
+        sector: 'G-10 / G-11',
+        address: 'Sector G-11/3, Islamabad (Sample Location Schema)',
+        curriculum: 'FBISE (Matric / HSSC)',
+        levels: ['Primary (Grades 1–5)', 'Middle (Grades 6–8)', 'Secondary (Matric / SSC)', 'Higher Secondary (HSSC)'],
+        levelGroup: 'Primary to HSSC',
+        gender: 'Separate Wings (Boys/Girls)',
+        feeDisplay: 'Fee Data: Connect Live Backend / Not Published',
+        admissionStatus: 'Session Inquiry Open',
+        facilities: ['Science Laboratories', 'Library', 'Auditorium', 'Cafeteria', 'Medical Room'],
+        description: 'Demonstration record representing a Federal Board (FBISE) secondary and higher secondary campus in Sector G-11, Islamabad with dedicated boys and girls wings.',
+        phone: '+92 (051) 000-0000 [Sample]',
+        email: 'info.sample@taleemfinder.pk'
+      },
+      {
+        id: 'sch-rwp-01',
+        name: '[Sample Campus Profile #03 — Rawalpindi Bahria Town Campus]',
+        badge: 'Demonstration Schema',
+        city: 'Rawalpindi',
+        sector: 'Bahria Town',
+        address: 'Phase 7, Bahria Town, Rawalpindi (Sample Location Schema)',
+        curriculum: 'Cambridge & FBISE Dual Track',
+        levels: ['Montessori / Early Years', 'Primary (Grades 1–5)', 'Middle (Grades 6–8)', 'Matric / O Levels'],
+        levelGroup: 'Montessori to O Levels',
+        gender: 'Co-Education',
+        feeDisplay: 'Fee Data: Connect Live Backend / Not Published',
+        admissionStatus: 'Admissions Schema Open',
+        facilities: ['Science Laboratories', 'Computer & Robotics Lab', 'Sports Ground', 'Swimming Pool', 'Transport Service', 'Library'],
+        description: 'Illustrative campus template showcasing dual-stream (Cambridge & FBISE) academic options and sports facilities in Bahria Town, Rawalpindi.',
+        phone: '+92 (051) 000-0000 [Sample]',
+        email: 'bahria.sample@taleemfinder.pk'
+      },
+      {
+        id: 'sch-rwp-02',
+        name: '[Sample Campus Profile #04 — Rawalpindi Saddar / Cantt Campus]',
+        badge: 'Demonstration Schema',
+        city: 'Rawalpindi',
+        sector: 'Saddar / Cantt',
+        address: 'The Mall / Cantt Zone, Rawalpindi (Sample Location Schema)',
+        curriculum: 'FBISE (Matric / HSSC)',
+        levels: ['Primary (Grades 1–5)', 'Middle (Grades 6–8)', 'Secondary (Matric / SSC)'],
+        levelGroup: 'Primary & Secondary',
+        gender: 'Co-Education',
+        feeDisplay: 'Fee Data: Connect Live Backend / Not Published',
+        admissionStatus: 'Upcoming Session',
+        facilities: ['Science Laboratories', 'Library', 'Sports Ground', 'CCTV Security'],
+        description: 'Sample institutional card representing an established Rawalpindi Cantonment school offering Federal Board science and humanities streams.',
+        phone: '+92 (051) 000-0000 [Sample]',
+        email: 'cantt.sample@taleemfinder.pk'
+      },
+      {
+        id: 'sch-isb-03',
+        name: '[Sample Campus Profile #05 — Islamabad E-7 Early Years Academy]',
+        badge: 'Demonstration Schema',
+        city: 'Islamabad',
+        sector: 'E-7 / E-11',
+        address: 'Sector E-7, Islamabad (Sample Location Schema)',
+        curriculum: 'Montessori / International Early Years',
+        levels: ['Montessori / Early Years', 'Primary (Grades 1–5)'],
+        levelGroup: 'Montessori / Early Years',
+        gender: 'Co-Education',
+        feeDisplay: 'Fee Data: Connect Live Backend / Not Published',
+        admissionStatus: 'Admissions Schema Open',
+        facilities: ['Montessori Activity Rooms', 'Indoor Play Area', 'Medical Room', 'CCTV Security', 'Library'],
+        description: 'Demonstration profile tailored for early childhood education and primary foundation years in Sector E-7, Islamabad.',
+        phone: '+92 (051) 000-0000 [Sample]',
+        email: 'earlyyears.sample@taleemfinder.pk'
+      },
+      {
+        id: 'sch-rwp-03',
+        name: '[Sample Campus Profile #06 — DHA Phase II STEM Campus]',
+        badge: 'Demonstration Schema',
+        city: 'Rawalpindi',
+        sector: 'DHA Islamabad-Rawalpindi',
+        address: 'DHA Phase II, Islamabad/Rawalpindi Expressway (Sample Location Schema)',
+        curriculum: 'Cambridge (O/A Levels)',
+        levels: ['Middle (Grades 6–8)', 'O Levels / IGCSE', 'A Levels'],
+        levelGroup: 'Middle to A Levels',
+        gender: 'Co-Education',
+        feeDisplay: 'Fee Data: Connect Live Backend / Not Published',
+        admissionStatus: 'Admissions Schema Open',
+        facilities: ['Computer & Robotics Lab', 'Science Laboratories', 'Auditorium', 'Sports Ground', 'Transport Service'],
+        description: 'Demonstration record highlighting STEM laboratories, robotics clubs, and A-Level subject combinations for families in DHA Phase II.',
+        phone: '+92 (051) 000-0000 [Sample]',
+        email: 'dha.sample@taleemfinder.pk'
+      }
+    ];
+
+    const SAMPLE_COLLEGES = [
+      {
+        id: 'col-01',
+        name: '[Sample Intermediate & Degree College — Islamabad H-8]',
+        city: 'Islamabad',
+        sector: 'Sector H-8',
+        programs: ['FSc Pre-Medical', 'FSc Pre-Engineering', 'ICS (Computer Science)', 'I.Com', 'FA Humanities'],
+        prepTracks: ['MDCAT Orientation', 'ECAT / NET Prep'],
+        status: 'HSSC Admission Window (Sample)'
+      },
+      {
+        id: 'col-02',
+        name: '[Sample Girls Science & Arts College — Rawalpindi Satellite Town]',
+        city: 'Rawalpindi',
+        sector: 'Satellite Town',
+        programs: ['FSc Pre-Medical', 'FSc Pre-Engineering', 'ICS', 'ADP / BS Foundation'],
+        prepTracks: ['NUMS / MDCAT Prep'],
+        status: 'Inquiries Open (Sample)'
+      },
+      {
+        id: 'col-03',
+        name: '[Sample Entry Test & STEM Prep Academy — F-10 Markaz]',
+        city: 'Islamabad',
+        sector: 'F-10 Markaz',
+        programs: ['MDCAT Intensive', 'NUST NET Engineering', 'FAST / COMSATS Entry Prep'],
+        prepTracks: ['Weekend & Evening Batches'],
+        status: 'Batch Registration Schema'
+      }
+    ];
+
+    const SAMPLE_UNIVERSITIES = [
+      {
+        id: 'uni-01',
+        name: '[Sample Public/Chartered University Profile — Islamabad H-9/H-12 Zone]',
+        city: 'Islamabad',
+        type: 'Chartered University Schema',
+        degrees: ['BS Computer Science & AI', 'BS Electrical & Mechanical Engineering', 'BBA / Management Sciences', 'MS & PhD Research'],
+        entryTest: 'University Entry Test / NAT Required',
+        scholarships: 'Need-Based & Merit Financial Aid Schema Available'
+      },
+      {
+        id: 'uni-02',
+        name: '[Sample Medical & Allied Health University Profile — Rawalpindi]',
+        city: 'Rawalpindi',
+        type: 'Health Sciences University Schema',
+        degrees: ['MBBS / BDS', 'Doctor of Physical Therapy (DPT)', 'BS Nursing & Allied Health'],
+        entryTest: 'PMDC MDCAT Mandatory',
+        scholarships: 'Merit & Provincial Quota Schema'
+      }
+    ];
+
+    const SAMPLE_INSTITUTES = [
+      {
+        id: 'ins-01',
+        name: '[Sample IT & Software Engineering Institute — Blue Area, Islamabad]',
+        category: 'IT & Skills',
+        city: 'Islamabad',
+        offerings: ['Full-Stack Web Development', 'Data Analytics & Python', 'UI/UX Product Design', 'Cloud & DevOps'],
+        mode: 'On-Campus & Hybrid'
+      },
+      {
+        id: 'ins-02',
+        name: '[Sample Language & Test Prep Center — Commercial Market, Rawalpindi]',
+        category: 'Language Institutes',
+        city: 'Rawalpindi',
+        offerings: ['IELTS Academic & General', 'TOEFL iBT', 'Spoken English & Business Communication', 'German A1–B1'],
+        mode: 'On-Campus'
+      },
+      {
+        id: 'ins-03',
+        name: '[Sample Technical & Vocational Training Center — I-9 Industrial Area]',
+        category: 'Vocational Training',
+        city: 'Islamabad',
+        offerings: ['CAD / CAM Drafting', 'Solar PV Installation', 'Digital E-Commerce Operations'],
+        mode: 'Practical Workshop'
+      }
+    ];
+
+    const SAMPLE_COURSES = [
+      {
+        id: 'crs-01',
+        title: 'Foundations of Modern Web Development (HTML, CSS, JS)',
+        category: 'Online Courses',
+        cost: 'Free Track',
+        duration: '8 Weeks (Self-Paced)',
+        mode: 'Online',
+        provider: '[Taleem Finder Partner Skill Schema]'
+      },
+      {
+        id: 'crs-02',
+        title: 'Career Readiness & University Admission Essay Workshop',
+        category: 'Free Courses',
+        cost: 'Free Track',
+        duration: '2 Weeks',
+        mode: 'Live Online Webinar',
+        provider: '[Taleem Finder Academic Advisory Schema]'
+      },
+      {
+        id: 'crs-03',
+        title: 'Applied Data Science & Machine Learning Bootcamp',
+        category: 'Professional Training',
+        cost: 'Tuition Listed on Provider Portal',
+        duration: '12 Weeks',
+        mode: 'Hybrid (Islamabad / Online)',
+        provider: '[Partner Tech Institute Schema]'
+      },
+      {
+        id: 'crs-04',
+        title: 'Digital Marketing & Freelancing Career Path',
+        category: 'Career Paths',
+        cost: 'Free / Scholarship Eligible',
+        duration: '6 Weeks',
+        mode: 'Online',
+        provider: '[National Skills Initiative Schema]'
+      }
+    ];
+
+    const SAMPLE_BOOKS = [
+      {
+        id: 'bk-01',
+        title: 'Cambridge O Level Physics & Chemistry Past Papers Set (Sample Listing)',
+        grade: 'O Levels / Grade 10',
+        city: 'Islamabad (Sector G-10)',
+        type: 'Swap / Donate',
+        condition: 'Good — Clean Pages'
+      },
+      {
+        id: 'bk-02',
+        title: 'FBISE HSSC Part-I & II Mathematics & Biology Textbooks (Sample Listing)',
+        grade: 'FSc / Class 11–12',
+        city: 'Rawalpindi (Bahria Town)',
+        type: 'Donate (Free)',
+        condition: 'Like New'
+      },
+      {
+        id: 'bk-03',
+        title: 'MDCAT Practice Question Bank & Conceptual Notes (Sample Listing)',
+        grade: 'Entry Test Prep',
+        city: 'Islamabad (Sector F-8)',
+        type: 'Low-Cost Exchange',
+        condition: 'Gently Used'
+      }
+    ];
+
+    const SAMPLE_EVENTS = [
+      {
+        id: 'ev-01',
+        title: 'Islamabad & Rawalpindi School Open House Weekend (Sample Event)',
+        type: 'Open House & Campus Tour',
+        location: 'Participating Campuses — Islamabad & Rawalpindi',
+        dateLabel: 'Schedule Published Upon Backend Sync',
+        summary: 'Parents can tour classrooms, science laboratories, and meet academic coordinators before fall admissions.'
+      },
+      {
+        id: 'ev-02',
+        title: 'FSc to University Career & Entry Test Guidance Seminar (Sample Event)',
+        type: 'Entry Test & Admissions Briefing',
+        location: 'Islamabad Convention / Online Stream',
+        dateLabel: 'Schedule Published Upon Backend Sync',
+        summary: 'Structured overview of NET, MDCAT, ECAT, and NAT timelines for Grade 11 and 12 students.'
+      }
+    ];
+
+    const PARENT_GUIDES = [
+      {
+        id: 'gd-01',
+        title: 'Cambridge (O/A Levels) vs. FBISE Matric/HSSC: A Practical Guide for Twin Cities Parents',
+        category: 'Curriculum Selection',
+        readTime: '6 min read',
+        excerpt: 'Understand assessment styles, IBCC equivalence considerations, university entry test alignment, and subject flexibility across Islamabad and Rawalpindi.',
+        content: [
+          'Choosing between the Cambridge International pathway (IGCSE/O & A Levels) and the Federal Board of Intermediate and Secondary Education (FBISE) is one of the most significant academic decisions families in Islamabad and Rawalpindi make.',
+          '1. Assessment & Learning Style: FBISE emphasizes structured textbook mastery and standardized board examinations, aligning closely with local MDCAT and ECAT syllabi. Cambridge emphasizes analytical application, conceptual problem-solving, and broader subject combinations.',
+          '2. University Equivalence (IBCC): Students completing O and A Levels obtain an equivalence certificate from the Inter Board Committee of Chairmen (IBCC) in Islamabad when applying to Pakistani universities.',
+          '3. Key Questions to Ask During Campus Visits: Inquire about faculty turnover, science laboratory equipment, student-to-teacher ratios, and past academic counseling support.'
+        ]
+      },
+      {
+        id: 'gd-02',
+        title: 'Campus Visit Checklist: 10 Essential Things to Inspect Before Paying Admission Dues',
+        category: 'Admissions Planning',
+        readTime: '5 min read',
+        excerpt: 'From safety protocols and transport routes to science labs and fee transparency, use this structured checklist during your next school tour.',
+        content: [
+          'A well-designed brochure only tells part of a school’s story. Visiting a campus during active school hours gives parents genuine insight into daily culture.',
+          'Safety & Hygiene: Inspect entry/exit security gates, fire safety equipment, medical room availability, and washroom cleanliness.',
+          'Academic Infrastructure: Visit the library, computer lab, and science laboratories rather than relying solely on administrative reception areas.',
+          'Written Fee Breakdown: Request a complete written schedule of admission fees, security deposits (refundable vs. non-refundable), monthly tuition, and annual charges.'
+        ]
+      },
+      {
+        id: 'gd-03',
+        title: 'Navigating University Entry Tests & Scholarships in Pakistan',
+        category: 'Higher Education',
+        readTime: '7 min read',
+        excerpt: 'How Grade 12 students can plan ahead for NUST NET, COMSATS NTS, FAST, and PMDC MDCAT application windows.',
+        content: [
+          'Admission cycles for top universities in Islamabad and Rawalpindi begin earlier than many students expect, often while HSSC Part-II exams are still underway.',
+          'Track Multiple Test Windows: Several engineering and computing universities conduct multiple entry test series across the academic year.',
+          'Financial Aid & Need-Based Scholarships: Prepare income documentation and academic transcripts early so you do not miss merit or need-based scholarship deadlines.'
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // CENTRAL APPLICATION STATE
+    // =========================================================================
+    const state = {
+      route: 'home',
+      routeParam: null,
+      schoolFilters: {
+        query: '',
+        city: 'All',
+        sector: 'All',
+        curriculum: 'All',
+        level: 'All',
+        facility: 'All',
+        sort: 'featured'
+      },
+      visibleSchoolCount: 4,
+      compareIds: ['sch-isb-01', 'sch-rwp-01'],
+      savedIds: ['sch-isb-01'],
+      user: null,
+      submittedInstitutions: [],
+      bookFilter: 'All',
+      courseFilter: 'All',
+      instituteFilter: 'All',
+      isDrawerOpen: false
+    };
+
+    // =========================================================================
+    // CORE NAVIGATION, DROPDOWN & DRAWER CONTROLLERS
+    // =========================================================================
+    function navigate(route, param = null) {
+      closeAllDropdowns();
+      state.route = route;
+      state.routeParam = param;
+      try {
+        window.location.hash = param ? `${route}/${param}` : route;
+      } catch (e) {}
+      renderApp();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function mobileNav(route, param = null) {
+      toggleMobileDrawer(false);
+      navigate(route, param);
+    }
+
+    function closeAllDropdowns() {
+      document.querySelectorAll('[data-dropdown]').forEach(wrapper => {
+        wrapper.classList.remove('is-open');
+        const btn = wrapper.querySelector('.nav-trigger');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      });
+      if (document.activeElement && document.activeElement.closest('[data-dropdown]')) {
+        document.activeElement.blur();
+      }
+    }
+
+    function initDesktopDropdowns() {
+      const wrappers = document.querySelectorAll('[data-dropdown]');
+      wrappers.forEach(wrapper => {
+        const trigger = wrapper.querySelector('.nav-trigger');
+        let closeTimer = null;
+
+        wrapper.addEventListener('mouseenter', () => {
+          if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = null;
+          }
+          wrappers.forEach(other => {
+            if (other !== wrapper) {
+              other.classList.remove('is-open');
+              const b = other.querySelector('.nav-trigger');
+              if (b) b.setAttribute('aria-expanded', 'false');
+            }
+          });
+          wrapper.classList.add('is-open');
+          if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+          closeTimer = setTimeout(() => {
+            wrapper.classList.remove('is-open');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+          }, 110);
+        });
+
+        wrapper.addEventListener('focusin', () => {
+          if (closeTimer) clearTimeout(closeTimer);
+          wrapper.classList.add('is-open');
+          if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        });
+
+        wrapper.addEventListener('focusout', (e) => {
+          if (!wrapper.contains(e.relatedTarget)) {
+            wrapper.classList.remove('is-open');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+          }
+        });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeAllDropdowns();
+          if (state.isDrawerOpen) {
+            toggleMobileDrawer(false);
+          }
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('[data-dropdown]')) {
+          closeAllDropdowns();
+        }
+      });
+    }
+
+    let mobileDrawerHideTimer = null;
+
+    function toggleMobileDrawer(open) {
+      const drawer = document.getElementById('mobile-drawer');
+      const backdrop = document.getElementById('mobile-drawer-backdrop');
+      if (!drawer || !backdrop) return;
+
+      if (mobileDrawerHideTimer) {
+        clearTimeout(mobileDrawerHideTimer);
+        mobileDrawerHideTimer = null;
+      }
+
+      state.isDrawerOpen = Boolean(open);
+
+      if (open) {
+        document.body.style.overflow = 'hidden';
+        backdrop.classList.remove('hidden');
+        // Force reflow so opacity & transform transitions run cleanly
+        void backdrop.offsetWidth;
+        backdrop.classList.remove('opacity-0');
+        drawer.classList.remove('translate-x-full');
+
+        const closeBtn = document.getElementById('mobile-drawer-close');
+        if (closeBtn) {
+          setTimeout(() => closeBtn.focus({ preventScroll: true }), 60);
+        }
+      } else {
+        document.body.style.overflow = '';
+        backdrop.classList.add('opacity-0');
+        drawer.classList.add('translate-x-full');
+        mobileDrawerHideTimer = setTimeout(() => {
+          backdrop.classList.add('hidden');
+        }, 300);
+      }
+    }
+
+    function updateActiveNavIndicators() {
+      const current = state.route;
+      document.querySelectorAll('[data-nav-route]').forEach(el => {
+        const routes = (el.getAttribute('data-nav-route') || '').split(',');
+        const isActive = routes.includes(current) || (current === 'school-detail' && routes.includes('schools'));
+        if (isActive) {
+          el.classList.add('text-teal-700', 'bg-teal-50/70');
+          el.classList.remove('text-slate-700');
+        } else {
+          el.classList.remove('text-teal-700', 'bg-teal-50/70');
+          el.classList.add('text-slate-700');
+        }
+      });
+    }
+
+    function filterAndGoSchools(filters) {
+      state.schoolFilters = {
+        ...state.schoolFilters,
+        query: '',
+        city: 'All',
+        sector: 'All',
+        curriculum: 'All',
+        level: 'All',
+        facility: 'All',
+        ...filters
+      };
+      state.visibleSchoolCount = 6;
+      navigate('schools');
+    }
+
+    function handleHeroSearch(e) {
+      e.preventDefault();
+      const q = document.getElementById('hero-query')?.value || '';
+      const city = document.getElementById('hero-city')?.value || 'All';
+      const curriculum = document.getElementById('hero-curriculum')?.value || 'All';
+      filterAndGoSchools({ query: q, city, curriculum });
+    }
+
+    // =========================================================================
+    // COMPARISON & SAVED BOOKMARKS ACTIONS
+    // =========================================================================
+    function toggleCompare(schoolId) {
+      const idx = state.compareIds.indexOf(schoolId);
+      if (idx > -1) {
+        state.compareIds.splice(idx, 1);
+        showToast('Removed from comparison list', 'info');
+      } else {
+        if (state.compareIds.length >= 3) {
+          showToast('You can compare up to 3 schools at a time. Remove one first.', 'warning');
+          return;
+        }
+        state.compareIds.push(schoolId);
+        showToast('Added to side-by-side comparison', 'success');
+      }
+      updateGlobalBadges();
+      renderApp();
+    }
+
+    function clearCompareList() {
+      state.compareIds = [];
+      updateGlobalBadges();
+      showToast('Comparison tray cleared', 'info');
+      renderApp();
+    }
+
+    function toggleSaveSchool(schoolId) {
+      const idx = state.savedIds.indexOf(schoolId);
+      if (idx > -1) {
+        state.savedIds.splice(idx, 1);
+        showToast('Removed from Saved Schools', 'info');
+      } else {
+        state.savedIds.push(schoolId);
+        showToast('Saved to your Dashboard bookmarks', 'success');
+      }
+      updateGlobalBadges();
+      renderApp();
+    }
+
+    function updateGlobalBadges() {
+      const cCount = state.compareIds.length;
+      const sCount = state.savedIds.length;
+
+      ['nav-compare-badge', 'mobile-compare-badge', 'drawer-compare-badge'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = cCount;
+      });
+
+      ['nav-saved-badge', 'mobile-saved-badge', 'drawer-saved-badge'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = sCount;
+          el.classList.toggle('hidden', sCount === 0);
+        }
+      });
+
+      const dock = document.getElementById('compare-dock');
+      const dockCount = document.getElementById('dock-count');
+      const dockNames = document.getElementById('dock-names');
+      if (dock && dockCount && dockNames) {
+        if (cCount > 0 && state.route !== 'compare') {
+          dock.classList.remove('hidden');
+          dockCount.textContent = cCount;
+          const names = state.compareIds
+            .map(id => SAMPLE_SCHOOLS.find(s => s.id === id)?.name.replace(/\[|\]/g, '').split('—')[0].trim())
+            .filter(Boolean);
+          dockNames.textContent = names.join('  •  ');
+        } else {
+          dock.classList.add('hidden');
+        }
+      }
+
+      const authContainer = document.getElementById('auth-header-actions');
+      const mobileDrawerAuth = document.getElementById('mobile-drawer-auth');
+      if (state.user) {
+        const firstName = escapeHtml(state.user.name.split(' ')[0]);
+        if (authContainer) {
+          authContainer.innerHTML = `
+            <button type="button" onclick="navigate('dashboard')" class="px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#0F2537] text-white hover:bg-[#1B3A54] transition-colors inline-flex items-center gap-2 whitespace-nowrap">
+              <i data-lucide="user-check" class="w-4 h-4 text-teal-400"></i>
+              <span>${firstName}</span>
+            </button>
+          `;
+        }
+        if (mobileDrawerAuth) {
+          mobileDrawerAuth.className = 'p-4 border-t border-slate-200 bg-slate-50/70 grid grid-cols-1 gap-2 shrink-0';
+          mobileDrawerAuth.innerHTML = `
+            <button type="button" onclick="mobileNav('dashboard')" class="py-2.5 px-4 rounded-xl text-sm font-semibold bg-[#0F2537] text-white hover:bg-[#1B3A54] transition-colors flex items-center justify-center gap-2">
+              <i data-lucide="user-check" class="w-4 h-4 text-teal-400"></i>
+              <span>${escapeHtml(state.user.name)} — Dashboard</span>
+            </button>
+          `;
+        }
+      } else {
+        if (authContainer) {
+          authContainer.innerHTML = `
+            <button type="button" onclick="navigate('signin')" class="px-3 xl:px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-[#0F2537] hover:bg-slate-100 transition-colors whitespace-nowrap">Sign In</button>
+            <button type="button" onclick="navigate('signup')" class="px-3.5 xl:px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#0F2537] hover:bg-[#1B3A54] shadow-xs transition-colors whitespace-nowrap">Sign Up</button>
+          `;
+        }
+        if (mobileDrawerAuth) {
+          mobileDrawerAuth.className = 'p-4 border-t border-slate-200 bg-slate-50/70 grid grid-cols-2 gap-2.5 shrink-0';
+          mobileDrawerAuth.innerHTML = `
+            <button type="button" onclick="mobileNav('signin')" class="py-2.5 px-3 rounded-xl text-sm font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors">Sign In</button>
+            <button type="button" onclick="mobileNav('signup')" class="py-2.5 px-3 rounded-xl text-sm font-semibold bg-[#0F2537] text-white hover:bg-[#1B3A54] transition-colors">Sign Up</button>
+          `;
+        }
+      }
+    }
+
+    // =========================================================================
+    // TOAST & HELPERS
+    // =========================================================================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const colors = {
+        success: 'bg-[#0F2537] text-white border-teal-500',
+        warning: 'bg-amber-950 text-white border-amber-400',
+        info: 'bg-slate-800 text-white border-slate-400'
+      };
+      const icons = {
+        success: 'check-circle-2',
+        warning: 'alert-circle',
+        info: 'info'
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border-l-4 text-sm font-medium transition-all duration-300 ${colors[type] || colors.info}`;
+      el.innerHTML = `<i data-lucide="${icons[type] || 'info'}" class="w-4 h-4 text-teal-400 shrink-0"></i><span>${escapeHtml(message)}</span>`;
+      container.appendChild(el);
+      refreshIcons();
+      setTimeout(() => {
+        el.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => el.remove(), 300);
+      }, 3200);
+    }
+
+    function refreshIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // =========================================================================
+    // REUSABLE SCHOOL CARD COMPONENT
+    // =========================================================================
+    function renderSchoolCard(school) {
+      const isCompared = state.compareIds.includes(school.id);
+      const isSaved = state.savedIds.includes(school.id);
+
+      return `
+        <article class="bg-white rounded-2xl border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all duration-200 flex flex-col overflow-hidden group">
+          <!-- Card Top Accent Header -->
+          <div class="p-5 pb-4 border-b border-slate-100">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                  ${escapeHtml(school.badge)}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+                  ${escapeHtml(school.admissionStatus)}
+                </span>
+              </div>
+              <button onclick="toggleSaveSchool('${school.id}')" title="${isSaved ? 'Remove Bookmark' : 'Save School'}" class="p-2 rounded-xl border ${isSaved ? 'bg-amber-50 border-amber-300 text-amber-600' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-[#0F2537]'} transition">
+                <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-amber-500' : ''}"></i>
+              </button>
+            </div>
+
+            <h3 class="font-display font-bold text-lg text-[#0F2537] group-hover:text-teal-700 transition leading-snug mb-2">
+              <button onclick="navigate('school-detail', '${school.id}')" class="text-left hover:underline">
+                ${escapeHtml(school.name)}
+              </button>
+            </h3>
+
+            <p class="text-xs text-slate-500 flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-teal-600 shrink-0"></i>
+              <span>${escapeHtml(school.city)} • ${escapeHtml(school.sector)}</span>
+            </p>
+          </div>
+
+          <!-- Card Metadata Body -->
+          <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-2.5 text-xs">
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                  <span class="text-slate-400 block mb-0.5">Curriculum</span>
+                  <span class="font-semibold text-[#0F2537]">${escapeHtml(school.curriculum)}</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                  <span class="text-slate-400 block mb-0.5">Grade Span</span>
+                  <span class="font-semibold text-[#0F2537]">${escapeHtml(school.levelGroup)}</span>
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-slate-50/70 border border-dashed border-slate-200 text-xs text-slate-600 flex items-center gap-2">
+                <i data-lucide="wallet" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                <span>${escapeHtml(school.feeDisplay)}</span>
+              </div>
+
+              <div class="flex flex-wrap gap-1.5">
+                ${school.facilities.slice(0, 3).map(f => `
+                  <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-medium">${escapeHtml(f)}</span>
+                `).join('')}
+                ${school.facilities.length > 3 ? `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[11px]">+${school.facilities.length - 3} more</span>` : ''}
+              </div>
+            </div>
+
+            <!-- Action Footer -->
+            <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
+              <button onclick="navigate('school-detail', '${school.id}')" class="flex-1 py-2.5 px-3 rounded-xl bg-[#0F2537] hover:bg-[#1B3A54] text-white text-xs font-semibold transition text-center">
+                View Campus Profile
+              </button>
+              <button onclick="toggleCompare('${school.id}')" class="py-2.5 px-3 rounded-xl text-xs font-semibold border transition inline-flex items-center gap-1.5 ${isCompared ? 'bg-teal-600 border-teal-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-teal-500 hover:text-teal-700'}">
+                <i data-lucide="${isCompared ? 'check' : 'columns-3'}" class="w-3.5 h-3.5"></i>
+                <span>${isCompared ? 'Selected' : 'Compare'}</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 1: HOMEPAGE
+    // =========================================================================
+    function renderHomeView() {
+      return `
+        <div class="view-animate">
+          <!-- HERO SECTION -->
+          <section class="hero-mesh relative overflow-hidden text-white pt-12 pb-16 lg:pt-20 lg:pb-24">
+            <div class="dot-grid absolute inset-0 pointer-events-none"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+              <div class="max-w-3xl mx-auto text-center space-y-5">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-semibold text-teal-300">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  <span>Islamabad &amp; Rawalpindi’s Structured Education Discovery Platform</span>
+                </div>
+
+                <h1 class="font-display font-extrabold text-3xl sm:text-5xl lg:text-[52px] tracking-tight leading-[1.12] text-white">
+                  Find the Right School, College &amp; Academic Path with Confidence
+                </h1>
+
+                <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                  Explore campuses across Islamabad and Rawalpindi by sector, curriculum, facilities, and admission windows—built for transparent parent &amp; student decision-making.
+                </p>
+              </div>
+
+              <!-- HERO MULTI-CRITERIA SEARCH BAR -->
+              <form onsubmit="handleHeroSearch(event)" class="mt-9 max-w-5xl mx-auto bg-white rounded-2xl p-3 sm:p-4 shadow-2xl border border-white/20 text-slate-800">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                  <div class="md:col-span-5 relative">
+                    <label for="hero-query" class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 pt-1">Institution or Sector</label>
+                    <div class="flex items-center px-3 pb-1.5">
+                      <i data-lucide="search" class="w-4 h-4 text-teal-600 mr-2 shrink-0"></i>
+                      <input id="hero-query" type="text" placeholder="e.g., F-7, Bahria Town, Cambridge, STEM..." class="w-full text-sm font-medium text-[#0F2537] placeholder-slate-400 focus:outline-none" />
+                    </div>
+                  </div>
+
+                  <div class="md:col-span-3 border-t md:border-t-0 md:border-l border-slate-200 pt-2 md:pt-0">
+                    <label for="hero-city" class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 pt-1">City</label>
+                    <select id="hero-city" class="w-full px-3 pb-1.5 text-sm font-semibold text-[#0F2537] bg-transparent focus:outline-none">
+                      <option value="All">Islamabad &amp; Rawalpindi</option>
+                      <option value="Islamabad">Islamabad</option>
+                      <option value="Rawalpindi">Rawalpindi</option>
+                    </select>
+                  </div>
+
+                  <div class="md:col-span-2 border-t md:border-t-0 md:border-l border-slate-200 pt-2 md:pt-0">
+                    <label for="hero-curriculum" class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 pt-1">Curriculum</label>
+                    <select id="hero-curriculum" class="w-full px-3 pb-1.5 text-sm font-semibold text-[#0F2537] bg-transparent focus:outline-none">
+                      <option value="All">All Tracks</option>
+                      <option value="Cambridge (O/A Levels)">Cambridge</option>
+                      <option value="FBISE (Matric / HSSC)">FBISE Board</option>
+                      <option value="Montessori / International Early Years">Montessori</option>
+                    </select>
+                  </div>
+
+                  <div class="md:col-span-2 flex items-stretch">
+                    <button type="submit" class="w-full py-3.5 px-5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+                      <i data-lucide="search" class="w-4 h-4"></i>
+                      <span>Search</span>
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              <!-- QUICK SECTOR & TRACK PILLS -->
+              <div class="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs">
+                <span class="text-slate-400 font-medium mr-1">Popular Searches:</span>
+                <button onclick="filterAndGoSchools({city:'Islamabad'})" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition">Islamabad Campuses</button>
+                <button onclick="filterAndGoSchools({city:'Rawalpindi'})" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition">Rawalpindi Campuses</button>
+                <button onclick="filterAndGoSchools({curriculum:'Cambridge (O/A Levels)'})" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition">Cambridge O/A Levels</button>
+                <button onclick="filterAndGoSchools({curriculum:'FBISE (Matric / HSSC)'})" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition">FBISE Matric / HSSC</button>
+                <button onclick="navigate('admissions')" class="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 transition">Admissions Tracker</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- BROWSE BY EDUCATION CATEGORY -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+              ${[
+                { label: 'Schools', sub: 'Montessori to A-Level', icon: 'school', route: 'schools', color: 'text-teal-600 bg-teal-50' },
+                { label: 'Colleges', sub: 'FSc, ICS & Entry Prep', icon: 'building-2', route: 'colleges', color: 'text-blue-600 bg-blue-50' },
+                { label: 'Universities', sub: 'BS, MS & Scholarships', icon: 'landmark', route: 'universities', color: 'text-[#0F2537] bg-slate-100' },
+                { label: 'Institutes', sub: 'IT, Languages & Skills', icon: 'cpu', route: 'institutes', color: 'text-amber-600 bg-amber-50' },
+                { label: 'Courses', sub: 'Online & Free Tracks', icon: 'play-circle', route: 'courses', color: 'text-emerald-600 bg-emerald-50' },
+                { label: 'Book Exchange', sub: 'Swap & Donate Books', icon: 'book-open', route: 'books', color: 'text-purple-600 bg-purple-50' }
+              ].map(cat => `
+                <button onclick="navigate('${cat.route}')" class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all text-left group">
+                  <div class="w-10 h-10 rounded-xl ${cat.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                    <i data-lucide="${cat.icon}" class="w-5 h-5"></i>
+                  </div>
+                  <p class="font-display font-bold text-sm text-[#0F2537]">${cat.label}</p>
+                  <p class="text-xs text-slate-500 mt-0.5">${cat.sub}</p>
+                </button>
+              `).join('')}
+            </div>
+          </section>
+
+          <!-- FEATURED SAMPLE CAMPUSES -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Directory Preview</span>
+                <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-[#0F2537] mt-1">Featured Sample Campus Profiles</h2>
+                <p class="text-sm text-slate-500 mt-1">Structured demonstration cards showing how Islamabad &amp; Rawalpindi schools appear on Taleem Finder.</p>
+              </div>
+              <button onclick="navigate('schools')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-teal-500 text-sm font-semibold text-[#0F2537] shadow-xs transition self-start sm:self-auto">
+                <span>Explore Full Directory</span>
+                <i data-lucide="arrow-right" class="w-4 h-4 text-teal-600"></i>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              ${SAMPLE_SCHOOLS.slice(0, 3).map(renderSchoolCard).join('')}
+            </div>
+          </section>
+
+          <!-- POPULAR LOCATIONS IN ISLAMABAD & RAWALPINDI -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-card">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                  <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Neighborhood Discovery</span>
+                  <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-[#0F2537] mt-1">Browse by Sector &amp; Locality</h2>
+                </div>
+                <p class="text-sm text-slate-500 max-w-md">Filter institutions close to home across major residential sectors of the Twin Cities.</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                ${[
+                  { area: 'Sector F-6, F-7 & F-8', city: 'Islamabad', filter: { sector: 'F-7 / F-8' } },
+                  { area: 'Sector G-10 & G-11', city: 'Islamabad', filter: { sector: 'G-10 / G-11' } },
+                  { area: 'Bahria Town Phases 1–8', city: 'Rawalpindi', filter: { sector: 'Bahria Town' } },
+                  { area: 'DHA Islamabad-Rawalpindi', city: 'Rawalpindi', filter: { sector: 'DHA Islamabad-Rawalpindi' } },
+                  { area: 'Sector E-7 & E-11', city: 'Islamabad', filter: { sector: 'E-7 / E-11' } },
+                  { area: 'Saddar & Chaklala Cantt', city: 'Rawalpindi', filter: { sector: 'Saddar / Cantt' } },
+                  { area: 'Sector H-8 & H-9 Ed-Zone', city: 'Islamabad', filter: { city: 'Islamabad' } },
+                  { area: 'Satellite Town & Murree Rd', city: 'Rawalpindi', filter: { city: 'Rawalpindi' } }
+                ].map(loc => `
+                  <button onclick='filterAndGoSchools(${JSON.stringify(loc.filter)})' class="p-4 rounded-2xl bg-slate-50 hover:bg-teal-50/70 border border-slate-200/80 hover:border-teal-300 transition text-left flex items-center justify-between group">
+                    <div>
+                      <p class="font-display font-bold text-sm text-[#0F2537] group-hover:text-teal-800">${loc.area}</p>
+                      <p class="text-xs text-slate-500 mt-0.5">${loc.city}</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-teal-600 group-hover:translate-x-0.5 transition"></i>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+
+          <!-- HOW TALEEM FINDER WORKS & PARENT BENEFITS -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+            <div class="text-center max-w-2xl mx-auto mb-10">
+              <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Built for Families &amp; Students</span>
+              <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-[#0F2537] mt-1">How Taleem Finder Simplifies Admissions</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              ${[
+                { step: '01', title: 'Discover & Filter Locally', desc: 'Narrow down schools, colleges, and universities by Islamabad/Rawalpindi sector, curriculum board, and campus facilities.', icon: 'search' },
+                { step: '02', title: 'Compare Side by Side', desc: 'Shortlist up to three institutions in our structured comparison table to evaluate academic tracks, grade spans, and facilities.', icon: 'columns-3' },
+                { step: '03', title: 'Track Admissions & Connect', desc: 'Stay informed on open house schedules, entry test prep, and parent guides—or exchange textbooks in the community hub.', icon: 'calendar-check' }
+              ].map(item => `
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-card">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="w-11 h-11 rounded-xl bg-[#0F2537] text-teal-400 flex items-center justify-center">
+                      <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                    </div>
+                    <span class="font-display font-extrabold text-2xl text-slate-200">${item.step}</span>
+                  </div>
+                  <h3 class="font-display font-bold text-lg text-[#0F2537] mb-2">${item.title}</h3>
+                  <p class="text-sm text-slate-600 leading-relaxed">${item.desc}</p>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+
+          <!-- INSTITUTIONAL REGISTRATION CTA BANNER -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+            <div class="hero-mesh rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden shadow-xl">
+              <div class="dot-grid absolute inset-0 pointer-events-none"></div>
+              <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+                <div class="max-w-2xl space-y-3">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-semibold">
+                    <i data-lucide="building" class="w-3.5 h-3.5"></i> For School Principals &amp; Administrators
+                  </span>
+                  <h2 class="font-display font-extrabold text-2xl sm:text-4xl leading-tight">
+                    Represent an Educational Institution in Pakistan?
+                  </h2>
+                  <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    Add your school, college, or training institute to Taleem Finder—or claim an existing profile to keep your academic programs, campus facilities, and admission notices accurate for parents.
+                  </p>
+                </div>
+                <div class="flex flex-wrap gap-3 shrink-0">
+                  <button onclick="navigate('add-school')" class="px-6 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-[#091824] font-bold text-sm shadow-lg transition inline-flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Add / Claim Your Institution</span>
+                  </button>
+                  <button onclick="navigate('guides')" class="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/15 transition">
+                    Read Parent Guides
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 2: SCHOOLS DIRECTORY (SEARCH, FILTERS, CHIPS, SORTING, LOAD MORE)
+    // =========================================================================
+    function renderSchoolsView() {
+      const f = state.schoolFilters;
+      const filtered = SAMPLE_SCHOOLS.filter(s => {
+        const q = f.query.trim().toLowerCase();
+        const matchQuery = !q ||
+          s.name.toLowerCase().includes(q) ||
+          s.city.toLowerCase().includes(q) ||
+          s.sector.toLowerCase().includes(q) ||
+          s.curriculum.toLowerCase().includes(q) ||
+          s.facilities.some(fac => fac.toLowerCase().includes(q));
+        const matchCity = f.city === 'All' || s.city === f.city;
+        const matchSector = f.sector === 'All' || s.sector === f.sector;
+        const matchCurriculum = f.curriculum === 'All' || s.curriculum === f.curriculum;
+        const matchLevel = f.level === 'All' || s.levels.includes(f.level);
+        const matchFacility = f.facility === 'All' || s.facilities.includes(f.facility);
+        return matchQuery && matchCity && matchSector && matchCurriculum && matchLevel && matchFacility;
+      });
+
+      if (f.sort === 'alpha') {
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (f.sort === 'city') {
+        filtered.sort((a, b) => a.city.localeCompare(b.city));
+      }
+
+      const visibleList = filtered.slice(0, state.visibleSchoolCount);
+      const activeChips = [];
+      if (f.query) activeChips.push({ key: 'query', label: `Keyword: "${f.query}"` });
+      if (f.city !== 'All') activeChips.push({ key: 'city', label: `City: ${f.city}` });
+      if (f.sector !== 'All') activeChips.push({ key: 'sector', label: `Sector: ${f.sector}` });
+      if (f.curriculum !== 'All') activeChips.push({ key: 'curriculum', label: `Curriculum: ${f.curriculum}` });
+      if (f.level !== 'All') activeChips.push({ key: 'level', label: `Level: ${f.level}` });
+      if (f.facility !== 'All') activeChips.push({ key: 'facility', label: `Facility: ${f.facility}` });
+
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <!-- Breadcrumb & Title -->
+          <div class="mb-6">
+            <nav class="text-xs text-slate-500 flex items-center gap-1.5 mb-2">
+              <button onclick="navigate('home')" class="hover:text-teal-600">Home</button>
+              <span>/</span>
+              <span class="font-semibold text-[#0F2537]">Schools Directory</span>
+            </nav>
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537]">Schools Directory — Islamabad &amp; Rawalpindi</h1>
+                <p class="text-sm text-slate-500 mt-1">Filter structured sample campus schemas by city, residential sector, curriculum board, grade level, and facilities.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <label for="school-sort" class="text-xs font-semibold text-slate-500">Sort:</label>
+                <select id="school-sort" onchange="updateSchoolFilter('sort', this.value)" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-[#0F2537]">
+                  <option value="featured" ${f.sort === 'featured' ? 'selected' : ''}>Featured Order</option>
+                  <option value="city" ${f.sort === 'city' ? 'selected' : ''}>By City (A–Z)</option>
+                  <option value="alpha" ${f.sort === 'alpha' ? 'selected' : ''}>Alphabetical</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-7">
+            <!-- FILTER SIDEBAR -->
+            <aside class="lg:col-span-3 space-y-5">
+              <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-card space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h2 class="font-display font-bold text-sm text-[#0F2537] flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4 text-teal-600"></i>
+                    <span>Refine Results</span>
+                  </h2>
+                  <button onclick="resetSchoolFilters()" class="text-xs font-semibold text-teal-600 hover:underline">Reset All</button>
+                </div>
+
+                <!-- Keyword Search -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1.5">Search Keyword</label>
+                  <input type="text" value="${escapeHtml(f.query)}" oninput="updateSchoolFilter('query', this.value)" placeholder="Sector, board, facility..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-500" />
+                </div>
+
+                <!-- City -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1.5">City</label>
+                  <select onchange="updateSchoolFilter('city', this.value)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                    <option value="All" ${f.city === 'All' ? 'selected' : ''}>All Cities</option>
+                    <option value="Islamabad" ${f.city === 'Islamabad' ? 'selected' : ''}>Islamabad</option>
+                    <option value="Rawalpindi" ${f.city === 'Rawalpindi' ? 'selected' : ''}>Rawalpindi</option>
+                  </select>
+                </div>
+
+                <!-- Sector -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1.5">Sector / Area</label>
+                  <select onchange="updateSchoolFilter('sector', this.value)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                    <option value="All" ${f.sector === 'All' ? 'selected' : ''}>All Sectors &amp; Areas</option>
+                    <option value="F-7 / F-8" ${f.sector === 'F-7 / F-8' ? 'selected' : ''}>F-7 / F-8 (Islamabad)</option>
+                    <option value="G-10 / G-11" ${f.sector === 'G-10 / G-11' ? 'selected' : ''}>G-10 / G-11 (Islamabad)</option>
+                    <option value="E-7 / E-11" ${f.sector === 'E-7 / E-11' ? 'selected' : ''}>E-7 / E-11 (Islamabad)</option>
+                    <option value="Bahria Town" ${f.sector === 'Bahria Town' ? 'selected' : ''}>Bahria Town (Rawalpindi)</option>
+                    <option value="DHA Islamabad-Rawalpindi" ${f.sector === 'DHA Islamabad-Rawalpindi' ? 'selected' : ''}>DHA Phase II</option>
+                    <option value="Saddar / Cantt" ${f.sector === 'Saddar / Cantt' ? 'selected' : ''}>Saddar / Cantt (Rawalpindi)</option>
+                  </select>
+                </div>
+
+                <!-- Curriculum -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1.5">Curriculum / Board</label>
+                  <select onchange="updateSchoolFilter('curriculum', this.value)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                    <option value="All" ${f.curriculum === 'All' ? 'selected' : ''}>All Curricula</option>
+                    <option value="Cambridge (O/A Levels)" ${f.curriculum === 'Cambridge (O/A Levels)' ? 'selected' : ''}>Cambridge (O/A Levels)</option>
+                    <option value="FBISE (Matric / HSSC)" ${f.curriculum === 'FBISE (Matric / HSSC)' ? 'selected' : ''}>FBISE (Matric / HSSC)</option>
+                    <option value="Cambridge & FBISE Dual Track" ${f.curriculum === 'Cambridge & FBISE Dual Track' ? 'selected' : ''}>Cambridge &amp; FBISE Dual Track</option>
+                    <option value="Montessori / International Early Years" ${f.curriculum === 'Montessori / International Early Years' ? 'selected' : ''}>Montessori / Early Years</option>
+                  </select>
+                </div>
+
+                <!-- Education Level -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1.5">Education Level</label>
+                  <select onchange="updateSchoolFilter('level', this.value)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                    <option value="All" ${f.level === 'All' ? 'selected' : ''}>All Grade Levels</option>
+                    <option value="Montessori / Early Years" ${f.level === 'Montessori / Early Years' ? 'selected' : ''}>Montessori / Early Years</option>
+                    <option value="Primary (Grades 1–5)" ${f.level === 'Primary (Grades 1–5)' ? 'selected' : ''}>Primary (Grades 1–5)</option>
+                    <option value="Middle (Grades 6–8)" ${f.level === 'Middle (Grades 6–8)' ? 'selected' : ''}>Middle (Grades 6–8)</option>
+                    <option value="O Levels / IGCSE" ${f.level === 'O Levels / IGCSE' ? 'selected' : ''}>O Levels / IGCSE</option>
+                    <option value="A Levels" ${f.level === 'A Levels' ? 'selected' : ''}>A Levels</option>
+                    <option value="Secondary (Matric / SSC)" ${f.level === 'Secondary (Matric / SSC)' ? 'selected' : ''}>Secondary (Matric / SSC)</option>
+                  </select>
+                </div>
+
+                <!-- Facilities -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1.5">Key Facility</label>
+                  <select onchange="updateSchoolFilter('facility', this.value)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                    <option value="All" ${f.facility === 'All' ? 'selected' : ''}>Any Facility</option>
+                    <option value="Science Laboratories" ${f.facility === 'Science Laboratories' ? 'selected' : ''}>Science Laboratories</option>
+                    <option value="Computer & Robotics Lab" ${f.facility === 'Computer & Robotics Lab' ? 'selected' : ''}>Computer &amp; Robotics Lab</option>
+                    <option value="Sports Ground" ${f.facility === 'Sports Ground' ? 'selected' : ''}>Sports Ground</option>
+                    <option value="Transport Service" ${f.facility === 'Transport Service' ? 'selected' : ''}>Transport Service</option>
+                    <option value="Library" ${f.facility === 'Library' ? 'selected' : ''}>Library</option>
+                  </select>
+                </div>
+              </div>
+            </aside>
+
+            <!-- RESULTS GRID -->
+            <div class="lg:col-span-9 space-y-5">
+              <!-- Active Filter Chips -->
+              ${activeChips.length > 0 ? `
+                <div class="flex flex-wrap items-center gap-2 bg-white p-3 rounded-2xl border border-slate-200">
+                  <span class="text-xs font-semibold text-slate-500 mr-1">Active Filters:</span>
+                  ${activeChips.map(c => `
+                    <button onclick="updateSchoolFilter('${c.key}', '${c.key === 'query' ? '' : 'All'}')" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-xs font-semibold hover:bg-teal-100">
+                      <span>${escapeHtml(c.label)}</span>
+                      <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                  `).join('')}
+                  <button onclick="resetSchoolFilters()" class="text-xs font-semibold text-slate-500 hover:text-[#0F2537] ml-auto">Clear All</button>
+                </div>
+              ` : ''}
+
+              <div class="flex items-center justify-between text-xs text-slate-500">
+                <span>Showing <strong class="text-[#0F2537]">${visibleList.length}</strong> of <strong class="text-[#0F2537]">${filtered.length}</strong> sample institutional schemas</span>
+                <span>Need live records? <button onclick="navigate('add-school')" class="text-teal-600 font-semibold hover:underline">Submit a School</button></span>
+              </div>
+
+              ${filtered.length === 0 ? `
+                <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+                  <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                    <i data-lucide="search-x" class="w-6 h-6"></i>
+                  </div>
+                  <h3 class="font-display font-bold text-lg text-[#0F2537]">No Matching Sample Profiles Found</h3>
+                  <p class="text-sm text-slate-500 max-w-md mx-auto">Try clearing one or more filters to view all structured Islamabad and Rawalpindi campus profiles.</p>
+                  <button onclick="resetSchoolFilters()" class="px-5 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-semibold">Reset Filters</button>
+                </div>
+              ` : `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  ${visibleList.map(renderSchoolCard).join('')}
+                </div>
+
+                ${visibleList.length < filtered.length ? `
+                  <div class="pt-4 text-center">
+                    <button onclick="loadMoreSchools()" class="px-6 py-3 rounded-xl bg-white border border-slate-300 hover:border-teal-600 text-sm font-semibold text-[#0F2537] shadow-xs transition">
+                      Load More Sample Campuses (${filtered.length - visibleList.length} remaining)
+                    </button>
+                  </div>
+                ` : ''}
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateSchoolFilter(key, val) {
+      state.schoolFilters[key] = val;
+      renderApp();
+    }
+
+    function resetSchoolFilters() {
+      state.schoolFilters = {
+        query: '',
+        city: 'All',
+        sector: 'All',
+        curriculum: 'All',
+        level: 'All',
+        facility: 'All',
+        sort: 'featured'
+      };
+      state.visibleSchoolCount = 6;
+      renderApp();
+    }
+
+    function loadMoreSchools() {
+      state.visibleSchoolCount += 4;
+      renderApp();
+    }
+
+    // =========================================================================
+    // VIEW 3: INDIVIDUAL SCHOOL PROFILE PAGE
+    // =========================================================================
+    function renderSchoolDetailView(schoolId) {
+      const school = SAMPLE_SCHOOLS.find(s => s.id === schoolId) || SAMPLE_SCHOOLS[0];
+      const isCompared = state.compareIds.includes(school.id);
+      const isSaved = state.savedIds.includes(school.id);
+      const similar = SAMPLE_SCHOOLS.filter(s => s.id !== school.id).slice(0, 2);
+
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <nav class="text-xs text-slate-500 flex flex-wrap items-center gap-1.5 mb-5">
+            <button onclick="navigate('home')" class="hover:text-teal-600">Home</button>
+            <span>/</span>
+            <button onclick="navigate('schools')" class="hover:text-teal-600">Schools</button>
+            <span>/</span>
+            <span class="font-semibold text-[#0F2537]">${escapeHtml(school.name)}</span>
+          </nav>
+
+          <!-- Campus Hero Banner -->
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-card overflow-hidden mb-8">
+            <div class="hero-mesh h-36 sm:h-44 relative">
+              <div class="dot-grid absolute inset-0"></div>
+              <div class="absolute top-4 right-4">
+                <span class="px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-bold">
+                  ${escapeHtml(school.badge)}
+                </span>
+              </div>
+            </div>
+
+            <div class="px-6 sm:px-8 pb-8 -mt-10 relative z-10">
+              <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                <div class="flex flex-col sm:flex-row sm:items-end gap-4">
+                  <div class="w-20 h-20 rounded-2xl bg-[#0F2537] border-4 border-white shadow-lg flex items-center justify-center text-teal-400 shrink-0">
+                    <i data-lucide="school" class="w-9 h-9"></i>
+                  </div>
+                  <div>
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                      <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">${escapeHtml(school.admissionStatus)}</span>
+                      <span class="text-xs font-medium text-slate-500">${escapeHtml(school.gender)}</span>
+                    </div>
+                    <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-[#0F2537]">${escapeHtml(school.name)}</h1>
+                    <p class="text-sm text-slate-600 flex items-center gap-1.5 mt-1">
+                      <i data-lucide="map-pin" class="w-4 h-4 text-teal-600"></i>
+                      <span>${escapeHtml(school.address)}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2.5">
+                  <button onclick="toggleSaveSchool('${school.id}')" class="px-4 py-2.5 rounded-xl border text-sm font-semibold transition inline-flex items-center gap-2 ${isSaved ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}">
+                    <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-amber-500 text-amber-500' : ''}"></i>
+                    <span>${isSaved ? 'Saved' : 'Save School'}</span>
+                  </button>
+                  <button onclick="toggleCompare('${school.id}')" class="px-4 py-2.5 rounded-xl border text-sm font-semibold transition inline-flex items-center gap-2 ${isCompared ? 'bg-teal-600 border-teal-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-teal-600'}">
+                    <i data-lucide="columns-3" class="w-4 h-4"></i>
+                    <span>${isCompared ? 'In Comparison' : 'Add to Compare'}</span>
+                  </button>
+                  <button onclick="navigate('add-school')" class="px-4 py-2.5 rounded-xl bg-[#0F2537] hover:bg-[#1B3A54] text-white text-sm font-semibold transition">
+                    Claim Profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Main Campus Details -->
+            <div class="lg:col-span-8 space-y-6">
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card space-y-3">
+                <h2 class="font-display font-bold text-lg text-[#0F2537]">Campus Overview</h2>
+                <p class="text-sm text-slate-600 leading-relaxed">${escapeHtml(school.description)}</p>
+              </div>
+
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card space-y-4">
+                <h2 class="font-display font-bold text-lg text-[#0F2537]">Academic Curriculum &amp; Grade Levels</h2>
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Primary Academic Track</p>
+                  <p class="font-display font-bold text-base text-[#0F2537] mt-0.5">${escapeHtml(school.curriculum)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Supported Grade Levels</p>
+                  <div class="flex flex-wrap gap-2">
+                    ${school.levels.map(lvl => `
+                      <span class="px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 border border-teal-200 text-xs font-semibold">${escapeHtml(lvl)}</span>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card space-y-4">
+                <h2 class="font-display font-bold text-lg text-[#0F2537]">Campus Facilities &amp; Infrastructure</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  ${school.facilities.map(fac => `
+                    <div class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 text-sm font-medium text-slate-700">
+                      <i data-lucide="check-circle-2" class="w-4 h-4 text-teal-600 shrink-0"></i>
+                      <span>${escapeHtml(fac)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Similar Campuses -->
+              <div class="space-y-4 pt-2">
+                <h2 class="font-display font-bold text-xl text-[#0F2537]">Explore Other Sample Profiles</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  ${similar.map(renderSchoolCard).join('')}
+                </div>
+              </div>
+            </div>
+
+            <!-- Sidebar Admission & Fee Schema -->
+            <aside class="lg:col-span-4 space-y-6">
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card space-y-4">
+                <h3 class="font-display font-bold text-base text-[#0F2537]">Fee &amp; Admission Transparency</h3>
+                <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
+                  <p class="font-bold">Fee Structure Status</p>
+                  <p>${escapeHtml(school.feeDisplay)}</p>
+                </div>
+                <div class="space-y-2.5 text-sm text-slate-600 pt-1">
+                  <div class="flex items-center gap-2.5">
+                    <i data-lucide="phone" class="w-4 h-4 text-teal-600"></i>
+                    <span>${escapeHtml(school.phone)}</span>
+                  </div>
+                  <div class="flex items-center gap-2.5">
+                    <i data-lucide="mail" class="w-4 h-4 text-teal-600"></i>
+                    <span>${escapeHtml(school.email)}</span>
+                  </div>
+                  <div class="flex items-center gap-2.5">
+                    <i data-lucide="map" class="w-4 h-4 text-teal-600"></i>
+                    <span>${escapeHtml(school.city)} — ${escapeHtml(school.sector)}</span>
+                  </div>
+                </div>
+                <button onclick="showToast('Demo inquiry recorded — connect institutional API for live dispatch', 'info')" class="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-sm transition">
+                  Request Admission Prospectus (Demo)
+                </button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 4: SCHOOL COMPARISON MATRIX (UP TO 3 SCHOOLS)
+    // =========================================================================
+    function renderCompareView() {
+      const selected = state.compareIds
+        .map(id => SAMPLE_SCHOOLS.find(s => s.id === id))
+        .filter(Boolean);
+
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Side-by-Side Decision Tool</span>
+              <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">Compare Schools (${selected.length}/3)</h1>
+              <p class="text-sm text-slate-500 mt-1">Evaluate curriculum boards, grade spans, sectors, and campus facilities side by side.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              ${selected.length < 3 ? `
+                <select onchange="if(this.value) toggleCompare(this.value)" class="px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs font-semibold text-[#0F2537]">
+                  <option value="">+ Add Another Sample School...</option>
+                  ${SAMPLE_SCHOOLS.filter(s => !state.compareIds.includes(s.id)).map(s => `
+                    <option value="${s.id}">${escapeHtml(s.name)}</option>
+                  `).join('')}
+                </select>
+              ` : ''}
+              ${selected.length > 0 ? `
+                <button onclick="clearCompareList()" class="px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                  Clear All
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          ${selected.length === 0 ? `
+            <div class="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4 shadow-card">
+              <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto">
+                <i data-lucide="columns-3" class="w-7 h-7"></i>
+              </div>
+              <h2 class="font-display font-bold text-xl text-[#0F2537]">No Schools Selected for Comparison</h2>
+              <p class="text-sm text-slate-500 max-w-md mx-auto">Browse the Schools Directory and click "Compare" on up to three campuses to inspect them side by side.</p>
+              <button onclick="navigate('schools')" class="px-6 py-3 rounded-xl bg-[#0F2537] text-white text-sm font-semibold">Browse Schools Directory</button>
+            </div>
+          ` : `
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-card overflow-x-auto">
+              <table class="w-full min-w-[680px] text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 bg-slate-50/70">
+                    <th class="p-5 text-xs font-bold uppercase tracking-wider text-slate-400 w-48">Criteria</th>
+                    ${selected.map(s => `
+                      <th class="p-5 align-top">
+                        <div class="flex items-start justify-between gap-2">
+                          <div>
+                            <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 mb-1.5">${escapeHtml(s.badge)}</span>
+                            <p class="font-display font-bold text-base text-[#0F2537] leading-snug">${escapeHtml(s.name)}</p>
+                          </div>
+                          <button onclick="toggleCompare('${s.id}')" title="Remove" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                          </button>
+                        </div>
+                      </th>
+                    `).join('')}
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                  <tr>
+                    <td class="p-5 font-semibold text-slate-500">City &amp; Sector</td>
+                    ${selected.map(s => `<td class="p-5 font-semibold text-[#0F2537]">${escapeHtml(s.city)} — ${escapeHtml(s.sector)}</td>`).join('')}
+                  </tr>
+                  <tr>
+                    <td class="p-5 font-semibold text-slate-500">Curriculum Board</td>
+                    ${selected.map(s => `<td class="p-5"><span class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 font-semibold text-xs">${escapeHtml(s.curriculum)}</span></td>`).join('')}
+                  </tr>
+                  <tr>
+                    <td class="p-5 font-semibold text-slate-500">Grade Levels</td>
+                    ${selected.map(s => `<td class="p-5 text-slate-700">${s.levels.map(l => `<span class="inline-block mr-1.5 mb-1 px-2 py-0.5 rounded bg-slate-100 text-xs">${escapeHtml(l)}</span>`).join('')}</td>`).join('')}
+                  </tr>
+                  <tr>
+                    <td class="p-5 font-semibold text-slate-500">Gender Policy</td>
+                    ${selected.map(s => `<td class="p-5 text-slate-700">${escapeHtml(s.gender)}</td>`).join('')}
+                  </tr>
+                  <tr>
+                    <td class="p-5 font-semibold text-slate-500">Fee Information</td>
+                    ${selected.map(s => `<td class="p-5 text-xs text-slate-500">${escapeHtml(s.feeDisplay)}</td>`).join('')}
+                  </tr>
+                  <tr>
+                    <td class="p-5 font-semibold text-slate-500 align-top">Campus Facilities</td>
+                    ${selected.map(s => `
+                      <td class="p-5 align-top">
+                        <ul class="space-y-1.5">
+                          ${s.facilities.map(f => `<li class="flex items-center gap-1.5 text-xs text-slate-700"><i data-lucide="check" class="w-3.5 h-3.5 text-teal-600"></i>${escapeHtml(f)}</li>`).join('')}
+                        </ul>
+                      </td>
+                    `).join('')}
+                  </tr>
+                  <tr>
+                    <td class="p-5 font-semibold text-slate-500">Profile Action</td>
+                    ${selected.map(s => `
+                      <td class="p-5">
+                        <button onclick="navigate('school-detail', '${s.id}')" class="px-4 py-2 rounded-xl bg-[#0F2537] text-white text-xs font-semibold hover:bg-[#1B3A54]">View Full Profile</button>
+                      </td>
+                    `).join('')}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 5: COLLEGES & ENTRY TEST PREP
+    // =========================================================================
+    function renderCollegesView() {
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Intermediate &amp; Entry Test Directory</span>
+            <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">Colleges &amp; MDCAT / ECAT Prep Centers</h1>
+            <p class="text-sm text-slate-500 mt-1">Explore FSc Pre-Medical, Pre-Engineering, ICS, and university entry test preparation schemas in Islamabad and Rawalpindi.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${SAMPLE_COLLEGES.map(col => `
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card flex flex-col justify-between space-y-4">
+                <div class="space-y-3">
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Sample College Schema</span>
+                  <h2 class="font-display font-bold text-lg text-[#0F2537]">${escapeHtml(col.name)}</h2>
+                  <p class="text-xs text-slate-500 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-teal-600"></i>${escapeHtml(col.city)} • ${escapeHtml(col.sector)}</p>
+                  <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1.5">Programs Offered</p>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${col.programs.map(p => `<span class="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-medium text-slate-700">${escapeHtml(p)}</span>`).join('')}
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1.5">Entry Test Prep Tracks</p>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${col.prepTracks.map(t => `<span class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-700 text-xs font-semibold">${escapeHtml(t)}</span>`).join('')}
+                    </div>
+                  </div>
+                </div>
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span class="text-xs font-semibold text-emerald-700">${escapeHtml(col.status)}</span>
+                  <button onclick="navigate('admissions')" class="text-xs font-bold text-[#0F2537] hover:text-teal-600">Admission Info &rarr;</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 6: UNIVERSITIES DIRECTORY
+    // =========================================================================
+    function renderUniversitiesView() {
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Higher Education Discovery</span>
+            <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">Universities Directory — Undergraduate &amp; Postgraduate</h1>
+            <p class="text-sm text-slate-500 mt-1">Structured university profile schemas covering BS/MS degrees, entry test requirements, and financial aid visibility.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            ${SAMPLE_UNIVERSITIES.map(uni => `
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">${escapeHtml(uni.type)}</span>
+                  <span class="text-xs font-semibold text-slate-500">${escapeHtml(uni.city)}</span>
+                </div>
+                <h2 class="font-display font-bold text-xl text-[#0F2537]">${escapeHtml(uni.name)}</h2>
+                <div class="space-y-2">
+                  <p class="text-xs font-bold uppercase text-slate-400">Sample Degree Faculties</p>
+                  <div class="flex flex-wrap gap-1.5">
+                    ${uni.degrees.map(d => `<span class="px-3 py-1 rounded-lg bg-slate-100 text-xs font-semibold text-slate-700">${escapeHtml(d)}</span>`).join('')}
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
+                    <span class="text-slate-400 block">Entry Test Policy</span>
+                    <span class="font-semibold text-[#0F2537]">${escapeHtml(uni.entryTest)}</span>
+                  </div>
+                  <div class="p-3 rounded-xl bg-teal-50/70 border border-teal-200/80 text-xs">
+                    <span class="text-teal-700 block">Scholarships</span>
+                    <span class="font-semibold text-teal-900">${escapeHtml(uni.scholarships)}</span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 7: TRAINING INSTITUTES
+    // =========================================================================
+    function renderInstitutesView() {
+      const list = state.instituteFilter === 'All'
+        ? SAMPLE_INSTITUTES
+        : SAMPLE_INSTITUTES.filter(i => i.category === state.instituteFilter);
+
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Skills &amp; Vocational Training</span>
+            <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">IT, Language &amp; Vocational Institutes</h1>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            ${['All', 'IT & Skills', 'Language Institutes', 'Vocational Training'].map(cat => `
+              <button onclick="state.instituteFilter='${cat}'; renderApp();" class="px-4 py-2 rounded-xl text-xs font-semibold border transition ${state.instituteFilter === cat ? 'bg-[#0F2537] text-white border-[#0F2537]' : 'bg-white text-slate-700 border-slate-200 hover:border-teal-500'}">
+                ${cat}
+              </button>
+            `).join('')}
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${list.map(ins => `
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-700">${escapeHtml(ins.category)}</span>
+                  <span class="text-xs text-slate-500">${escapeHtml(ins.city)}</span>
+                </div>
+                <h2 class="font-display font-bold text-lg text-[#0F2537]">${escapeHtml(ins.name)}</h2>
+                <div class="flex flex-wrap gap-1.5">
+                  ${ins.offerings.map(o => `<span class="px-2.5 py-1 rounded-lg bg-slate-100 text-xs text-slate-700">${escapeHtml(o)}</span>`).join('')}
+                </div>
+                <p class="text-xs text-slate-500 pt-2 border-t border-slate-100">Learning Mode: <strong class="text-[#0F2537]">${escapeHtml(ins.mode)}</strong></p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 8: COURSES DIRECTORY
+    // =========================================================================
+    function renderCoursesView() {
+      const list = state.courseFilter === 'All'
+        ? SAMPLE_COURSES
+        : SAMPLE_COURSES.filter(c => c.category === state.courseFilter);
+
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Skill Acceleration</span>
+            <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">Courses &amp; Career Tracks Directory</h1>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            ${['All', 'Online Courses', 'Free Courses', 'Professional Training', 'Career Paths'].map(cat => `
+              <button onclick="state.courseFilter='${cat}'; renderApp();" class="px-4 py-2 rounded-xl text-xs font-semibold border transition ${state.courseFilter === cat ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:border-teal-500'}">
+                ${cat}
+              </button>
+            `).join('')}
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            ${list.map(crs => `
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card flex flex-col justify-between space-y-4">
+                <div class="space-y-2.5">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">${escapeHtml(crs.cost)}</span>
+                    <span class="text-xs text-slate-500">${escapeHtml(crs.duration)}</span>
+                  </div>
+                  <h2 class="font-display font-bold text-lg text-[#0F2537]">${escapeHtml(crs.title)}</h2>
+                  <p class="text-xs text-slate-500">Provider: ${escapeHtml(crs.provider)} • Mode: ${escapeHtml(crs.mode)}</p>
+                </div>
+                <button onclick="showToast('Course syllabus preview opened (Demonstration Mode)', 'info')" class="self-start px-4 py-2 rounded-xl bg-[#0F2537] text-white text-xs font-semibold hover:bg-[#1B3A54]">
+                  View Course Outline
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 9: CENTRALIZED ADMISSIONS HUB
+    // =========================================================================
+    function renderAdmissionsView() {
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+          <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-card">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Centralized Admissions Tracker</span>
+            <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">Admissions Status &amp; Application Timelines</h1>
+            <p class="text-sm text-slate-500 mt-2 max-w-2xl">
+              Track admission windows across schools, colleges, and universities in Islamabad &amp; Rawalpindi. Official deadline dates populate automatically once connected to verified institutional feeds.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            ${SAMPLE_SCHOOLS.map(s => `
+              <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200">${escapeHtml(s.admissionStatus)}</span>
+                    <span class="text-xs text-slate-500">${escapeHtml(s.city)} • ${escapeHtml(s.sector)}</span>
+                  </div>
+                  <h2 class="font-display font-bold text-base text-[#0F2537]">${escapeHtml(s.name)}</h2>
+                  <p class="text-xs text-slate-500">Curriculum: ${escapeHtml(s.curriculum)} | Levels: ${escapeHtml(s.levelGroup)}</p>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0">
+                  <button onclick="navigate('school-detail', '${s.id}')" class="px-4 py-2.5 rounded-xl bg-[#0F2537] text-white text-xs font-semibold hover:bg-[#1B3A54]">
+                    View Admission Details
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 10: BOOK EXCHANGE MARKETPLACE
+    // =========================================================================
+    function renderBooksView() {
+      const list = state.bookFilter === 'All'
+        ? SAMPLE_BOOKS
+        : SAMPLE_BOOKS.filter(b => b.type.includes(state.bookFilter));
+
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Community Sustainability</span>
+              <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">Student Book Exchange — Buy, Swap &amp; Donate</h1>
+              <p class="text-sm text-slate-500 mt-1">Connect with parents and students in Islamabad &amp; Rawalpindi to pass forward textbooks and past papers.</p>
+            </div>
+            <div class="flex gap-2">
+              ${['All', 'Swap', 'Donate'].map(t => `
+                <button onclick="state.bookFilter='${t}'; renderApp();" class="px-4 py-2 rounded-xl text-xs font-semibold border ${state.bookFilter === t ? 'bg-[#0F2537] text-white border-[#0F2537]' : 'bg-white text-slate-700 border-slate-200'}">
+                  ${t}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${list.map(bk => `
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card flex flex-col justify-between space-y-4">
+                <div class="space-y-2.5">
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-700">${escapeHtml(bk.type)}</span>
+                  <h2 class="font-display font-bold text-base text-[#0F2537]">${escapeHtml(bk.title)}</h2>
+                  <p class="text-xs text-slate-500">Level: ${escapeHtml(bk.grade)}</p>
+                  <p class="text-xs text-slate-500">Location: ${escapeHtml(bk.city)}</p>
+                  <p class="text-xs text-slate-600">Condition: <strong>${escapeHtml(bk.condition)}</strong></p>
+                </div>
+                <button onclick="showToast('Community exchange request simulated — sign in for messaging', 'info')" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-teal-600 hover:text-white text-[#0F2537] text-xs font-semibold transition">
+                  Request Book Exchange (Demo)
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 11: EDUCATIONAL EVENTS & OPEN HOUSES
+    // =========================================================================
+    function renderEventsView() {
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Campus Tours &amp; Seminars</span>
+            <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">Educational Events, Open Houses &amp; Entry Briefings</h1>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            ${SAMPLE_EVENTS.map(ev => `
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">${escapeHtml(ev.type)}</span>
+                  <span class="text-xs text-slate-500">${escapeHtml(ev.dateLabel)}</span>
+                </div>
+                <h2 class="font-display font-bold text-xl text-[#0F2537]">${escapeHtml(ev.title)}</h2>
+                <p class="text-sm text-slate-600 leading-relaxed">${escapeHtml(ev.summary)}</p>
+                <p class="text-xs text-slate-500 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-teal-600"></i>${escapeHtml(ev.location)}</p>
+                <button onclick="showToast('RSVP reminder registered in your demo session', 'success')" class="px-4 py-2.5 rounded-xl bg-[#0F2537] text-white text-xs font-semibold hover:bg-[#1B3A54]">
+                  Register Interest (Demo)
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 12: PARENT GUIDES & EDITORIAL ARTICLES
+    // =========================================================================
+    function renderGuidesView(guideId = null) {
+      if (guideId) {
+        const g = PARENT_GUIDES.find(item => item.id === guideId) || PARENT_GUIDES[0];
+        return `
+          <div class="view-animate max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+            <button onclick="navigate('guides')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:underline mb-5">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to All Parent Guides
+            </button>
+            <article class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-card space-y-6">
+              <div class="space-y-3 border-b border-slate-100 pb-6">
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 font-bold">${escapeHtml(g.category)}</span>
+                  <span class="text-slate-400">${escapeHtml(g.readTime)}</span>
+                </div>
+                <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] leading-tight">${escapeHtml(g.title)}</h1>
+              </div>
+              <div class="space-y-4 text-slate-700 text-base leading-relaxed">
+                ${g.content.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+              </div>
+            </article>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Editorial Knowledge Base</span>
+            <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-1">Parent &amp; Student Education Guides</h1>
+            <p class="text-sm text-slate-500 mt-1">Practical resources on choosing curricula, inspecting campuses, and preparing for university admissions.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${PARENT_GUIDES.map(g => `
+              <article class="bg-white rounded-2xl border border-slate-200 p-6 shadow-card flex flex-col justify-between space-y-4">
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 font-semibold">${escapeHtml(g.category)}</span>
+                    <span class="text-slate-400">${escapeHtml(g.readTime)}</span>
+                  </div>
+                  <h2 class="font-display font-bold text-lg text-[#0F2537] leading-snug">${escapeHtml(g.title)}</h2>
+                  <p class="text-sm text-slate-600 leading-relaxed">${escapeHtml(g.excerpt)}</p>
+                </div>
+                <button onclick="navigate('guides', '${g.id}')" class="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-800">
+                  <span>Read Full Guide</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </button>
+              </article>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 13: ADD / CLAIM YOUR INSTITUTION
+    // =========================================================================
+    function renderAddSchoolView() {
+      return `
+        <div class="view-animate max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+          <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-card">
+            <span class="px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-bold">Institution Portal</span>
+            <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-[#0F2537] mt-3">Add or Claim Your Educational Institution</h1>
+            <p class="text-sm text-slate-500 mt-1">Submit verified details for your school, college, university, or training institute in Islamabad, Rawalpindi, or across Pakistan.</p>
+
+            <form onsubmit="handleInstitutionSubmit(event)" class="mt-6 space-y-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">Institution Name *</label>
+                  <input id="inst-name" required type="text" placeholder="Official Registered Name" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-teal-600" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">Institution Category *</label>
+                  <select id="inst-type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+                    <option>School (K-12 / Montessori)</option>
+                    <option>College (Intermediate / Prep)</option>
+                    <option>University</option>
+                    <option>Training / IT Institute</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">City *</label>
+                  <select id="inst-city" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+                    <option>Islamabad</option>
+                    <option>Rawalpindi</option>
+                    <option>Other City in Pakistan</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">Sector / Campus Address *</label>
+                  <input id="inst-sector" required type="text" placeholder="e.g., Sector F-8/3 or Bahria Phase 4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-teal-600" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">Official Email *</label>
+                  <input id="inst-email" required type="email" placeholder="principal@institution.edu.pk" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-teal-600" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5">Curriculum / Affiliation</label>
+                  <input id="inst-curriculum" type="text" placeholder="e.g., Cambridge, FBISE, HEC" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-teal-600" />
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                <strong>Frontend Demonstration Notice:</strong> Submissions in this preview are stored in your current browser session and previewed in your Dashboard. Connect the production verification API to publish live public listings.
+              </div>
+
+              <button type="submit" class="px-6 py-3 rounded-xl bg-[#0F2537] hover:bg-[#1B3A54] text-white font-bold text-sm shadow-sm transition">
+                Submit Institution Profile
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleInstitutionSubmit(e) {
+      e.preventDefault();
+      const entry = {
+        name: document.getElementById('inst-name').value,
+        type: document.getElementById('inst-type').value,
+        city: document.getElementById('inst-city').value,
+        sector: document.getElementById('inst-sector').value,
+        curriculum: document.getElementById('inst-curriculum').value || 'Specified on Verification'
+      };
+      state.submittedInstitutions.push(entry);
+      showToast('Institution submission recorded in your Dashboard!', 'success');
+      navigate('dashboard');
+    }
+
+    // =========================================================================
+    // VIEW 14: AUTH (SIGN IN / SIGN UP) & USER DASHBOARD
+    // =========================================================================
+    function renderAuthView(mode) {
+      const isSignUp = mode === 'signup';
+      return `
+        <div class="view-animate max-w-md mx-auto px-4 pt-12">
+          <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-card space-y-6">
+            <div class="text-center space-y-1.5">
+              <div class="w-12 h-12 rounded-2xl bg-[#0F2537] text-teal-400 flex items-center justify-center mx-auto mb-2">
+                <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+              </div>
+              <h1 class="font-display font-extrabold text-2xl text-[#0F2537]">${isSignUp ? 'Create Your Taleem Finder Account' : 'Welcome Back'}</h1>
+              <p class="text-xs text-slate-500">Save shortlisted campuses, manage comparisons, and track admissions.</p>
+            </div>
+
+            <form onsubmit="handleAuthSubmit(event, '${mode}')" class="space-y-4">
+              ${isSignUp ? `
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                  <input id="auth-name" required type="text" placeholder="Parent or Student Name" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+                </div>
+              ` : ''}
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                <input id="auth-email" required type="email" placeholder="you@example.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                <input required type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+              </div>
+              <button type="submit" class="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-sm transition">
+                ${isSignUp ? 'Create Account (Demo)' : 'Sign In (Demo)'}
+              </button>
+            </form>
+
+            <p class="text-center text-xs text-slate-500">
+              ${isSignUp
+                ? `Already have an account? <button onclick="navigate('signin')" class="font-bold text-teal-600 hover:underline">Sign In</button>`
+                : `New to Taleem Finder? <button onclick="navigate('signup')" class="font-bold text-teal-600 hover:underline">Create Account</button>`
+              }
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleAuthSubmit(e, mode) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value;
+      const nameInput = document.getElementById('auth-name');
+      const name = nameInput ? nameInput.value : email.split('@')[0];
+      state.user = { name, email, role: 'Parent / Student Member' };
+      showToast(`Signed in as ${name} (Demo Session)`, 'success');
+      navigate('dashboard');
+    }
+
+    function renderDashboardView() {
+      const savedSchools = state.savedIds
+        .map(id => SAMPLE_SCHOOLS.find(s => s.id === id))
+        .filter(Boolean);
+
+      return `
+        <div class="view-animate max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+          <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Personal Workspace</span>
+              <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-[#0F2537] mt-1">
+                ${state.user ? `Welcome, ${escapeHtml(state.user.name)}` : 'Parent & Student Dashboard (Guest Preview)'}
+              </h1>
+              <p class="text-xs text-slate-500 mt-1">Manage your bookmarked campuses, active comparison shortlist, and institutional submissions.</p>
+            </div>
+            <div class="flex gap-2">
+              ${state.user
+                ? `<button onclick="state.user=null; showToast('Signed out', 'info'); renderApp();" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700">Sign Out</button>`
+                : `<button onclick="navigate('signin')" class="px-4 py-2 rounded-xl bg-[#0F2537] text-white text-xs font-semibold">Sign In to Sync</button>`
+              }
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <h2 class="font-display font-bold text-xl text-[#0F2537]">Saved &amp; Bookmarked Campuses (${savedSchools.length})</h2>
+            ${savedSchools.length === 0 ? `
+              <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-500">
+                No bookmarked schools yet. Click the bookmark icon on any school card to save it here.
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${savedSchools.map(renderSchoolCard).join('')}
+              </div>
+            `}
+          </div>
+
+          ${state.submittedInstitutions.length > 0 ? `
+            <div class="space-y-4">
+              <h2 class="font-display font-bold text-xl text-[#0F2537]">Your Submitted Institution Drafts (${state.submittedInstitutions.length})</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${state.submittedInstitutions.map(inst => `
+                  <div class="bg-white rounded-2xl border border-teal-200 p-5 shadow-card">
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-teal-50 text-teal-700">Pending Verification (Demo)</span>
+                    <h3 class="font-display font-bold text-base text-[#0F2537] mt-2">${escapeHtml(inst.name)}</h3>
+                    <p class="text-xs text-slate-500 mt-1">${escapeHtml(inst.type)} • ${escapeHtml(inst.city)} (${escapeHtml(inst.sector)})</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // VIEW 15: INFORMATIONAL & LEGAL PAGES (ABOUT, CONTACT, PRIVACY, TERMS)
+    // =========================================================================
+    function renderStaticPageView(page) {
+      const pages = {
+        about: {
+          badge: 'Our Mission',
+          title: 'About Taleem Finder (taleemfinder.pk)',
+          body: [
+            'Taleem Finder is an education discovery and institutional comparison platform built to help families and students in Islamabad, Rawalpindi, and across Pakistan make informed academic choices.',
+            'Finding reliable, structured details about school curricula, campus facilities, colleges, universities, and skill institutes often requires visiting dozens of fragmented sources. Taleem Finder organizes educational discovery into one unified, searchable experience.',
+            'Data Integrity Standard: Taleem Finder is committed to institutional accuracy. Demonstration views clearly distinguish sample schema templates from verified institutional records.'
+          ]
+        },
+        contact: {
+          badge: 'Support & Partnerships',
+          title: 'Contact Taleem Finder',
+          body: [
+            'Have a question about listing your school, updating campus information, or partnering with Taleem Finder in Islamabad and Rawalpindi?',
+            'Reach our platform coordination desk via the inquiry form below or write to support@taleemfinder.pk.'
+          ],
+          hasForm: true
+        },
+        privacy: {
+          badge: 'Legal & Data Protection',
+          title: 'Privacy Policy',
+          body: [
+            'Taleem Finder respects the privacy of parents, students, and institutional administrators using taleemfinder.pk.',
+            'Information Collected: Account registration details, saved institution preferences, and voluntary institutional submission forms.',
+            'Use of Information: Data is used solely to personalize education discovery, process institutional verification requests, and improve platform usability.'
+          ]
+        },
+        terms: {
+          badge: 'Platform Governance',
+          title: 'Terms of Use',
+          body: [
+            'By accessing Taleem Finder (taleemfinder.pk), users agree to use directory information, comparison tools, and community book exchange features responsibly.',
+            'Institutional Verification: Parents and students are encouraged to confirm final fee schedules and admission deadlines directly with each institution’s admissions office.'
+          ]
+        },
+        copyright: {
+          badge: 'Intellectual Property',
+          title: 'Copyright & Takedown Requests',
+          body: [
+            'Taleem Finder respects the intellectual property rights of educational institutions, publishers, and content creators.',
+            'Authorized institutional representatives may request profile updates, logo replacements, or content takedowns by contacting our verification team with official institutional credentials.'
+          ]
+        }
+      };
+
+      const info = pages[page] || pages.about;
+
+      return `
+        <div class="view-animate max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-card space-y-6">
+            <div>
+              <span class="px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-bold">${info.badge}</span>
+              <h1 class="font-display font-extrabold text-2xl sm:text-4xl text-[#0F2537] mt-3">${info.title}</h1>
+            </div>
+            <div class="space-y-4 text-slate-600 text-sm sm:text-base leading-relaxed">
+              ${info.body.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+            </div>
+
+            ${info.hasForm ? `
+              <form onsubmit="event.preventDefault(); showToast('Message sent to Taleem Finder support (Demo)', 'success'); this.reset();" class="pt-4 border-t border-slate-100 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <input required type="text" placeholder="Your Name" class="px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+                  <input required type="email" placeholder="Your Email" class="px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+                </div>
+                <textarea required rows="4" placeholder="How can our team help you?" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"></textarea>
+                <button type="submit" class="px-6 py-3 rounded-xl bg-[#0F2537] text-white text-sm font-bold hover:bg-[#1B3A54]">Send Message</button>
+              </form>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // MASTER VIEW DISPATCHER & INITIALIZATION
+    // =========================================================================
+    function renderApp() {
+      const root = document.getElementById('app-root');
+      if (!root) return;
+
+      let html = '';
+      switch (state.route) {
+        case 'home':
+          html = renderHomeView();
+          break;
+        case 'schools':
+          html = renderSchoolsView();
+          break;
+        case 'school-detail':
+          html = renderSchoolDetailView(state.routeParam);
+          break;
+        case 'compare':
+          html = renderCompareView();
+          break;
+        case 'colleges':
+          html = renderCollegesView();
+          break;
+        case 'universities':
+          html = renderUniversitiesView();
+          break;
+        case 'institutes':
+          html = renderInstitutesView();
+          break;
+        case 'courses':
+          html = renderCoursesView();
+          break;
+        case 'admissions':
+          html = renderAdmissionsView();
+          break;
+        case 'books':
+          html = renderBooksView();
+          break;
+        case 'events':
+          html = renderEventsView();
+          break;
+        case 'guides':
+          html = renderGuidesView(state.routeParam);
+          break;
+        case 'add-school':
+          html = renderAddSchoolView();
+          break;
+        case 'signin':
+          html = renderAuthView('signin');
+          break;
+        case 'signup':
+          html = renderAuthView('signup');
+          break;
+        case 'dashboard':
+          html = renderDashboardView();
+          break;
+        case 'about':
+        case 'contact':
+        case 'privacy':
+        case 'terms':
+        case 'copyright':
+          html = renderStaticPageView(state.route);
+          break;
+        default:
+          html = renderHomeView();
+      }
+
+      root.innerHTML = html;
+      updateActiveNavIndicators();
+      updateGlobalBadges();
+      refreshIcons();
+    }
+
+    function syncFromHash() {
+      const raw = (window.location.hash || '').replace(/^#/, '');
+      if (!raw) return;
+      const [route, param] = raw.split('/');
+      if (route) {
+        state.route = route;
+        state.routeParam = param || null;
+      }
+    }
+
+    window.addEventListener('hashchange', () => {
+      syncFromHash();
+      renderApp();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024 && state.isDrawerOpen) {
+        toggleMobileDrawer(false);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initDesktopDropdowns();
+      syncFromHash();
+      renderApp();
+    });
+  </script>
+</body>
+</html>

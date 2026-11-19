@@ -1,6 +1,6 @@
 @extends('directory.layout')
-@section('title', $listing->name)
-@section('description', $listing->tagline ?: 'View the verified TaleemFinder profile for '.$listing->name.'.')
+@section('title', $listing->seo_title ?: $listing->name)
+@section('description', $listing->seo_description ?: ($listing->tagline ?: 'View the verified TaleemFinder profile for '.$listing->name.'.'))
 @section('content')
 <section class="hero directory-hero"><div class="wrap">
     <p class="breadcrumb"><a href="{{ route('directory.home') }}">Home</a> / <a href="{{ route('directory.index') }}">Directory</a></p>
@@ -10,6 +10,8 @@
 <div class="wrap profile-grid">
     <section class="panel"><h2>About this institution</h2>
         @if($listing->tagline)<p><strong>{{ $listing->tagline }}</strong></p>@endif
+        @if($listing->established_year)<p>Established {{ $listing->established_year }}</p>@endif
+        @if($listing->medium)<p>Language of instruction: {{ ['english' => 'English', 'urdu' => 'Urdu', 'both' => 'English and Urdu'][$listing->medium] }}</p>@endif
         <p class="description">{{ $listing->description ?: 'A detailed overview has not been published yet.' }}</p>
         <div class="listing-actions">
             <a class="button outline" href="{{ route('institute.claim', $listing->slug) }}">Claim this institution</a>

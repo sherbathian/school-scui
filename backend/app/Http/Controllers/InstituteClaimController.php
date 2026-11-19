@@ -38,6 +38,8 @@ class InstituteClaimController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'email' => ['required', 'email', 'max:190', 'unique:users'],
             'password' => ['required', 'string', 'min:12', 'max:72', 'confirmed'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'locale' => ['sometimes', Rule::in(['en', 'ur'])],
             'listing' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -46,7 +48,10 @@ class InstituteClaimController extends Controller
         }
 
         try {
-            $user = User::create(collect($data)->only(['name', 'email', 'password'])->all());
+            $user = User::forceCreate([
+                ...collect($data)->only(['name', 'email', 'password', 'phone', 'locale'])->all(),
+                'last_login_at' => now(),
+            ]);
         } catch (UniqueConstraintViolationException) {
             throw ValidationException::withMessages(['email' => ['This email address is already registered.']]);
         }

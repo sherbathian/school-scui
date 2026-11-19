@@ -45,6 +45,7 @@ class AuthController extends Controller
             ]);
         }
 
+        $user->forceFill(['last_login_at' => now()])->save();
         $request->session()->regenerate();
 
         return response()->json(['data' => $this->userData($request->user())]);

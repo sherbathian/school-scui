@@ -92,10 +92,32 @@ class AdminListingController extends Controller
             ...$this->profileRules(),
         ]);
 
-        return $this->updateLocked($listing, function (School $school) use ($details): void {
-            $school->forceFill($details);
-            $this->validateArea($school->city_id, $school->area_id);
-        });
+        $code = $request->validate(['branch_code' => ['sometimes', 'nullable', 'alpha_dash:ascii', 'max:20']]);
+        if (isset($code['branch_code'])) {
+            $code['branch_code'] = strtoupper($code['branch_code']);
+        }
+
+        try {
+            return $this->updateLocked($listing, function (School $school) use ($details, $code): void {
+                if (isset($code['branch_code'])) {
+                    if ($school->group_id === null) {
+                        throw ValidationException::withMessages(['branch_code' => ['Verify the listing to create its organisation before assigning a branch code.']]);
+                    }
+
+                    validator($code, [
+                        'branch_code' => [Rule::unique('schools')->where('group_id', $school->group_id)->ignore($school->id)],
+                    ])->validate();
+                }
+                $school->forceFill([...$details, ...$code]);
+                $this->validateArea($school->city_id, $school->area_id);
+            });
+        } catch (UniqueConstraintViolationException $exception) {
+            if (! array_key_exists('branch_code', $code)) {
+                throw $exception;
+            }
+
+            throw ValidationException::withMessages(['branch_code' => ['This branch code is already in use within the organisation.']]);
+        }
     }
 
     public function verify(School $listing, SchoolOrganisations $organisations): AdminListingResource
@@ -153,6 +175,16 @@ class AdminListingController extends Controller
         return [
             'short_name' => ['nullable', 'string', 'max:80'],
             'branch_name' => ['nullable', 'string', 'max:100'],
+            'gender_type' => ['nullable', Rule::in(['boys', 'girls', 'co_ed'])],
+            'medium' => ['nullable', Rule::in(['english', 'urdu', 'both'])],
+            'established_year' => ['nullable', 'integer', 'between:1,'.now()->year],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'decimal:0,7'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'decimal:0,7'],
+            'whatsapp' => ['nullable', 'string', 'max:30'],
+            'social_links' => ['nullable', 'array:facebook,instagram,youtube'],
+            'social_links.*' => ['nullable', 'url:http,https', 'max:255'],
+            'seo_title' => ['nullable', 'string', 'max:160'],
+            'seo_description' => ['nullable', 'string', 'max:300'],
             'tagline' => ['nullable', 'string', 'max:160'],
             'description' => ['nullable', 'string', 'max:10000'],
             'city_id' => ['nullable', 'integer', Rule::exists('cities', 'id')->where('is_active', true)],

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\InstituteClaimController;
 use App\Http\Controllers\PublicDirectoryController;
+use App\Http\Resources\AdminListingResource;
 use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,10 +85,7 @@ $adminPage = function (Request $request, ?int $listing = null) {
         'administrator' => $administrator,
         'adminName' => $request->user()?->name,
         'screen' => $screen,
-        'listing' => $record?->only([
-            'id', 'name', 'institute_type', 'city_id', 'area_id', 'short_name',
-            'branch_name', 'tagline', 'address_line', 'phone', 'email', 'website_url', 'description',
-        ]),
+        'listing' => $record?->only(AdminListingResource::PROFILE_FIELDS),
     ])->toResponse($request)->header('Cache-Control', 'no-store');
 };
 

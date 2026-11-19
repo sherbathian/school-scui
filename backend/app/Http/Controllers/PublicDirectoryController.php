@@ -69,7 +69,9 @@ class PublicDirectoryController extends Controller
 
     public function show(string $slug): View
     {
-        return view('directory.profile', ['listing' => $this->listings()->where('schools.slug', $slug)->firstOrFail()]);
+        return view('directory.profile', ['listing' => $this->listings()
+            ->addSelect('schools.seo_title', 'schools.seo_description', 'schools.established_year', 'schools.medium')
+            ->where('schools.slug', $slug)->firstOrFail()]);
     }
 
     public function collection(Request $request, string $collection): View

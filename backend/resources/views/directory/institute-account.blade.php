@@ -11,6 +11,9 @@
             <input type="hidden" name="listing" value="{{ is_string($listing) ? $listing : '' }}">
             @if($mode === 'register')<label>Full name<input name="name" required maxlength="150" autocomplete="name" value="{{ old('name') }}"></label>@endif
             <label>Email address<input type="email" name="email" required maxlength="190" autocomplete="username" value="{{ old('email') }}"></label>
+            @if($mode === 'register')
+                <label>Contact phone (optional)<input type="tel" name="phone" maxlength="30" autocomplete="tel" value="{{ old('phone') }}"></label>
+            @endif
             <label>Password<input type="password" name="password" required autocomplete="{{ $mode === 'register' ? 'new-password' : 'current-password' }}" @if($mode === 'register') minlength="12" maxlength="72" @endif></label>
             @if($mode === 'register')<label>Confirm password<input type="password" name="password_confirmation" required autocomplete="new-password"></label>@endif
             <button class="button teal">{{ $mode === 'register' ? 'Create account' : 'Sign in' }}</button>

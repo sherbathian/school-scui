@@ -40,6 +40,7 @@ class SchoolUserController extends Controller
         $validated = $request->validate([
             'email' => ['required', 'email', 'max:255'],
             'role' => ['required', 'string'],
+            'is_primary_contact' => ['sometimes', 'required', 'boolean'],
         ]);
 
         $user = User::query()->where('email', $validated['email'])->first();
@@ -58,6 +59,7 @@ class SchoolUserController extends Controller
             $schoolRecord->users()->attach($user, [
                 'role' => $validated['role'],
                 'is_active' => true,
+                'is_primary_contact' => $validated['is_primary_contact'] ?? false,
             ]);
             $user->assignRole($role);
         });
@@ -78,6 +80,7 @@ class SchoolUserController extends Controller
         $validated = $request->validate([
             'role' => ['sometimes', 'required', 'string'],
             'is_active' => ['sometimes', 'required', 'boolean'],
+            'is_primary_contact' => ['sometimes', 'required', 'boolean'],
         ]);
 
         DB::transaction(function () use ($member, $schoolRecord, $validated, $role): void {
@@ -122,6 +125,7 @@ class SchoolUserController extends Controller
             'role' => $user->pivot->role,
             'is_super_admin' => $user->isSuperAdmin(),
             'is_active' => (bool) $user->pivot->is_active,
+            'is_primary_contact' => (bool) $user->pivot->is_primary_contact,
         ];
     }
 

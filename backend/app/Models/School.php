@@ -20,6 +20,9 @@ class School extends Model
         return [
             'verified_at' => 'datetime',
             'published_at' => 'datetime',
+            'featured_until' => 'datetime',
+            'is_featured' => 'boolean',
+            'social_links' => 'array',
         ];
     }
 
@@ -32,7 +35,7 @@ class School extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
-            ->withPivot(['role', 'is_active'])
+            ->withPivot(['role', 'is_active', 'is_primary_contact'])
             ->withTimestamps();
     }
 

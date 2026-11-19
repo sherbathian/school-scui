@@ -11,6 +11,7 @@ const profile = {
     short_name: ['Short name', 80], branch_name: ['Branch name', 100], tagline: ['Tagline', 160],
     address_line: ['Street address', 255], phone: ['Public phone', 30, 'tel'],
     email: ['Public email', 190, 'email'], website_url: ['Website', 255, 'url'],
+    whatsapp: ['Public WhatsApp', 30, 'tel'], seo_title: ['SEO title', 160], seo_description: ['SEO description', 300],
 };
 
 function Field({ label, children, ...props }) {
@@ -65,6 +66,16 @@ function ListingEditor({ listing, submit, busy, onError }) {
                 <Field label="Institute type"><select name="institute_type" defaultValue={listing.institute_type ?? 'school'}><Choices values={types} /></select></Field>
                 <PlacePicker cities={cities} value={city} area={area} names onChange={(nextCity, nextArea) => { setCity(nextCity); setArea(nextArea); }} />
                 {Object.entries(profile).map(([name, [label, maxLength, type]]) => <Field key={name} {...{ label, name, maxLength, type }} defaultValue={listing[name]} />)}
+                {listing.group_id && <Field label="Branch code" name="branch_code" maxLength={20} defaultValue={listing.branch_code} />}
+                <Field label="Student intake"><select name="gender_type" defaultValue={listing.gender_type ?? ''}>
+                    <option value="">Not specified</option><Choices values={{ boys: 'Boys', girls: 'Girls', co_ed: 'Co-educational' }} />
+                </select></Field>
+                <Field label="Language of instruction"><select name="medium" defaultValue={listing.medium ?? ''}>
+                    <option value="">Not specified</option><Choices values={{ english: 'English', urdu: 'Urdu', both: 'English and Urdu' }} />
+                </select></Field>
+                <Field label="Year established" name="established_year" type="number" min={1} defaultValue={listing.established_year} />
+                <Field label="Latitude" name="latitude" type="number" min={-90} max={90} step={0.0000001} defaultValue={listing.latitude} />
+                <Field label="Longitude" name="longitude" type="number" min={-180} max={180} step={0.0000001} defaultValue={listing.longitude} />
                 <Field label="Description"><textarea name="description" maxLength={10000} defaultValue={listing.description} /></Field>
             </div>
             <div className="drawer-footer">

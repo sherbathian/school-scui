@@ -21,3 +21,9 @@ Updated 19 November 2026. The latest source documents are the Database Plan v4 w
 - A branch's **Modules** action opens its switches. Fees depend on Students. The free listing remains independent of management switches.
 
 Before starting another increment, read [DECISIONS.md](DECISIONS.md) and check the confirmed and open items in the current workbook.
+
+## Database Plan v4 · School access
+
+Implemented the added columns for the three **School access** rows in the Table Plan. Branch codes are unique within an organisation. Memberships can record a primary contact through the authorised school-user API. Account phone and verification metadata are private, and successful sign-in updates the last-login timestamp. The admin listing form exposes the new branch and profile fields. The media, fee, rating, and featured fields await their respective workflows.
+
+The full suite passed 84 tests on SQLite and MySQL. The disposable MySQL upgrade, rollback, and reapply preserved the existing branch, account, and membership records. The migration was applied to local Herd MySQL and the health endpoint passed.

@@ -42,6 +42,7 @@ Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('
 Route::prefix('admin')->middleware(['auth:sanctum', 'can:moderateListings,'.School::class])->group(function () {
     Route::get('branches/{branch}/modules', [AdminBranchModuleController::class, 'index']);
     Route::patch('branches/{branch}/modules/{module}', [AdminBranchModuleController::class, 'update']);
+    Route::get('permissions', [UserController::class, 'permissionCatalogue']);
     Route::get('claims', [InstituteClaimController::class, 'queue']);
     Route::patch('claims/{claim}', [InstituteClaimController::class, 'review'])->whereNumber('claim');
     Route::get('cities', [AdminLocationController::class, 'cities']);

@@ -27,3 +27,9 @@ Before starting another increment, read [DECISIONS.md](DECISIONS.md) and check t
 Implemented the added columns for the three **School access** rows in the Table Plan. Branch codes are unique within an organisation. Memberships can record a primary contact through the authorised school-user API. Account phone and verification metadata are private, and successful sign-in updates the last-login timestamp. The admin listing form exposes the new branch and profile fields. The media, fee, rating, and featured fields await their respective workflows.
 
 The full suite passed 84 tests on SQLite and MySQL. The disposable MySQL upgrade, rollback, and reapply preserved the existing branch, account, and membership records. The migration was applied to local Herd MySQL and the health endpoint passed.
+
+## Platform admin · School access and permissions
+
+Added sidebar pages for platform user accounts, branch memberships, branch roles, and the permissions catalogue. Platform admins can create and edit accounts, deactivate accounts, and delete eligible accounts. Branch membership screens manage role assignments, primary contacts, and direct permissions. Branch roles can be created, edited, and deleted subject to built-in role and assignment protections. The listings table links to branch access screens and supports archiving a branch.
+
+The permissions catalogue shows application-defined abilities. Changes to access go through branch roles and memberships. Laravel's cache, locks, queue storage, migration history, reset tokens, and sessions require no admin CRUD for these workflows.

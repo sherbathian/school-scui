@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Role;
 
 class SchoolUserController extends Controller
 {
@@ -40,6 +41,7 @@ class SchoolUserController extends Controller
         $validated = $request->validate([
             'email' => ['required', 'email', 'max:255'],
             'role' => ['required', 'string'],
+            'is_active' => ['sometimes', 'required', 'boolean'],
             'is_primary_contact' => ['sometimes', 'required', 'boolean'],
         ]);
 
@@ -58,7 +60,7 @@ class SchoolUserController extends Controller
         DB::transaction(function () use ($schoolRecord, $user, $validated, $role): void {
             $schoolRecord->users()->attach($user, [
                 'role' => $validated['role'],
-                'is_active' => true,
+                'is_active' => $validated['is_active'] ?? true,
                 'is_primary_contact' => $validated['is_primary_contact'] ?? false,
             ]);
             $user->assignRole($role);
@@ -75,11 +77,17 @@ class SchoolUserController extends Controller
         $member = $schoolRecord->users()->whereKey($user)->firstOrFail();
         Gate::authorize('manageMember', [$schoolRecord, $member]);
 
+        if ($request->has('direct_permissions')) {
+            abort_unless($request->user()->isSuperAdmin() && ! $member->isSuperAdmin(), 403);
+        }
+
         $this->roles->ensureDefaults($schoolRecord);
         $role = $request->has('role') ? $this->requestedRole($request, $schoolRecord) : null;
         $validated = $request->validate([
             'role' => ['sometimes', 'required', 'string'],
             'is_active' => ['sometimes', 'required', 'boolean'],
+            'direct_permissions' => ['sometimes', 'array'],
+            'direct_permissions.*' => ['string', Rule::in($this->roles->assignablePermissions())],
             'is_primary_contact' => ['sometimes', 'required', 'boolean'],
         ]);
 
@@ -91,7 +99,11 @@ class SchoolUserController extends Controller
                 $member->syncRoles([$role]);
             }
 
-            $schoolRecord->users()->updateExistingPivot($member->id, $validated);
+            if (array_key_exists('direct_permissions', $validated)) {
+                $member->syncPermissions($validated['direct_permissions']);
+            }
+
+            $schoolRecord->users()->updateExistingPivot($member->id, collect($validated)->except('direct_permissions')->all());
         });
 
         $member = $schoolRecord->users()->whereKey($member->id)->firstOrFail();
@@ -109,6 +121,7 @@ class SchoolUserController extends Controller
         }
         DB::transaction(function () use ($member, $schoolRecord): void {
             $member->syncRoles([]);
+            $member->syncPermissions([]);
             $schoolRecord->users()->detach($member->id);
         });
 
@@ -123,6 +136,7 @@ class SchoolUserController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->pivot->role,
+            'direct_permissions' => $user->getDirectPermissions()->pluck('name')->sort()->values()->all(),
             'is_super_admin' => $user->isSuperAdmin(),
             'is_active' => (bool) $user->pivot->is_active,
             'is_primary_contact' => (bool) $user->pivot->is_primary_contact,
@@ -142,7 +156,13 @@ class SchoolUserController extends Controller
             'role' => [Rule::exists('roles', 'name')->where('team_id', $school->id)->where('guard_name', 'web')],
         ])->validate();
 
-        return $role;
+        $assignedRole = Role::query()->where('team_id', $school->id)->where('guard_name', 'web')
+            ->where('name', $role)->with('permissions:id,name')->firstOrFail();
+        foreach ($assignedRole->permissions as $permission) {
+            abort_unless($request->user()->hasSchoolPermission($school, $permission->name), 403);
+        }
+
+        return $assignedRole->name;
     }
 
     private function accessibleSchool(Request $request, int $school): School

@@ -173,6 +173,25 @@ function Workspace({ run, busy, onError }) {
                     <td><div className="row-actions">
                         <Link className="admin-link-button" href={`/admin/listings/${item.id}/edit`}>Edit</Link>
                         <Link className="admin-link-button" href={`/admin/branches/${item.id}/modules`} aria-label={`Modules for ${item.name}`}>Modules</Link>
+                        <Link className="admin-link-button" href={`/admin/branches/${item.id}/members`}>Members</Link>
+                        <Link className="admin-link-button" href={`/admin/branches/${item.id}/roles`}>Roles</Link>
+                        <Button variant="outline" disabled={busy} onClick={() => {
+                            const active = item.status === 'active';
+                            if (active && !window.confirm(`Pause branch access for ${item.name}?`)) return;
+                            run(async () => {
+                                await api(`schools/${item.id}`, 'PATCH', { status: active ? 'suspended' : 'active' });
+                                refresh(value => value + 1);
+                                return active ? 'Branch paused.' : 'Branch reactivated.';
+                            });
+                        }}>{item.status === 'active' ? 'Pause branch' : 'Reactivate branch'}</Button>
+                        <Button variant="outline" disabled={busy} onClick={() => {
+                            if (!window.confirm(`Archive ${item.name}? This removes its public listing and branch access.`)) return;
+                            run(async () => {
+                                await api(`schools/${item.id}`, 'DELETE');
+                                refresh(value => value + 1);
+                                return 'School archived.';
+                            });
+                        }}>Archive</Button>
                         <Button variant="outline" disabled={busy || Boolean(item.verified_at)} onClick={() => moderate(item.id, 'verify', 'Listing verified.')}>Verify</Button>
                         <Button variant="outline" disabled={busy || !item.verified_at || item.status !== 'active' || item.listing_status === 'published'}
                             onClick={() => moderate(item.id, 'publish', 'Listing published.')}>Publish</Button>

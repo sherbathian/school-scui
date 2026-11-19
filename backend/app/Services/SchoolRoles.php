@@ -11,6 +11,13 @@ class SchoolRoles
 {
     public const array BUILT_IN = ['admin', 'teacher', 'account', 'student'];
 
+    public function assignablePermissions(): array
+    {
+        return Permission::query()->where('guard_name', 'web')
+            ->whereNotIn('name', ['users.view', 'users.create', 'users.update', 'users.delete'])
+            ->where('name', 'not like', 'platform.%')->orderBy('name')->pluck('name')->all();
+    }
+
     public function ensureDefaults(School $school): void
     {
         $attributes = ['team_id' => $school->id, 'guard_name' => 'web'];
@@ -25,9 +32,7 @@ class SchoolRoles
                 }
 
                 $permissions = match ($name) {
-                    'admin' => Permission::query()->where('guard_name', 'web')
-                        ->whereNotIn('name', ['users.view', 'users.create', 'users.update', 'users.delete'])
-                        ->where('name', 'not like', 'platform.%')->pluck('name')->all(),
+                    'admin' => $this->assignablePermissions(),
                     'teacher' => ['students.view', 'guardians.view', 'attendance.view', 'attendance.manage', 'academics.view', 'staff.view'],
                     'account' => ['fees.view', 'fees.manage', 'expenses.view', 'expenses.manage', 'reports.view'],
                     'student' => ['students.view', 'attendance.view', 'fees.view'],

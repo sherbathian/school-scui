@@ -10,9 +10,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Permission;
 
 class UserController extends Controller
 {
+    public function permissionCatalogue(): JsonResponse
+    {
+        return response()->json(['data' => Permission::query()->where('guard_name', 'web')->orderBy('name')
+            ->select(['id', 'name'])->withCount('roles')->get()->map(fn (Permission $permission) => [
+                'id' => $permission->id, 'name' => $permission->name,
+                'role_count' => $permission->roles_count,
+            ])]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $this->authorizePermission($request, 'users.manage');
@@ -33,9 +43,13 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:12'],
+            'password' => ['required', 'string', 'min:12', 'max:72'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'locale' => ['sometimes', Rule::in(['en', 'ur'])],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+
+        $this->validatePasswordBytes($validated['password']);
 
         $user = DB::transaction(function () use ($validated): User {
             $user = User::create([
@@ -45,6 +59,7 @@ class UserController extends Controller
             ]);
             $user->forceFill([
                 'is_super_admin' => false,
+                ...collect($validated)->only(['phone', 'locale'])->all(),
                 'is_active' => $validated['is_active'] ?? true,
             ])->save();
 
@@ -61,9 +76,14 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'email' => ['sometimes', 'required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($record->id)],
-            'password' => ['sometimes', 'nullable', 'string', 'min:12'],
+            'password' => ['sometimes', 'nullable', 'string', 'min:12', 'max:72'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'locale' => ['sometimes', Rule::in(['en', 'ur'])],
             'is_active' => ['sometimes', 'required', 'boolean'],
         ]);
+
+        abort_if($record->isSuperAdmin() && ! $record->is($request->user()), 403);
+        $this->validatePasswordBytes($validated['password'] ?? null);
 
         if ($record->isSuperAdmin() && array_key_exists('is_active', $validated) && ! $validated['is_active']) {
             throw ValidationException::withMessages(['is_active' => ['The Super Admin account cannot be deactivated from the user module.']]);
@@ -76,6 +96,9 @@ class UserController extends Controller
             }
             if (array_key_exists('is_active', $validated)) {
                 $changes['is_active'] = $validated['is_active'];
+            }
+            if (array_key_exists('phone', $changes) && $changes['phone'] !== $record->phone) {
+                $changes['phone_verified_at'] = null;
             }
             $record->forceFill($changes)->save();
         });
@@ -97,15 +120,27 @@ class UserController extends Controller
         if ($record->schools()->exists() || $record->staffProfile()->exists()) {
             throw ValidationException::withMessages(['user' => ['Remove this user from their schools and staff profile before deleting the account. You can deactivate it instead.']]);
         }
+        if (DB::table('school_group_user')->where('user_id', $record->id)->exists()
+            || DB::table('listing_claims')->where('user_id', $record->id)->exists()) {
+            throw ValidationException::withMessages(['user' => ['Deactivate this account to preserve its ownership and claim history.']]);
+        }
+
         $record->delete();
 
         return response()->json([], 204);
     }
 
+    private function validatePasswordBytes(?string $password): void
+    {
+        if ($password !== null && strlen($password) > 72) {
+            throw ValidationException::withMessages(['password' => ['Use a password no longer than 72 bytes.']]);
+        }
+    }
+
     private function authorizePermission(Request $request, string $permission): void
     {
         $actor = $request->user();
-        abort_unless($actor->isSuperAdmin(), 403);
+        abort_unless($actor->is_active && $actor->isSuperAdmin(), 403);
         if ($actor->hasRole('super-admin')) {
             abort_unless($actor->hasPermissionTo($permission), 403);
         }
@@ -118,6 +153,8 @@ class UserController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'phone' => $user->phone,
+            'locale' => $user->locale,
             'global_role' => $user->isSuperAdmin() ? 'super-admin' : 'user',
             'is_super_admin' => $user->isSuperAdmin(),
             'is_active' => (bool) $user->is_active,

@@ -138,7 +138,8 @@ class User extends Authenticatable
 
         try {
             if (! $this->roles()->exists()) {
-                return in_array($this->schoolAccessRole($school) ?? '', ['school_admin', 'admin'], true);
+                return in_array($this->schoolAccessRole($school) ?? '', ['school_admin', 'admin'], true)
+                    || $this->getDirectPermissions()->contains(fn (Permission $permission) => str_ends_with($permission->name, '.manage'));
             }
 
             return $this->getAllPermissions()->contains(fn (Permission $permission) => str_ends_with($permission->name, '.manage'));
@@ -178,7 +179,7 @@ class User extends Authenticatable
                 return $this->hasPermissionTo($permission);
             }
 
-            return $this->legacyMembershipPermission($this->schoolAccessRole($school) ?? '', $permission);
+            return $this->hasDirectPermission($permission) || $this->legacyMembershipPermission($this->schoolAccessRole($school) ?? '', $permission);
         } finally {
             $registrar->setPermissionsTeamId($teamId);
             $this->unsetRelation('roles')->unsetRelation('permissions');
@@ -212,7 +213,9 @@ class User extends Authenticatable
 
             $role = $this->schoolAccessRole($school);
 
-            return $role ? $this->legacyMembershipPermissions($role) : [];
+            return $this->getDirectPermissions()->pluck('name')
+                ->merge($role ? $this->legacyMembershipPermissions($role) : [])
+                ->unique()->sort()->values()->all();
         } finally {
             $registrar->setPermissionsTeamId($teamId);
             $this->unsetRelation('roles')->unsetRelation('permissions');

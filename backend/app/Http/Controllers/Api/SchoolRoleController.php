@@ -33,7 +33,7 @@ class SchoolRoleController extends Controller
 
         return response()->json(['data' => [
             'roles' => $roles->map(fn (Role $role) => $this->roleData($role, $school))->values(),
-            'permissions' => Permission::query()->where('guard_name', 'web')->orderBy('name')->get(['id', 'name'])
+            'permissions' => Permission::query()->where('guard_name', 'web')->whereIn('name', $this->roles->assignablePermissions())->orderBy('name')->get(['id', 'name'])
                 ->map(fn (Permission $permission) => [
                     'name' => $permission->name,
                     'module' => str($permission->name)->before('.')->headline()->toString(),
@@ -50,19 +50,25 @@ class SchoolRoleController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:64', 'alpha_dash', Rule::unique('roles', 'name')->where(fn ($query) => $query->where('team_id', $school)->where('guard_name', 'web'))],
             'permissions' => ['sometimes', 'array'],
-            'permissions.*' => ['string', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
+            'permissions.*' => ['string', Rule::in($this->roles->assignablePermissions())],
         ]);
 
-        if (in_array($validated['name'], ['super-admin', 'super_admin', 'platform-admin', 'platform_admin'], true)) {
+        $this->authorizeDelegation($request, $schoolRecord, $validated['permissions'] ?? []);
+
+        if (in_array(strtolower($validated['name']), ['super-admin', 'super_admin', 'platform-admin', 'platform_admin'], true)) {
             throw ValidationException::withMessages(['name' => ['The Super Admin role is reserved and cannot be changed.']]);
         }
 
-        $role = Role::create([
-            'name' => $validated['name'],
-            'guard_name' => 'web',
-            'team_id' => $school,
-        ]);
-        $role->syncPermissions($validated['permissions'] ?? []);
+        $role = DB::transaction(function () use ($school, $validated): Role {
+            $role = Role::create([
+                'name' => $validated['name'],
+                'guard_name' => 'web',
+                'team_id' => $school,
+            ]);
+            $role->syncPermissions($validated['permissions'] ?? []);
+
+            return $role;
+        });
 
         return response()->json(['data' => $this->roleData($role->load('permissions:id,name'), $school)], 201);
     }
@@ -75,21 +81,30 @@ class SchoolRoleController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:64', 'alpha_dash', Rule::unique('roles', 'name')->where(fn ($query) => $query->where('team_id', $school)->where('guard_name', 'web'))->ignore($record->id)],
             'permissions' => ['sometimes', 'array'],
-            'permissions.*' => ['string', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
+            'permissions.*' => ['string', Rule::in($this->roles->assignablePermissions())],
         ]);
 
-        if (array_key_exists('name', $validated) && ! in_array($record->name, SchoolRoles::BUILT_IN, true)) {
-            $oldName = $record->name;
-            $record->name = $validated['name'];
-            $record->save();
-            DB::table('school_user')->where('school_id', $school)->where('role', $oldName)->update(['role' => $record->name]);
-        } elseif (array_key_exists('name', $validated) && $validated['name'] !== $record->name) {
-            throw ValidationException::withMessages(['name' => ['System role names cannot be changed.']]);
+        if (isset($validated['name']) && in_array(strtolower($validated['name']), ['super-admin', 'super_admin', 'platform-admin', 'platform_admin'], true)) {
+            throw ValidationException::withMessages(['name' => ['The Super Admin role is reserved.']]);
         }
 
-        if (array_key_exists('permissions', $validated)) {
-            $record->syncPermissions($validated['permissions']);
-        }
+        $this->authorizeDelegation($request, $schoolRecord, $record->permissions->pluck('name')->all());
+        $this->authorizeDelegation($request, $schoolRecord, $validated['permissions'] ?? []);
+
+        DB::transaction(function () use ($validated, $record, $school): void {
+            if (array_key_exists('name', $validated) && ! in_array($record->name, SchoolRoles::BUILT_IN, true)) {
+                $oldName = $record->name;
+                $record->name = $validated['name'];
+                $record->save();
+                DB::table('school_user')->where('school_id', $school)->where('role', $oldName)->update(['role' => $record->name]);
+            } elseif (array_key_exists('name', $validated) && $validated['name'] !== $record->name) {
+                throw ValidationException::withMessages(['name' => ['System role names cannot be changed.']]);
+            }
+
+            if (array_key_exists('permissions', $validated)) {
+                $record->syncPermissions($validated['permissions']);
+            }
+        });
 
         return response()->json(['data' => $this->roleData($record->fresh()->load('permissions:id,name'), $school)]);
     }
@@ -113,6 +128,13 @@ class SchoolRoleController extends Controller
         $record->delete();
 
         return response()->json([], 204);
+    }
+
+    private function authorizeDelegation(Request $request, School $school, array $permissions): void
+    {
+        foreach ($permissions as $permission) {
+            abort_unless($request->user()->hasSchoolPermission($school, $permission), 403);
+        }
     }
 
     private function authorizeRoleManagement(Request $request, School $school): void

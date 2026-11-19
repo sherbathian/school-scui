@@ -107,3 +107,25 @@ Route::get('/admin/{kind}', function (Request $request, string $kind) {
         'adminName' => $request->user()->name,
     ])->toResponse($request)->header('Cache-Control', 'no-store');
 })->whereIn('kind', ['cities', 'areas'])->name('admin.locations');
+
+$accessPage = function (Request $request, string $screen, ?int $branch = null) {
+    if (! Auth::check()) {
+        return redirect()->route('admin.login');
+    }
+
+    Gate::authorize('moderateListings', School::class);
+    $school = $branch !== null ? School::query()->findOrFail($branch, ['id', 'name']) : null;
+    Inertia::setRootView('admin.app');
+
+    return Inertia::render('Admin/Access', [
+        'screen' => $screen,
+        'branch' => $school,
+        'branches' => in_array($screen, ['members', 'roles'], true)
+            ? School::query()->orderBy('name')->get(['id', 'name']) : [],
+        'adminName' => $request->user()->name,
+        'adminId' => $request->user()->id,
+    ])->toResponse($request)->header('Cache-Control', 'no-store');
+};
+
+Route::get('/admin/{screen}', $accessPage)->whereIn('screen', ['users', 'permissions', 'roles', 'members']);
+Route::get('/admin/branches/{branch}/{screen}', fn (Request $request, int $branch, string $screen) => $accessPage($request, $screen, $branch))->whereNumber('branch')->whereIn('screen', ['roles', 'members']);

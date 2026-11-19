@@ -310,7 +310,7 @@ class StudentController extends Controller
             ]);
         }
 
-        $enrollment = DB::transaction(function () use ($studentRecord, $schoolRecord, $gradeId, $sectionId, $enrolledOn, $previousEnrollmentEndDate): Enrollment {
+        $enrollment = DB::transaction(function () use ($studentRecord, $schoolRecord, $gradeId, $sectionId, $enrolledOn, $previousEnrollmentEndDate, $academicYear): Enrollment {
             $studentRecord = Student::query()->whereKey($studentRecord->id)->lockForUpdate()->firstOrFail();
             $studentRecord->enrollments()
                 ->where('status', 'active')

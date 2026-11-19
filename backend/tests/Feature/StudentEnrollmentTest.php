@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Grade;
 use App\Models\School;
+use App\Models\SchoolSession;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\User;
@@ -168,6 +169,9 @@ class StudentEnrollmentTest extends TestCase
         $archivedStudent = Student::factory()->for($school)->create(['status' => 'active']);
         $otherYearStudent = Student::factory()->for($school)->create();
 
+        $session = $school->schoolSessions()->where('is_current', true)->firstOrFail();
+        $session->update(['starts_on' => '2025-08-01', 'ends_on' => '2026-06-30']);
+
         $this->actingAs($schoolAdmin, 'sanctum')
             ->postJson('/api/schools/'.$school->id.'/students/'.$archivedStudent->id.'/enrollments', [
                 'grade_id' => $grade->id,
@@ -181,6 +185,7 @@ class StudentEnrollmentTest extends TestCase
             ->assertJsonPath('data.status', 'active')
             ->assertJsonPath('data.current_enrollment', null);
 
+        $session->update(['starts_on' => '2026-08-01', 'ends_on' => '2027-06-30']);
         $this->postJson('/api/schools/'.$school->id.'/students/'.$otherYearStudent->id.'/enrollments', [
             'grade_id' => $grade->id,
             'section_id' => $section->id,
@@ -206,6 +211,9 @@ class StudentEnrollmentTest extends TestCase
 
     private function schoolAdminFor(School $school): User
     {
+        SchoolSession::factory()->for($school)->create([
+            'starts_on' => '2026-08-01', 'ends_on' => '2027-06-30', 'is_current' => true,
+        ]);
         $user = User::factory()->create();
         $user->schools()->attach($school, ['role' => 'school_admin']);
 

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\School;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class AdminListingTest extends TestCase
@@ -101,7 +102,9 @@ class AdminListingTest extends TestCase
 
     public function test_admin_workspace_is_available_only_to_active_platform_admins(): void
     {
-        $this->get('/admin/listings')->assertOk()->assertSee('Sign in');
+        $this->withoutVite();
+        $this->get('/admin/listings')->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Admin/Listings')->where('administrator', false));
 
         $this->actingAs(User::factory()->create())
             ->get('/admin/listings')->assertForbidden();
@@ -110,7 +113,8 @@ class AdminListingTest extends TestCase
             ->getJson('/api/admin/listings')->assertForbidden();
 
         $this->actingAs(User::factory()->create(['is_super_admin' => true, 'is_active' => true]))
-            ->get('/admin/listings')->assertOk()->assertSee('New listing');
+            ->get('/admin/listings')->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Admin/Listings')->where('administrator', true));
     }
 
     public function test_admin_sign_in_rejects_school_members_and_starts_a_platform_session(): void
@@ -156,6 +160,75 @@ class AdminListingTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors('area_id');
         $this->patchJson("/api/admin/listings/{$listing}", ['city_id' => $secondCity, 'area_id' => null])
             ->assertOk()->assertJsonPath('data.city_id', $secondCity);
+    }
+
+    public function test_dashboard_counts_and_filters_the_verification_queue(): void
+    {
+        $this->signInAsPlatformAdmin();
+        $draft = School::factory()->create();
+        School::factory()->create(['listing_status' => 'published', 'verified_at' => now()]);
+        School::factory()->create(['listing_status' => 'suspended']);
+        School::factory()->create(['status' => 'suspended']);
+        School::factory()->create()->delete();
+
+        $this->getJson('/api/admin/listings?needs_verification=1')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $draft->id)
+            ->assertJsonPath('summary.published', 1)
+            ->assertJsonPath('summary.needs_verification', 1)
+            ->assertJsonPath('summary.suspended', 1);
+
+        $this->postJson("/api/admin/listings/{$draft->id}/verify")->assertOk();
+        $this->getJson('/api/admin/listings?needs_verification=1')
+            ->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('summary.needs_verification', 0);
+    }
+
+    public function test_listing_search_respects_status_and_matches_slug(): void
+    {
+        $this->signInAsPlatformAdmin();
+        $match = School::factory()->create(['name' => 'Example Academy', 'slug' => 'north-campus']);
+        School::factory()->create(['name' => 'North Institute', 'listing_status' => 'suspended']);
+        School::factory()->create(['name' => 'South Institute']);
+
+        $this->getJson('/api/admin/listings?search=north&listing_status=draft')
+            ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $match->id);
+    }
+
+    public function test_listing_editor_pages_require_platform_access_and_load_the_requested_record(): void
+    {
+        $this->withoutVite();
+        $listing = School::factory()->create();
+
+        $this->get('/admin/login')->assertOk();
+        $this->get('/admin/listings/create')->assertRedirect('/admin/login');
+
+        $this->actingAs(User::factory()->create())->get('/admin/listings/create')->assertForbidden();
+        $this->signInAsPlatformAdmin();
+        $this->get('/admin/listings/create')->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('screen', 'create')->where('listing', null));
+        $this->get("/admin/listings/{$listing->id}/edit")->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('screen', 'edit')->where('listing.id', $listing->id));
+        $listing->delete();
+        $this->get("/admin/listings/{$listing->id}/edit")->assertNotFound();
+    }
+
+    public function test_platform_admin_can_list_edit_and_delete_locations(): void
+    {
+        $this->get('/admin/cities')->assertRedirect('/admin/login');
+        $this->getJson('/api/admin/areas')->assertUnauthorized();
+        $this->signInAsPlatformAdmin();
+        $this->withoutVite();
+        $city = $this->postJson('/api/admin/cities', ['name' => 'Islamabad'])->assertCreated()->json('data.id');
+        $area = $this->postJson("/api/admin/cities/{$city}/areas", ['name' => 'F-8'])->assertCreated()->json('data.id');
+        $this->get('/admin/areas')->assertInertia(fn (Assert $page) => $page->component('Admin/Locations')->where('kind', 'areas'));
+        $this->getJson('/api/admin/areas')->assertJsonPath('data.0.city_name', 'Islamabad');
+        $this->patchJson("/api/admin/cities/{$city}", ['name' => 'Islamabad Capital'])->assertOk()->assertJsonPath('data.slug', 'islamabad');
+        $this->patchJson("/api/admin/areas/{$area}", ['name' => 'Sector F-8', 'area_type' => 'sector'])
+            ->assertOk()->assertJsonPath('data.area_type', 'sector');
+        $this->deleteJson("/api/admin/cities/{$city}")->assertConflict();
+        $this->deleteJson("/api/admin/areas/{$area}")->assertNoContent();
+        $this->deleteJson("/api/admin/cities/{$city}")->assertNoContent();
     }
 
     private function signInAsPlatformAdmin(): void

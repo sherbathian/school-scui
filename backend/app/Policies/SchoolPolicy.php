@@ -60,6 +60,7 @@ class SchoolPolicy
 
         return $user->hasSchoolPermission($school, 'users.manage')
             && ! $member->isSuperAdmin()
+            && ! in_array(strtolower($member->pivot->role), ['admin', 'school_admin'], true)
             && $school->users()
                 ->whereKey($member->id)
                 ->exists();

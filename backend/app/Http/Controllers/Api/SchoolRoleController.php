@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\School;
+use App\Services\SchoolRoles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ use Spatie\Permission\Models\Role;
 
 class SchoolRoleController extends Controller
 {
-    private const array SYSTEM_ROLES = ['admin', 'teacher', 'account', 'student'];
+    public function __construct(private readonly SchoolRoles $roles) {}
 
     public function index(Request $request, int $school): JsonResponse
     {
@@ -23,6 +24,8 @@ class SchoolRoleController extends Controller
             $request->user()->hasSchoolPermission($schoolRecord, 'roles.manage') || $request->user()->hasSchoolPermission($schoolRecord, 'users.manage'),
             403,
         );
+
+        $this->roles->ensureDefaults($schoolRecord);
 
         $roles = Role::query()->where('guard_name', 'web')->where(function ($query) use ($school) {
             $query->where('team_id', $school)->orWhereNull('team_id');
@@ -43,6 +46,7 @@ class SchoolRoleController extends Controller
     {
         $schoolRecord = $this->accessibleSchool($request, $school);
         $this->authorizeRoleManagement($request, $schoolRecord);
+        $this->roles->ensureDefaults($schoolRecord);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:64', 'alpha_dash', Rule::unique('roles', 'name')->where(fn ($query) => $query->where('team_id', $school)->where('guard_name', 'web'))],
             'permissions' => ['sometimes', 'array'],
@@ -74,7 +78,7 @@ class SchoolRoleController extends Controller
             'permissions.*' => ['string', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
         ]);
 
-        if (array_key_exists('name', $validated) && ! in_array($record->name, self::SYSTEM_ROLES, true)) {
+        if (array_key_exists('name', $validated) && ! in_array($record->name, SchoolRoles::BUILT_IN, true)) {
             $oldName = $record->name;
             $record->name = $validated['name'];
             $record->save();
@@ -96,7 +100,7 @@ class SchoolRoleController extends Controller
         $this->authorizeRoleManagement($request, $schoolRecord);
         $record = Role::query()->where('team_id', $school)->where('guard_name', 'web')->findOrFail($role);
 
-        if (in_array($record->name, self::SYSTEM_ROLES, true)) {
+        if (in_array($record->name, SchoolRoles::BUILT_IN, true)) {
             throw ValidationException::withMessages(['role' => ['Built-in roles cannot be deleted.']]);
         }
 
@@ -127,7 +131,7 @@ class SchoolRoleController extends Controller
     private function roleData(Role $role, int $school): array
     {
         $immutable = $role->name === 'super-admin' && $role->team_id === null;
-        $isBuiltIn = $immutable || in_array($role->name, self::SYSTEM_ROLES, true);
+        $isBuiltIn = $immutable || in_array($role->name, SchoolRoles::BUILT_IN, true);
 
         return [
             'id' => $role->id,

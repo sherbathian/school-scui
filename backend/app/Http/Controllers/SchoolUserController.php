@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\School;
 use App\Models\User;
+use App\Services\SchoolRoles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class SchoolUserController extends Controller
 {
+    public function __construct(private readonly SchoolRoles $roles) {}
+
     public function index(Request $request, int $school): JsonResponse
     {
         $schoolRecord = $this->accessibleSchool($request, $school);
@@ -32,9 +35,11 @@ class SchoolUserController extends Controller
         $schoolRecord = $this->accessibleSchool($request, $school);
         Gate::authorize('manageUsers', $schoolRecord);
 
+        $this->roles->ensureDefaults($schoolRecord);
+        $role = $this->requestedRole($request, $schoolRecord);
         $validated = $request->validate([
             'email' => ['required', 'email', 'max:255'],
-            'role' => ['required', 'string', Rule::exists('roles', 'name')->where(fn ($query) => $query->where('team_id', $schoolRecord->id)->where('guard_name', 'web'))],
+            'role' => ['required', 'string'],
         ]);
 
         $user = User::query()->where('email', $validated['email'])->first();
@@ -49,12 +54,12 @@ class SchoolUserController extends Controller
             throw ValidationException::withMessages(['email' => ['This user already belongs to the school.']]);
         }
 
-        DB::transaction(function () use ($schoolRecord, $user, $validated): void {
+        DB::transaction(function () use ($schoolRecord, $user, $validated, $role): void {
             $schoolRecord->users()->attach($user, [
                 'role' => $validated['role'],
                 'is_active' => true,
             ]);
-            $user->assignRole($validated['role']);
+            $user->assignRole($role);
         });
 
         $member = $schoolRecord->users()->whereKey($user->id)->firstOrFail();
@@ -68,17 +73,19 @@ class SchoolUserController extends Controller
         $member = $schoolRecord->users()->whereKey($user)->firstOrFail();
         Gate::authorize('manageMember', [$schoolRecord, $member]);
 
+        $this->roles->ensureDefaults($schoolRecord);
+        $role = $request->has('role') ? $this->requestedRole($request, $schoolRecord) : null;
         $validated = $request->validate([
-            'role' => ['sometimes', 'required', 'string', Rule::exists('roles', 'name')->where(fn ($query) => $query->where('team_id', $schoolRecord->id)->where('guard_name', 'web'))],
+            'role' => ['sometimes', 'required', 'string'],
             'is_active' => ['sometimes', 'required', 'boolean'],
         ]);
 
-        DB::transaction(function () use ($member, $schoolRecord, $validated): void {
+        DB::transaction(function () use ($member, $schoolRecord, $validated, $role): void {
             if (isset($validated['role'])) {
                 if ($member->isSuperAdmin()) {
                     throw ValidationException::withMessages(['role' => ['The Super Admin role cannot be changed.']]);
                 }
-                $member->syncRoles([$validated['role']]);
+                $member->syncRoles([$role]);
             }
 
             $schoolRecord->users()->updateExistingPivot($member->id, $validated);
@@ -98,8 +105,7 @@ class SchoolUserController extends Controller
             throw ValidationException::withMessages(['user' => ['The Super Admin school access cannot be changed here.']]);
         }
         DB::transaction(function () use ($member, $schoolRecord): void {
-            $role = $member->pivot->role;
-            $member->removeRole($role);
+            $member->syncRoles([]);
             $schoolRecord->users()->detach($member->id);
         });
 
@@ -117,6 +123,22 @@ class SchoolUserController extends Controller
             'is_super_admin' => $user->isSuperAdmin(),
             'is_active' => (bool) $user->pivot->is_active,
         ];
+    }
+
+    private function requestedRole(Request $request, School $school): string
+    {
+        $input = $request->validate(['role' => ['required', 'string']])['role'];
+        $role = strtolower($input) === 'school_admin' ? 'admin' : $input;
+
+        if (strtolower($role) === 'admin' && ! $request->user()->isSuperAdmin()) {
+            throw ValidationException::withMessages(['role' => ['Only a global administrator can grant school administrator access.']]);
+        }
+
+        validator(['role' => $role], [
+            'role' => [Rule::exists('roles', 'name')->where('team_id', $school->id)->where('guard_name', 'web')],
+        ])->validate();
+
+        return $role;
     }
 
     private function accessibleSchool(Request $request, int $school): School

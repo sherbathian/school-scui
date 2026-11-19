@@ -39,6 +39,11 @@ Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('
 Route::prefix('admin')->middleware(['auth:sanctum', 'can:moderateListings,'.School::class])->group(function () {
     Route::get('cities', [AdminLocationController::class, 'cities']);
     Route::post('cities', [AdminLocationController::class, 'storeCity']);
+    Route::patch('cities/{city}', [AdminLocationController::class, 'updateCity'])->whereNumber('city');
+    Route::delete('cities/{city}', [AdminLocationController::class, 'deleteCity'])->whereNumber('city');
+    Route::get('areas', [AdminLocationController::class, 'allAreas']);
+    Route::patch('areas/{area}', [AdminLocationController::class, 'updateArea'])->whereNumber('area');
+    Route::delete('areas/{area}', [AdminLocationController::class, 'deleteArea'])->whereNumber('area');
     Route::get('cities/{city}/areas', [AdminLocationController::class, 'areas'])->whereNumber('city');
     Route::post('cities/{city}/areas', [AdminLocationController::class, 'storeArea'])->whereNumber('city');
     Route::apiResource('listings', AdminListingController::class)->only(['index', 'store', 'show', 'update']);

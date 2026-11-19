@@ -36,7 +36,7 @@ class FeeStructureTest extends TestCase
         $this->assertDatabaseHas('fee_types', ['id' => $typeId, 'school_id' => $school->id, 'title' => 'Tuition']);
     }
 
-    public function test_fee_type_catalog_is_school_scoped_and_teachers_cannot_manage_it(): void
+    public function test_fee_type_catalog_is_school_scoped_and_teachers_cannot_access_it(): void
     {
         $school = School::factory()->create();
         $foreign = School::factory()->create();
@@ -47,7 +47,7 @@ class FeeStructureTest extends TestCase
 
         $this->actingAs($admin, 'sanctum')->getJson("/api/schools/{$school->id}/fee-types")->assertOk()->assertJsonCount(0, 'data');
         $this->getJson("/api/schools/{$foreign->id}/fee-types")->assertNotFound();
-        $this->actingAs($teacher, 'sanctum')->getJson("/api/schools/{$school->id}/fee-types")->assertOk();
+        $this->actingAs($teacher, 'sanctum')->getJson("/api/schools/{$school->id}/fee-types")->assertForbidden();
         $this->postJson("/api/schools/{$school->id}/fee-types", ['title' => 'Books'])->assertForbidden();
     }
 
@@ -72,7 +72,7 @@ class FeeStructureTest extends TestCase
         $school = School::factory()->create();
         $foreign = School::factory()->create();
         $admin = $this->feeAdmin($school);
-        $session = SchoolSession::factory()->for($school)->create();
+        $session = SchoolSession::factory()->for($school)->create(['is_current' => true]);
         $foreignSession = SchoolSession::factory()->for($foreign)->create();
         $grade = Grade::factory()->for($school)->create();
         $group = $school->feeGroups()->create(['title' => 'Primary', 'allows_discount' => true]);
@@ -81,7 +81,7 @@ class FeeStructureTest extends TestCase
         $foreignType = $foreign->feeTypes()->create(['title' => 'Foreign tuition']);
         $group->grades()->sync([$grade->id]);
         $payload = ['school_session_id' => $session->id, 'fee_group_id' => $group->id, 'fee_type_id' => $type->id,
-            'due_date' => '2026-09-01', 'amount' => '1250.50', 'fine_type' => 'percentage', 'fine_value' => '5.00'];
+            'billing_month' => '2026-09', 'due_date' => '2026-09-01', 'amount' => '1250.50', 'fine_type' => 'percentage', 'fine_value' => '5.00'];
 
         $this->actingAs($admin, 'sanctum')->postJson("/api/schools/{$school->id}/fee-masters", $payload)
             ->assertCreated()->assertJsonPath('data.amount', '1250.50')->assertJsonPath('data.fine_value', '5.00');
@@ -97,16 +97,16 @@ class FeeStructureTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors('amount');
     }
 
-    public function test_fee_master_is_unique_for_group_type_and_session_and_protects_used_groups(): void
+    public function test_fee_master_is_unique_per_group_type_session_and_month_and_protects_used_groups(): void
     {
         $school = School::factory()->create();
         $admin = $this->feeAdmin($school);
-        $session = SchoolSession::factory()->for($school)->create();
+        $session = SchoolSession::factory()->for($school)->create(['is_current' => true]);
         $group = $school->feeGroups()->create(['title' => 'Primary', 'allows_discount' => true]);
         $type = $school->feeTypes()->create(['title' => 'Tuition']);
         $path = "/api/schools/{$school->id}/fee-masters";
         $payload = ['school_session_id' => $session->id, 'fee_group_id' => $group->id, 'fee_type_id' => $type->id,
-            'due_date' => '2026-09-01', 'amount' => '100.00'];
+            'billing_month' => '2026-09', 'due_date' => '2026-09-01', 'amount' => '100.00'];
         $this->actingAs($admin, 'sanctum')->postJson($path, $payload)->assertCreated();
         $this->postJson($path, $payload)->assertUnprocessable()->assertJsonValidationErrors('fee_type_id');
         $this->deleteJson("/api/schools/{$school->id}/fee-groups/{$group->id}")

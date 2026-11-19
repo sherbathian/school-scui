@@ -26,14 +26,33 @@ class AdminListingController extends Controller
             'area_id' => ['sometimes', 'integer', 'min:1'],
         ]);
 
+        $options = $request->validate([
+            'needs_verification' => ['sometimes', 'boolean'],
+            'search' => ['sometimes', 'nullable', 'string', 'max:100'],
+        ]);
+        $search = $options['search'] ?? '';
+        $reviewQueue = fn ($query) => $query->whereNull('verified_at')
+            ->where('status', 'active')->whereIn('listing_status', ['draft', 'pending_review']);
+
         $schools = School::query()
             ->where($filters)
+            ->when($options['needs_verification'] ?? false, $reviewQueue)
+            ->when($search !== '', fn ($query) => $query->where(fn ($membership) => $membership
+                ->whereLike('name', "%{$search}%")
+                ->orWhereLike('short_name', "%{$search}%")
+                ->orWhereLike('slug', "%{$search}%")))
             ->orderBy('name')
             ->orderBy('id')
             ->paginate(25)
             ->withQueryString();
 
-        return AdminListingResource::collection($schools);
+        return AdminListingResource::collection($schools)->additional([
+            'summary' => [
+                'published' => School::query()->where('listing_status', 'published')->where('status', 'active')->whereNotNull('verified_at')->count(),
+                'needs_verification' => $reviewQueue(School::query())->count(),
+                'suspended' => School::query()->where('listing_status', 'suspended')->count(),
+            ],
+        ]);
     }
 
     public function store(Request $request): AdminListingResource

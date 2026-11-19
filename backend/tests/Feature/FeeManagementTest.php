@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Grade;
 use App\Models\LegacyFeeType;
 use App\Models\School;
+use App\Models\SchoolSession;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\User;
@@ -151,6 +152,9 @@ class FeeManagementTest extends TestCase
 
     private function schoolAdminFor(School $school): User
     {
+        SchoolSession::factory()->for($school)->create([
+            'starts_on' => '2026-08-01', 'ends_on' => '2027-06-30', 'is_current' => true,
+        ]);
         $user = User::factory()->create();
         $user->schools()->attach($school, ['role' => 'school_admin']);
 

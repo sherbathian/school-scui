@@ -746,3 +746,32 @@ img {
 .neighbourhood-links h2 {
     font-size: 1.15rem;
 }
+
+.institute-form {
+    max-width: 520px;
+    margin-inline: auto;
+}
+.institute-form form {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+.institute-form label {
+    display: grid;
+    gap: 5px;
+    font-weight: 650;
+}
+.institute-form input {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.institute-form select {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+.submission-heading {
+    margin-top: 24px;
+}

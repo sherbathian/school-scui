@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AdminListingResource;
 use App\Models\School;
+use App\Services\SchoolOrganisations;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -97,10 +98,11 @@ class AdminListingController extends Controller
         });
     }
 
-    public function verify(School $listing): AdminListingResource
+    public function verify(School $listing, SchoolOrganisations $organisations): AdminListingResource
     {
-        return $this->updateLocked($listing, function (School $school): void {
+        return $this->updateLocked($listing, function (School $school) use ($organisations): void {
             $school->verified_at ??= now();
+            $organisations->ensureFor($school);
         });
     }
 

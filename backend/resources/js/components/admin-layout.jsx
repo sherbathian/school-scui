@@ -4,6 +4,8 @@ import { Button } from './ui/button.jsx';
 
 export function AdminLayout({ screen, title, adminName, signOut, busy, children }) {
     const [menuOpen, setMenuOpen] = useState(null);
+    const name = adminName?.trim() || 'Administrator';
+    const initials = name.split(/\s+/).slice(0, 2).map(word => Array.from(word)[0]).join('').toUpperCase();
 
     return <div className="admin-shell" data-menu={menuOpen === null ? 'auto' : menuOpen ? 'open' : 'closed'}>
         <aside className="sidebar" id="admin-navigation">
@@ -15,16 +17,13 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, children 
                     <Link href="/admin/listings" aria-current={screen === 'index' ? 'page' : undefined}>All listings</Link>
                     <Link href="/admin/listings/create" aria-current={screen === 'create' ? 'page' : undefined}>Create listing</Link>
                 </div>
+                <Link href="/admin/claims" aria-current={screen === 'claims' ? 'page' : undefined}>Listing claims</Link>
                 <span className="nav-group">Locations</span>
                 <div className="sidebar-links">
                     <Link href="/admin/cities" aria-current={screen === 'cities' ? 'page' : undefined}>Cities</Link>
                     <Link href="/admin/areas" aria-current={screen === 'areas' ? 'page' : undefined}>Areas</Link>
                 </div>
             </nav>
-            <div className="sidebar-account">
-                <span className="account-mark" aria-hidden="true">{adminName?.trim().slice(0, 1).toUpperCase() || 'A'}</span>
-                <div><strong>{adminName || 'Administrator'}</strong><Button variant="outline" disabled={busy} onClick={signOut}>Sign out</Button></div>
-            </div>
         </aside>
         <div className="admin-surface">
             <header className="topbar">
@@ -33,11 +32,15 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, children 
                 }}>☰</Button>
                 <nav aria-label="Breadcrumb">
                     <span>Platform admin</span><span aria-hidden="true">›</span>
-                    {['index', 'cities', 'areas'].includes(screen) ? <span aria-current="page">{title}</span> : <>
+                    {['index', 'cities', 'areas', 'claims'].includes(screen) ? <span aria-current="page">{title}</span> : <>
                         <Link href="/admin/listings">Listings</Link><span aria-hidden="true">›</span><span aria-current="page">{title}</span>
                     </>}
                 </nav>
-                <Button className="topbar-sign-out" variant="outline" disabled={busy} onClick={signOut}>Sign out</Button>
+                <div className="admin-account" aria-label="Signed-in account">
+                    <span className="account-mark" aria-hidden="true">{initials}</span>
+                    <span className="account-name" title={name}>{name}</span>
+                    <Button className="account-sign-out" variant="outline" disabled={busy} onClick={signOut}>Sign out</Button>
+                </div>
             </header>
             <main className="admin-main">{children}</main>
         </div>

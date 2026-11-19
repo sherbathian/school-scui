@@ -161,6 +161,7 @@ function Workspace({ run, busy, onError }) {
                     <td>{item.verified_at ? 'Verified' : 'Unverified'}</td>
                     <td><div className="row-actions">
                         <Link className="admin-link-button" href={`/admin/listings/${item.id}/edit`}>Edit</Link>
+                        <Link className="admin-link-button" href={`/admin/branches/${item.id}/modules`} aria-label={`Modules for ${item.name}`}>Modules</Link>
                         <Button variant="outline" disabled={busy || Boolean(item.verified_at)} onClick={() => moderate(item.id, 'verify', 'Listing verified.')}>Verify</Button>
                         <Button variant="outline" disabled={busy || !item.verified_at || item.status !== 'active' || item.listing_status === 'published'}
                             onClick={() => moderate(item.id, 'publish', 'Listing published.')}>Publish</Button>

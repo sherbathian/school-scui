@@ -2,12 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\BranchModules;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class RequireSchoolPermission
 {
+    public function __construct(private readonly BranchModules $modules) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         if (! $request->route('school')) {
@@ -17,18 +20,26 @@ class RequireSchoolPermission
         $schoolId = (int) $request->route('school');
         $user = $request->user();
 
+        $permission = $this->requiredPermission($request);
+        $module = is_string($permission) ? str($permission)->before('.')->toString() : null;
         if ($user->isSuperAdmin()) {
+            if ($module) {
+                $this->modules->assertEnabled($schoolId, $module);
+            }
+
             return $next($request);
         }
 
         $school = $user->activeSchools()->whereKey($schoolId)->first();
         abort_unless($school, 404);
 
-        $permission = $this->requiredPermission($request);
         $allowed = is_array($permission)
             ? collect($permission)->contains(fn (string $name) => $user->hasSchoolPermission($school, $name))
             : $user->hasSchoolPermission($school, $permission);
         abort_unless($allowed, 403, 'You do not have permission to perform this action for the selected school.');
+        if ($module) {
+            $this->modules->assertEnabled($schoolId, $module);
+        }
 
         return $next($request);
     }
@@ -55,7 +66,7 @@ class RequireSchoolPermission
             'attendance' => 'attendance',
             'grades', 'sections', 'subjects', 'sessions' => 'academics',
             'staff', 'staff-lookups' => 'staff',
-            'fee-types', 'legacy-fee-types', 'fee-discounts', 'fee-groups', 'fee-masters', 'fee-invoices' => 'fees',
+            'fee-types', 'legacy-fee-types', 'fee-discounts', 'fee-groups', 'fee-masters', 'fee-invoices', 'family-fee-receipts' => 'fees',
             'expenses', 'expense-heads' => 'expenses',
             default => 'schools',
         };

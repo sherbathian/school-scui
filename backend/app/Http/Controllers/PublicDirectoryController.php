@@ -118,8 +118,7 @@ class PublicDirectoryController extends Controller
 
     private function listings(): Builder
     {
-        return School::query()->where('schools.status', 'active')->where('schools.listing_status', 'published')
-            ->whereNotNull('schools.verified_at')
+        return School::publicDirectory()
             ->leftJoin('cities', fn ($join) => $join->on('schools.city_id', '=', 'cities.id')->where('cities.is_active', true))
             ->leftJoin('areas', fn ($join) => $join->on('schools.area_id', '=', 'areas.id')->on('areas.city_id', '=', 'cities.id')->where('areas.is_active', true))
             ->select([

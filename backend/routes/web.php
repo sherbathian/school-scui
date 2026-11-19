@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InstituteClaimController;
 use App\Http\Controllers\PublicDirectoryController;
 use App\Models\School;
 use Illuminate\Http\Request;
@@ -20,6 +21,43 @@ Route::post('/{collection}/{slug}', [PublicDirectoryController::class, 'toggle']
 Route::get('/sitemap.xml', [PublicDirectoryController::class, 'sitemap'])->name('directory.sitemap');
 Route::view('/about', 'directory.about')->name('directory.about');
 Route::view('/contact', 'directory.contact')->name('directory.contact');
+
+Route::get('/institute/register', [InstituteClaimController::class, 'registration'])->name('institute.register');
+Route::post('/institute/register', [InstituteClaimController::class, 'register'])->middleware('throttle:6,1');
+Route::get('/institute/sign-in', [InstituteClaimController::class, 'signInPage'])->name('login');
+Route::post('/institute/sign-in', [InstituteClaimController::class, 'login'])->middleware('throttle:6,1');
+Route::get('/institute/new', [InstituteClaimController::class, 'submissions'])->middleware('auth')->name('institute.new');
+Route::post('/institute/new', [InstituteClaimController::class, 'submit'])->middleware(['auth', 'throttle:6,1']);
+Route::post('/institute/sign-out', [InstituteClaimController::class, 'logout'])->middleware('auth')->name('institute.logout');
+Route::get('/institutions/{slug}/claim', [InstituteClaimController::class, 'show'])->name('institute.claim');
+Route::post('/institutions/{slug}/claim', [InstituteClaimController::class, 'store'])->middleware(['auth', 'throttle:10,1']);
+
+Route::get('/admin/claims', function (Request $request) {
+    if (! Auth::check()) {
+        return redirect()->route('admin.login');
+    }
+
+    Gate::authorize('moderateListings', School::class);
+    Inertia::setRootView('admin.app');
+
+    return Inertia::render('Admin/Claims', ['adminName' => $request->user()->name])
+        ->toResponse($request)->header('Cache-Control', 'no-store');
+})->name('admin.claims');
+
+Route::get('/admin/branches/{branch}/modules', function (Request $request, int $branch) {
+    if (! Auth::check()) {
+        return redirect()->route('admin.login');
+    }
+
+    Gate::authorize('moderateListings', School::class);
+    $school = School::query()->findOrFail($branch, ['id', 'name']);
+    Inertia::setRootView('admin.app');
+
+    return Inertia::render('Admin/BranchModules', [
+        'branch' => $school,
+        'adminName' => $request->user()->name,
+    ])->toResponse($request)->header('Cache-Control', 'no-store');
+})->whereNumber('branch')->name('admin.branches.modules');
 
 $adminPage = function (Request $request, ?int $listing = null) {
     $administrator = Auth::check();

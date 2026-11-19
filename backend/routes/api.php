@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminBranchModuleController;
 use App\Http\Controllers\Api\AdminListingController;
 use App\Http\Controllers\Api\AdminLocationController;
 use App\Http\Controllers\Api\AttendanceController;
@@ -24,8 +25,10 @@ use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\InstituteClaimController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\SchoolUserController;
+use App\Http\Middleware\RequireBranchModule;
 use App\Http\Middleware\RequireSchoolPermission;
 use App\Http\Middleware\ResolveSchoolPermissionTeam;
 use App\Models\School;
@@ -37,6 +40,10 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,
 Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:6,1');
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'can:moderateListings,'.School::class])->group(function () {
+    Route::get('branches/{branch}/modules', [AdminBranchModuleController::class, 'index']);
+    Route::patch('branches/{branch}/modules/{module}', [AdminBranchModuleController::class, 'update']);
+    Route::get('claims', [InstituteClaimController::class, 'queue']);
+    Route::patch('claims/{claim}', [InstituteClaimController::class, 'review'])->whereNumber('claim');
     Route::get('cities', [AdminLocationController::class, 'cities']);
     Route::post('cities', [AdminLocationController::class, 'storeCity']);
     Route::patch('cities/{city}', [AdminLocationController::class, 'updateCity'])->whereNumber('city');
@@ -137,14 +144,14 @@ Route::middleware(['auth:sanctum', ResolveSchoolPermissionTeam::class, RequireSc
 
 Route::get('/schools/{school}/students/{student}/media/{kind}', [StudentController::class, 'media'])
     ->where('kind', 'photo|document')
-    ->middleware('signed:relative')
+    ->middleware(['signed:relative', RequireBranchModule::class.':students'])
     ->name('students.media');
 
 Route::get('/schools/{school}/guardians/{guardian}/media/{kind}', [GuardianController::class, 'media'])
     ->where('kind', 'father|mother|guardian')
-    ->middleware('signed:relative')
+    ->middleware(['signed:relative', RequireBranchModule::class.':guardians'])
     ->name('guardians.media');
 
 Route::get('/schools/{school}/expenses/{expense}/attachment', [ExpenseController::class, 'attachment'])
-    ->middleware('signed:relative')
+    ->middleware(['signed:relative', RequireBranchModule::class.':expenses'])
     ->name('expenses.attachment');

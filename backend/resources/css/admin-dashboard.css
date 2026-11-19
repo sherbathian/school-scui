@@ -98,19 +98,14 @@
     .sidebar nav a { display: block; padding: 7px 9px; border-radius: 7px; }
     .sidebar-links { border-left: 1px solid var(--line); margin: 0 0 5px 10px; padding-left: 9px; }
     .sidebar nav a[aria-current], .sidebar nav a:hover { color: var(--green); background: var(--mint); }
-    .sidebar-account { display: flex; gap: 9px; align-items: center; margin-top: auto; }
-    .sidebar-account strong { display: block; overflow-wrap: anywhere; }
-    .sidebar-account button { padding: 3px 6px; font-size: .8rem; }
     .admin-surface { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
     .topbar { display: flex; align-items: center; gap: 13px; min-height: 57px; padding: 9px 16px; border-bottom: 1px solid var(--line); }
     .topbar nav { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; color: var(--muted); }
     .topbar [aria-current] { color: var(--ink); font-weight: 650; }
     .topbar a:hover { text-decoration: underline; }
-    .topbar-sign-out { display: none !important; margin-left: auto; }
     .admin-main { padding: clamp(14px, 3vw, 28px); }
     .admin-shell[data-menu=closed] { grid-template-columns: minmax(0, 1fr); }
     .admin-shell[data-menu=closed] .sidebar { display: none; }
-    .admin-shell[data-menu=closed] .topbar-sign-out { display: inline-flex !important; }
     .listing-form { max-width: 760px; padding: clamp(16px, 3vw, 26px); box-shadow: 0 4px 14px #18232e0a; }
     .listing-form .fields { gap: 16px 14px; }
     .listing-form textarea, .listing-form input, .listing-form select { min-height: 38px; }
@@ -131,7 +126,35 @@
     @media (max-width: 760px) {
         .admin-shell { grid-template-columns: minmax(0, 1fr); align-content: start; }
         .admin-shell[data-menu=auto] .sidebar { display: none; }
-        .admin-shell[data-menu=auto] .topbar-sign-out { display: inline-flex !important; }
         .sidebar { gap: 12px; }
+    }
+    .admin-account {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        margin-inline-start: auto;
+    }
+    .admin-account .account-mark {
+        flex: none;
+        color: var(--green);
+        background: var(--mint);
+        font-size: .8rem;
+        font-weight: 700;
+    }
+    .account-name {
+        font-weight: 650;
+        max-width: 11rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .account-sign-out { white-space: nowrap; }
+    .module-summary { color: var(--muted); }
+    @media (max-width: 580px) {
+        .topbar { flex-wrap: wrap; }
+        .topbar nav { min-width: 0; flex: 1; }
+        .admin-account { width: 100%; justify-content: flex-end; }
+        .account-name { max-width: min(11rem, 46vw); }
     }
 }

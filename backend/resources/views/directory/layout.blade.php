@@ -35,7 +35,7 @@
         <div><h2>Directories</h2>@foreach (\App\Http\Controllers\PublicDirectoryController::TYPES as $path => [, $label])
             <a href="{{ route('directory.category', $path) }}">{{ $label }}</a>@endforeach</div>
         <div><h2>Resources</h2><a href="{{ route('directory.collection', 'compare') }}">Compare institutions</a><a href="{{ route('directory.collection', 'saved') }}">Saved listings</a></div>
-        <div><h2>TaleemFinder</h2><a href="{{ route('directory.about') }}">About us</a><a href="{{ route('directory.contact') }}">Contact support</a></div>
+        <div><h2>TaleemFinder</h2><a href="{{ route('directory.about') }}">About us</a><a href="{{ route('directory.contact') }}">Contact support</a><a href="{{ route(auth()->check() ? 'institute.new' : 'institute.register') }}">Institute registration</a></div>
     </div>
     <div class="wrap footer-bottom">© {{ now()->year }} TaleemFinder</div>
 </footer>

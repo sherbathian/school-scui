@@ -76,12 +76,12 @@ class AuthController extends Controller
             'roles' => $user->getRoleNames()->values(),
             'schools' => $user->activeSchools()
                 ->orderBy('schools.name')
-                ->get(['schools.id', 'schools.name', 'schools.slug'])
+                ->get(['schools.id', 'schools.name', 'schools.slug', 'schools.status', 'schools.group_id'])
                 ->map(fn ($school) => [
                     'id' => $school->id,
                     'name' => $school->name,
                     'slug' => $school->slug,
-                    'role' => $school->pivot->role,
+                    'role' => $user->schoolAccessRole($school),
                 ])
                 ->values(),
         ];

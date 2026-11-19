@@ -23,7 +23,7 @@ class SchoolController extends Controller
 
         return response()->json([
             'data' => $schools->with(['schoolSessions' => fn ($query) => $query->where('is_current', true)])
-                ->orderBy('schools.name')->get(['schools.id', 'schools.name', 'schools.slug', 'schools.status'])
+                ->orderBy('schools.name')->get(['schools.id', 'schools.name', 'schools.slug', 'schools.status', 'schools.group_id'])
                 ->map(fn (School $school) => $this->schoolData($school, $request->user()))
                 ->values(),
         ]);
@@ -100,7 +100,7 @@ class SchoolController extends Controller
             'name' => $school->name,
             'slug' => $school->slug,
             'status' => $school->status,
-            'role' => $user->isSuperAdmin() ? 'super_admin' : $school->pivot->role,
+            'role' => $user->isSuperAdmin() ? 'super_admin' : $user->schoolAccessRole($school),
             'permissions' => $user->permissionsForSchool($school),
             'active_session' => ($session = $school->schoolSessions->first()) ? [
                 'id' => $session->id,

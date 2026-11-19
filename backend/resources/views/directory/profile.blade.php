@@ -12,6 +12,7 @@
         @if($listing->tagline)<p><strong>{{ $listing->tagline }}</strong></p>@endif
         <p class="description">{{ $listing->description ?: 'A detailed overview has not been published yet.' }}</p>
         <div class="listing-actions">
+            <a class="button outline" href="{{ route('institute.claim', $listing->slug) }}">Claim this institution</a>
             @foreach(['saved' => 'Save listing', 'compare' => 'Add to comparison'] as $key => $label)
                 @php($selected = in_array($listing->slug, session("directory.{$key}", []), true))
                 <form method="post" action="{{ route('directory.toggle', [$key, $listing->slug]) }}">@csrf

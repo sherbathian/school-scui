@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -20,6 +21,12 @@ class School extends Model
             'verified_at' => 'datetime',
             'published_at' => 'datetime',
         ];
+    }
+
+    public function scopePublicDirectory(Builder $query): Builder
+    {
+        return $query->where('schools.status', 'active')->where('schools.listing_status', 'published')
+            ->whereNotNull('schools.verified_at');
     }
 
     public function users(): BelongsToMany

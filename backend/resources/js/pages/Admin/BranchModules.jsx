@@ -64,12 +64,17 @@ function ModulePage({ branch, adminName }) {
                         const requirement = modules.find(item => item.slug === missing)?.name;
                         return <tr key={module.slug}>
                             <td>{module.name}</td>
-                            <td>{module.core ? 'Always available when published' : module.enabled ? 'Enabled' : 'Disabled'}
+                            <td>{module.core ? 'Always available when published' : module.enabled ? (module.read_only ? 'Read-only' : 'Enabled') : 'Disabled'}
                                 {requirement && <p className="module-summary">Requires {requirement}</p>}
                             </td>
-                            <td>{module.core ? 'Core' : <Button variant="outline" aria-label={`${module.switched_on ? 'Disable' : 'Enable'} ${module.name}`}
-                                disabled={busy || !module.available || (!module.switched_on && Boolean(requirement))}
-                                onClick={() => toggle(module)}>{module.switched_on ? 'Disable' : 'Enable'}</Button>}</td>
+                            <td>{module.core ? 'Core' : <div className="row-actions"><Button variant="outline" aria-label={`${module.switched_on ? 'Disable' : 'Enable'} ${module.name}`}
+                                disabled={busy || !module.available || (!module.switched_on && (Boolean(requirement) || !module.entitled))}
+                                onClick={() => toggle(module)}>{module.switched_on ? 'Disable' : 'Enable'}</Button>
+                                {module.has_override && <Button variant="outline" disabled={busy} onClick={() => run(async () => {
+                                    setModules((await api(`${path}/${module.slug}`, 'DELETE')).data);
+                                    setFeedback({ message: `${module.name} switch reset.` });
+                                })}>Reset</Button>}
+                            </div>}</td>
                         </tr>;
                     })}
                     {!modules && <tr><td colSpan={3}>{feedback?.error ? 'Module settings could not be loaded.' : 'Loading modules…'}</td></tr>}

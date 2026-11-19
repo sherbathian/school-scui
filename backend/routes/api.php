@@ -1,8 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\AdminBranchModuleController;
+use App\Http\Controllers\Api\AdminCommunityController;
+use App\Http\Controllers\Api\AdminDirectoryController;
 use App\Http\Controllers\Api\AdminListingController;
 use App\Http\Controllers\Api\AdminLocationController;
+use App\Http\Controllers\Api\AdminPlatformController;
+use App\Http\Controllers\Api\AdminServicesController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\FamilyFeeReceiptController;
@@ -31,6 +35,7 @@ use App\Http\Controllers\SchoolUserController;
 use App\Http\Middleware\RequireBranchModule;
 use App\Http\Middleware\RequireSchoolPermission;
 use App\Http\Middleware\ResolveSchoolPermissionTeam;
+use App\Http\Middleware\RestrictPersonalAccessToken;
 use App\Models\School;
 use Illuminate\Support\Facades\Route;
 
@@ -39,9 +44,47 @@ Route::get('/health', HealthController::class);
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
 Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:6,1');
 
-Route::prefix('admin')->middleware(['auth:sanctum', 'can:moderateListings,'.School::class])->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum', RestrictPersonalAccessToken::class, 'can:moderateListings,'.School::class])->group(function () {
+    Route::get('community/{resource}/{record}/download', [AdminCommunityController::class, 'download'])
+        ->whereIn('resource', ['books', 'study-resources'])->whereNumber('record');
+    Route::prefix('community')->whereIn('resource', array_keys(AdminCommunityController::RESOURCES))->group(function () {
+        Route::get('{resource}', [AdminCommunityController::class, 'index']);
+        Route::get('{resource}/options', [AdminCommunityController::class, 'options']);
+        Route::post('{resource}', [AdminCommunityController::class, 'store']);
+        Route::patch('{resource}/{record}', [AdminCommunityController::class, 'update']);
+        Route::delete('{resource}/{record}', [AdminCommunityController::class, 'destroy']);
+    });
+    Route::prefix('services')->whereIn('resource', array_keys(AdminServicesController::RESOURCES))->group(function () {
+        Route::get('{resource}', [AdminServicesController::class, 'index']);
+        Route::get('{resource}/options', [AdminServicesController::class, 'options']);
+        Route::post('{resource}', [AdminServicesController::class, 'store']);
+        Route::patch('{resource}/{record}', [AdminServicesController::class, 'update']);
+        Route::delete('{resource}/{record}', [AdminServicesController::class, 'destroy']);
+    });
+    Route::prefix('platform')->whereIn('resource', array_keys(AdminPlatformController::RESOURCES))->group(function () {
+        Route::get('{resource}', [AdminPlatformController::class, 'index']);
+        Route::get('{resource}/options', [AdminPlatformController::class, 'options']);
+        Route::post('{resource}', [AdminPlatformController::class, 'store']);
+        Route::patch('{resource}/{record}', [AdminPlatformController::class, 'update']);
+        Route::delete('{resource}/{record}', [AdminPlatformController::class, 'destroy']);
+    });
+    Route::prefix('directory')->whereIn('resource', array_keys(AdminDirectoryController::RESOURCES))->group(function () {
+        Route::get('{resource}', [AdminDirectoryController::class, 'index']);
+        Route::get('{resource}/options', [AdminDirectoryController::class, 'options']);
+        Route::post('{resource}', [AdminDirectoryController::class, 'store']);
+        Route::patch('{resource}/{record}', [AdminDirectoryController::class, 'update'])->whereNumber('record');
+        Route::delete('{resource}/{record}', [AdminDirectoryController::class, 'destroy'])->whereNumber('record');
+    });
+    Route::get('directory/school-media/{record}/download', [AdminDirectoryController::class, 'downloadMedia'])->whereNumber('record');
+    Route::put('directory/school-groups/{group}/branches/{branch}', [AdminDirectoryController::class, 'attachBranch'])
+        ->whereNumber(['group', 'branch']);
+    Route::get('listings/{branch}/assignments/{assignment}', [AdminDirectoryController::class, 'assignments'])
+        ->whereNumber('branch')->whereIn('assignment', array_keys(AdminDirectoryController::ASSIGNMENTS));
+    Route::put('listings/{branch}/assignments/{assignment}', [AdminDirectoryController::class, 'syncAssignments'])
+        ->whereNumber('branch')->whereIn('assignment', array_keys(AdminDirectoryController::ASSIGNMENTS));
     Route::get('branches/{branch}/modules', [AdminBranchModuleController::class, 'index']);
     Route::patch('branches/{branch}/modules/{module}', [AdminBranchModuleController::class, 'update']);
+    Route::delete('branches/{branch}/modules/{module}', [AdminBranchModuleController::class, 'reset']);
     Route::get('permissions', [UserController::class, 'permissionCatalogue']);
     Route::get('claims', [InstituteClaimController::class, 'queue']);
     Route::patch('claims/{claim}', [InstituteClaimController::class, 'review'])->whereNumber('claim');
@@ -60,9 +103,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'can:moderateListings,'.Scho
     Route::post('listings/{listing}/suspend', [AdminListingController::class, 'suspend']);
 });
 
-Route::middleware(['auth:sanctum', ResolveSchoolPermissionTeam::class, RequireSchoolPermission::class])->group(function () {
+Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSchoolPermissionTeam::class, RequireSchoolPermission::class])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/notifications', [AdminPlatformController::class, 'inbox']);
+    Route::patch('/notifications/{record}', [AdminPlatformController::class, 'updateInbox']);
+    Route::delete('/notifications/{record}', [AdminPlatformController::class, 'deleteInbox']);
+    Route::get('/me', [AuthController::class, 'me'])->name('api.me');
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
     Route::patch('/users/{user}', [UserController::class, 'update']);

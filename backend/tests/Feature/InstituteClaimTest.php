@@ -18,11 +18,14 @@ class InstituteClaimTest extends TestCase
         $path = "/institutions/{$school->slug}/claim";
 
         $this->get($path)->assertRedirect(route('institute.register', ['listing' => $school->slug]));
-        $this->post('/institute/register', [
+        $registration = [
             'name' => 'Synthetic Owner', 'email' => 'owner@example.test',
-            'password' => 'Synthetic-passphrase-2026', 'password_confirmation' => 'Synthetic-passphrase-2026',
             'listing' => $school->slug, 'is_super_admin' => true,
-        ])->assertRedirect($path);
+        ];
+        $this->post('/institute/register', [...$registration, 'password' => 'Demo123', 'password_confirmation' => 'Demo123'])
+            ->assertSessionHasErrors('password');
+        $this->post('/institute/register', [...$registration, 'password' => 'Demo1234', 'password_confirmation' => 'Demo1234'])
+            ->assertRedirect($path);
         $user = User::where('email', 'owner@example.test')->firstOrFail();
         $this->assertAuthenticatedAs($user);
         $this->assertFalse($user->isSuperAdmin());

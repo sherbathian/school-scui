@@ -195,22 +195,29 @@ class AdminListingTest extends TestCase
             ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $match->id);
     }
 
-    public function test_listing_editor_pages_require_platform_access_and_load_the_requested_record(): void
+    public function test_listing_pages_require_platform_access_and_load_the_requested_record(): void
     {
         $this->withoutVite();
         $listing = School::factory()->create();
 
         $this->get('/admin/login')->assertOk();
         $this->get('/admin/listings/create')->assertRedirect('/admin/login');
+        $this->get("/admin/listings/{$listing->id}")->assertRedirect('/admin/login');
 
         $this->actingAs(User::factory()->create())->get('/admin/listings/create')->assertForbidden();
+        $this->get("/admin/listings/{$listing->id}")->assertForbidden();
         $this->signInAsPlatformAdmin();
         $this->get('/admin/listings/create')->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('screen', 'create')->where('listing', null));
         $this->get("/admin/listings/{$listing->id}/edit")->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('screen', 'edit')->where('listing.id', $listing->id));
+        $this->get("/admin/listings/{$listing->id}")->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('screen', 'details')
+                ->where('listing.id', $listing->id)->where('listing.listing_status', 'draft')
+                ->where('locationNames.city', null));
         $listing->delete();
         $this->get("/admin/listings/{$listing->id}/edit")->assertNotFound();
+        $this->get("/admin/listings/{$listing->id}")->assertNotFound();
     }
 
     public function test_platform_admin_can_list_edit_and_delete_locations(): void

@@ -37,7 +37,7 @@ class InstituteClaimController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:150'],
             'email' => ['required', 'email', 'max:190', 'unique:users'],
-            'password' => ['required', 'string', 'min:12', 'max:72', 'confirmed'],
+            'password' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
             'phone' => ['nullable', 'string', 'max:30'],
             'locale' => ['sometimes', Rule::in(['en', 'ur'])],
             'listing' => ['nullable', 'string', 'max:255'],
@@ -164,10 +164,14 @@ class InstituteClaimController extends Controller
         return redirect()->route('institute.claim', $slug);
     }
 
-    public function queue(): JsonResponse
+    public function queue(Request $request): JsonResponse
     {
+        $filters = $request->validate(['status' => ['sometimes', 'in:pending,verified,rejected,all']]);
+        $status = $filters['status'] ?? 'pending';
+
         return response()->json(DB::table('listing_claims')->join('schools', 'schools.id', '=', 'listing_claims.school_id')
-            ->whereNull('schools.deleted_at')->where('listing_claims.status', 'pending')
+            ->when($status === 'pending', fn ($query) => $query->whereNull('schools.deleted_at'))
+            ->when($status !== 'all', fn ($query) => $query->where('listing_claims.status', $status))
             ->select('listing_claims.*', 'schools.name as school_name')->orderBy('listing_claims.id')->paginate(25));
     }
 
@@ -208,6 +212,16 @@ class InstituteClaimController extends Controller
             (clone $claims)->where('id', $claim)->update([
                 ...$review, 'status' => $details['decision'],
                 'verified_at' => $details['decision'] === 'verified' ? now() : null,
+            ]);
+
+            User::query()->find($record->user_id)?->notifications()->create([
+                'id' => (string) Str::uuid(),
+                'type' => 'listing.claim.reviewed',
+                'data' => [
+                    'title' => $details['decision'] === 'verified' ? 'Listing claim approved' : 'Listing claim declined',
+                    'message' => $school->name,
+                    'claim_id' => $claim,
+                ],
             ]);
 
             $remaining = (clone $claims)->where('school_id', $school->id)->where('status', 'pending');

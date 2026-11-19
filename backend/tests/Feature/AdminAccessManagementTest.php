@@ -70,13 +70,20 @@ class AdminAccessManagementTest extends TestCase
     {
         $admin = $this->admin();
         $school = School::factory()->create();
-        $this->actingAs($admin, 'sanctum')->postJson('/api/users', [
+        $details = [
             'name' => 'Synthetic account', 'email' => 'synthetic-access@example.test',
-            'password' => 'Synthetic-passphrase-2026', 'phone' => '+1 202 555 0100', 'locale' => 'ur',
-        ])->assertCreated()->assertJsonPath('data.locale', 'ur');
+            'phone' => '+1 202 555 0100', 'locale' => 'ur',
+        ];
+        $this->actingAs($admin, 'sanctum')->postJson('/api/users', [...$details, 'password' => 'Demo123'])
+            ->assertUnprocessable()->assertJsonValidationErrors('password');
+        $this->postJson('/api/users', [...$details, 'password' => 'Demo1234'])
+            ->assertCreated()->assertJsonPath('data.locale', 'ur');
         $account = User::where('email', 'synthetic-access@example.test')->firstOrFail();
         $path = "/api/users/{$account->id}";
         $account->schools()->attach($school, ['role' => 'teacher']);
+
+        $this->patchJson($path, ['password' => 'Edit123'])->assertUnprocessable()->assertJsonValidationErrors('password');
+        $this->patchJson($path, ['password' => 'Edit1234'])->assertOk();
 
         $this->getJson('/api/admin/permissions')->assertOk()->assertJsonStructure(['data' => [['name', 'role_count']]]);
         $this->deleteJson($path)->assertUnprocessable()->assertJsonValidationErrors('user');

@@ -16,7 +16,7 @@
         <div class="listing-actions">
             <a class="button outline" href="{{ route('institute.claim', $listing->slug) }}">Claim this institution</a>
             @foreach(['saved' => 'Save listing', 'compare' => 'Add to comparison'] as $key => $label)
-                @php($selected = in_array($listing->slug, session("directory.{$key}", []), true))
+                @php($selected = in_array($listing->slug, $key === 'saved' ? ($savedSlugs ?? []) : session('directory.compare', []), true))
                 <form method="post" action="{{ route('directory.toggle', [$key, $listing->slug]) }}">@csrf
                 <button class="button outline">{{ $selected ? ($key === 'saved' ? 'Remove from saved' : 'Remove from comparison') : $label }}</button></form>
             @endforeach

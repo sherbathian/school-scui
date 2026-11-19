@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
@@ -22,7 +23,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * Get the attributes that should be cast.
@@ -62,31 +63,48 @@ class User extends Authenticatable
         })->where(function (Builder $query): void {
             $query->whereExists(DB::table('school_user')->whereColumn('school_user.school_id', 'schools.id')
                 ->where('user_id', $this->id)->where('is_active', true))
-                ->orWhereExists($this->activeOwnerships()->whereColumn('school_group_user.school_group_id', 'schools.group_id'));
+                ->orWhereExists($this->activeOrganisationMemberships()->whereColumn('school_group_user.school_group_id', 'schools.group_id'));
         });
     }
 
     public function schoolAccessRole(School $school): ?string
     {
-        if ($this->ownsSchool($school)) {
-            return 'owner';
-        }
+        $role = $this->organisationRole($school);
 
+        return $role === 'owner' ? $role : ($this->branchMembershipRole($school) ?? $role);
+    }
+
+    private function branchMembershipRole(School $school): ?string
+    {
         return $this->schools()->whereKey($school->id)->wherePivot('is_active', true)->first()?->pivot->role;
     }
 
-    private function activeOwnerships(): \Illuminate\Database\Query\Builder
+    private function activeOrganisationMemberships(): \Illuminate\Database\Query\Builder
     {
         return DB::table('school_group_user')->join('school_groups', 'school_groups.id', '=', 'school_group_user.school_group_id')
-            ->where('school_group_user.user_id', $this->id)->where('role', 'owner')
+            ->where('school_group_user.user_id', $this->id)
+            ->whereIn('school_group_user.role', ['owner', 'group_admin', 'group_accountant', 'group_viewer'])
             ->where('school_group_user.is_active', true)->where('school_groups.status', 'active')
             ->whereExists(DB::table('users')->whereColumn('users.id', 'school_group_user.user_id')->where('users.is_active', true));
     }
 
-    private function ownsSchool(School $school): bool
+    private function organisationRole(School $school): ?string
     {
-        return $this->is_active && $school->status === 'active' && $school->group_id !== null
-            && $this->activeOwnerships()->where('school_group_id', $school->group_id)->exists();
+        if (! $this->is_active || $school->status !== 'active' || $school->group_id === null) {
+            return null;
+        }
+
+        return $this->activeOrganisationMemberships()->where('school_group_id', $school->group_id)->value('school_group_user.role');
+    }
+
+    private function organisationPermissions(?string $role): array
+    {
+        return match ($role) {
+            'owner', 'group_admin' => $this->ownerPermissions(),
+            'group_accountant' => ['schools.view', 'fees.view', 'fees.manage', 'expenses.view', 'expenses.manage'],
+            'group_viewer' => ['schools.view'],
+            default => [],
+        };
     }
 
     private function ownerPermissions(): array
@@ -122,7 +140,7 @@ class User extends Authenticatable
 
     public function hasAnySchoolManagementPermission(School $school): bool
     {
-        if ($this->isSuperAdmin() || $this->ownsSchool($school)) {
+        if ($this->isSuperAdmin() || collect($this->organisationPermissions($this->organisationRole($school)))->contains(fn (string $name) => str_ends_with($name, '.manage'))) {
             return true;
         }
 
@@ -160,8 +178,12 @@ class User extends Authenticatable
             return true;
         }
 
-        if ($this->ownsSchool($school)) {
-            return in_array($permission, $this->ownerPermissions(), true);
+        $role = $this->organisationRole($school);
+        if (in_array($permission, $this->organisationPermissions($role), true)) {
+            return true;
+        }
+        if ($role === 'owner') {
+            return false;
         }
 
         $membership = $this->activeSchools()->whereKey($school->getKey())->first();
@@ -179,7 +201,7 @@ class User extends Authenticatable
                 return $this->hasPermissionTo($permission);
             }
 
-            return $this->hasDirectPermission($permission) || $this->legacyMembershipPermission($this->schoolAccessRole($school) ?? '', $permission);
+            return $this->hasDirectPermission($permission) || (($role = $this->branchMembershipRole($school)) !== null && $this->legacyMembershipPermission($role, $permission));
         } finally {
             $registrar->setPermissionsTeamId($teamId);
             $this->unsetRelation('roles')->unsetRelation('permissions');
@@ -193,8 +215,10 @@ class User extends Authenticatable
             return Permission::query()->where('guard_name', 'web')->orderBy('name')->pluck('name')->all();
         }
 
-        if ($this->ownsSchool($school)) {
-            return $this->ownerPermissions();
+        $role = $this->organisationRole($school);
+        $organisationPermissions = $this->organisationPermissions($role);
+        if ($role === 'owner') {
+            return $organisationPermissions;
         }
 
         if (! $this->activeSchools()->whereKey($school->getKey())->exists()) {
@@ -208,12 +232,13 @@ class User extends Authenticatable
 
         try {
             if ($this->roles()->exists()) {
-                return $this->getAllPermissions()->pluck('name')->unique()->sort()->values()->all();
+                return $this->getAllPermissions()->pluck('name')->merge($organisationPermissions)->unique()->sort()->values()->all();
             }
 
-            $role = $this->schoolAccessRole($school);
+            $role = $this->branchMembershipRole($school);
 
             return $this->getDirectPermissions()->pluck('name')
+                ->merge($organisationPermissions)
                 ->merge($role ? $this->legacyMembershipPermissions($role) : [])
                 ->unique()->sort()->values()->all();
         } finally {

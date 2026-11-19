@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { api } from '../../admin-api.js';
+import { Detail, ListingSection, RecordHeading } from '../../components/admin-record.jsx';
 import { AdminLayout } from '../../components/admin-layout.jsx';
 import { Button } from '../../components/ui/button.jsx';
 import { Input } from '../../components/ui/input.jsx';
@@ -27,7 +28,7 @@ function UserFields({ record }) {
             <option value="en">English</option><option value="ur">Urdu</option>
         </select></label>
         <label>{record.id ? 'New password (optional)' : 'Password'}<Input type="password" name="password"
-            minLength={12} maxLength={72} required={!record.id} autoComplete="new-password" /></label>
+            minLength={8} maxLength={72} required={!record.id} autoComplete="new-password" /></label>
         <label className="review-toggle"><input type="checkbox" name="is_active" defaultChecked={record.is_active ?? true} /> Account active</label>
     </>;
 }
@@ -67,6 +68,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
     const [roles, setRoles] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [editor, setEditor] = useState(null);
+    const [details, setDetails] = useState(null);
     const [query, setQuery] = useState('');
     const [revision, setRevision] = useState(0);
     const [busy, setBusy] = useState(false);
@@ -121,6 +123,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
         run(async () => {
             await api(editor.id ? `${path}/${editor.id}` : path, editor.id ? 'PATCH' : 'POST', data);
             setEditor(null);
+            setDetails(null);
             setRevision(value => value + 1);
             return editor.id ? 'Changes saved.' : 'Record created.';
         });
@@ -161,7 +164,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
         window.location.assign('/admin/login');
     })}>
         <Head title={title + ' · Schoolhouse'} />
-        <div className="page-heading"><div><h1>{title}</h1>{branch && <p>{branch.name}</p>}</div>
+        {!editor && !details && <><div className="page-heading"><div><h1>{title}</h1>{branch && <p>{branch.name}</p>}</div>
             {noun && (!branchScreen || branch) && <Button disabled={busy} onClick={() => { setFeedback(null); setEditor({}); }}>+ New {noun}</Button>}
         </div>
         {branchScreen && <label className="mb-4 max-w-sm">Select branch
@@ -170,28 +173,42 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
                 <option value="">Choose a branch</option>
                 {branches.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
-        </label>}
+        </label>}</>}
         <p id="feedback" role="status" data-error={feedback?.error || undefined}>{feedback?.text}</p>
-        {editor && <section className="listing-form" aria-labelledby="access-form-title">
-            <h2 id="access-form-title" className="mb-4">{editor.id ? 'Edit' : 'Create'} {noun}</h2>
-            <form key={editor.id ?? 'new'} onSubmit={save}>
-                <div className="fields">
+        {editor && <>
+            <RecordHeading icon={editor.id ? 'edit' : 'create'} title={`${editor.id ? 'Edit' : 'New'} ${noun}`} name={editor.name ?? branch?.name}
+                back={() => { setEditor(null); setDetails(null); }} />
+            <form className="listing-full-form" key={editor.id ?? 'new'} onSubmit={save}>
+                <ListingSection icon="shield" title="Access information">
                     {screen === 'users' && <UserFields record={editor} />}
                     {screen === 'members' && <MemberFields record={editor} {...{ roles, permissions }} />}
                     {screen === 'roles' && <RoleFields record={editor} {...{ permissions }} />}
-                </div>
-                <div className="flex gap-2"><Button type="submit" disabled={busy}>Save {noun}</Button>
+                </ListingSection>
+                <div className="listing-save-bar"><Button type="submit" disabled={busy}>Save {noun}</Button>
                     <Button variant="outline" disabled={busy} onClick={() => setEditor(null)}>Cancel</Button></div>
             </form>
-        </section>}
-        {(!branchScreen || branch) && <section aria-label={title}>
+        </>}
+        {!editor && details && <>
+            <RecordHeading icon="shield" title={noun ? `${noun[0].toUpperCase() + noun.slice(1)} details` : 'Permission details'}
+                name={details.name} back={() => setDetails(null)}>
+                {canEdit(details) && <Button disabled={busy} onClick={() => setEditor(details)}>Edit {noun}</Button>}
+            </RecordHeading>
+            <ListingSection icon="key" title="Access information" readOnly>
+                {cells(details).map((value, index) => <Detail key={columns[index]} label={columns[index]} value={value} />)}
+                {details.email && <Detail label="Email address" value={details.email} />}
+                {screen === 'users' && <Detail label="Private phone" value={details.phone} />}
+                {screen === 'roles' && <Detail label="Granted permissions" value={details.permissions.join(', ') || '—'} wide />}
+            </ListingSection>
+        </>}
+        {!editor && !details && (!branchScreen || branch) && <section aria-label={title}>
             {screen === 'permissions' && <p className="mb-4">Assign application permissions in Branch roles or Branch memberships.</p>}
             <label className="mb-4 max-w-sm">Search <Input type="search" value={query} onChange={event => setQuery(event.target.value)} /></label>
             <div className="table-scroll"><table>
                 <thead><tr>{columns.map(column => <th key={column}>{column}</th>)}{noun && <th>Actions</th>}</tr></thead>
                 <tbody>
                     {visible?.map(record => <tr key={record.id}>
-                        {cells(record).map((value, index) => <td key={columns[index]}>{value}
+                        {cells(record).map((value, index) => <td key={columns[index]}>{index === 0
+                            ? <button type="button" className="record-name-link" onClick={() => setDetails(record)}>{value}</button> : value}
                             {index === 0 && record.email && <small className="listing-context">{record.email}</small>}</td>)}
                         {noun && <td><div className="row-actions">
                             {canEdit(record) ? <>

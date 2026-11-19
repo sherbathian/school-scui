@@ -14,7 +14,7 @@
             @if($mode === 'register')
                 <label>Contact phone (optional)<input type="tel" name="phone" maxlength="30" autocomplete="tel" value="{{ old('phone') }}"></label>
             @endif
-            <label>Password<input type="password" name="password" required autocomplete="{{ $mode === 'register' ? 'new-password' : 'current-password' }}" @if($mode === 'register') minlength="12" maxlength="72" @endif></label>
+            <label>Password<input type="password" name="password" required autocomplete="{{ $mode === 'register' ? 'new-password' : 'current-password' }}" @if($mode === 'register') minlength="8" maxlength="72" @endif></label>
             @if($mode === 'register')<label>Confirm password<input type="password" name="password_confirmation" required autocomplete="new-password"></label>@endif
             <button class="button teal">{{ $mode === 'register' ? 'Create account' : 'Sign in' }}</button>
         </form>

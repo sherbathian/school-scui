@@ -23,6 +23,14 @@ class SchoolOrganisations
         ]);
         $school->forceFill(['group_id' => $group, 'is_main_branch' => true])->save();
 
+        $plan = DB::table('plans')->where('is_default', true)->where('is_active', true)->orderBy('id')->value('id');
+        if ($plan !== null && $school->verified_at) {
+            DB::table('school_subscriptions')->insert([
+                'school_group_id' => $group, 'plan_id' => $plan, 'starts_at' => now(),
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
         return $group;
     }
 }

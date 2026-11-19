@@ -79,7 +79,7 @@ class FeeStructureTest extends TestCase
         $foreignGroup = $foreign->feeGroups()->create(['title' => 'Foreign', 'allows_discount' => true]);
         $type = $school->feeTypes()->create(['title' => 'Tuition']);
         $foreignType = $foreign->feeTypes()->create(['title' => 'Foreign tuition']);
-        $group->grades()->sync([$grade->id]);
+        $group->grades()->syncWithPivotValues([$grade->id], ['school_id' => $school->id]);
         $payload = ['school_session_id' => $session->id, 'fee_group_id' => $group->id, 'fee_type_id' => $type->id,
             'billing_month' => '2026-09', 'due_date' => '2026-09-01', 'amount' => '1250.50', 'fine_type' => 'percentage', 'fine_value' => '5.00'];
 

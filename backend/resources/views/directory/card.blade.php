@@ -10,7 +10,7 @@
     </div>
     <div class="listing-actions">
         @foreach(['saved' => 'Save', 'compare' => 'Compare'] as $key => $label)
-            @php($selected = in_array($listing->slug, session("directory.{$key}", []), true))
+            @php($selected = in_array($listing->slug, $key === 'saved' ? ($savedSlugs ?? []) : session('directory.compare', []), true))
             <form method="post" action="{{ route('directory.toggle', [$key, $listing->slug]) }}">
                 @csrf <button class="button outline small" aria-pressed="{{ $selected ? 'true' : 'false' }}" aria-label="{{ $label }} {{ $listing->name }}">{{ $selected ? ($key === 'saved' ? 'Saved' : 'Selected') : $label }}</button>
             </form>

@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { api } from '../../admin-api.js';
+import { Detail, ListingSection, RecordHeading } from '../../components/admin-record.jsx';
 import { AdminLayout } from '../../components/admin-layout.jsx';
 import { Button } from '../../components/ui/button.jsx';
 import { Input } from '../../components/ui/input.jsx';
@@ -18,6 +19,7 @@ function LocationPage({ kind, adminName }) {
     const [rows, setRows] = useState(null);
     const [cities, setCities] = useState([]);
     const [editor, setEditor] = useState(null);
+    const [details, setDetails] = useState(null);
     const [cityFilter, setCityFilter] = useState('');
     const [busy, setBusy] = useState(false);
     const [feedback, setFeedback] = useState(null);
@@ -62,12 +64,15 @@ function LocationPage({ kind, adminName }) {
     function save(event) {
         event.preventDefault();
         const { city_id, ...details } = Object.fromEntries(new FormData(event.currentTarget));
+        details.is_active = details.is_active === 'on';
+        if (isCity) details.sort_order = Number(details.sort_order);
         const creating = !editor.id;
         const path = !creating ? `admin/${kind}/${editor.id}` : isCity ? 'admin/cities' : `admin/cities/${city_id}/areas`;
         run(async () => {
-            await api(path, creating ? 'POST' : 'PATCH', details);
+            const saved = await api(path, creating ? 'POST' : 'PATCH', details);
             setEditor(null);
             await refresh();
+            setDetails({ ...editor, ...saved.data, city_name: editor.city_name ?? cities.find(city => String(city.id) === city_id)?.name });
             return creating ? 'Location added.' : 'Location updated.';
         });
     }
@@ -89,32 +94,52 @@ function LocationPage({ kind, adminName }) {
         window.location.assign('/admin/login');
     })}>
         <Head title={title + ' · Schoolhouse'} />
-        <div className="page-heading"><h1>{title}</h1>
+        {!editor && !details && <><div className="page-heading"><h1>{title}</h1>
             <Button onClick={() => open({})} disabled={busy || (!isCity && !cities.length)}>+ New {noun}</Button>
-        </div>
+        </div></>}
         <p id="feedback" role="status" data-error={feedback?.error || undefined}>{feedback?.message}</p>
         {!isCity && rows && !cities.length && <p className="mb-4">Add a city before creating an area.</p>}
-        {editor && <section className="listing-form" aria-labelledby="location-form-title">
-            <h2 id="location-form-title" className="mb-4">{editor.id ? 'Edit' : 'Create'} {noun}</h2>
-            <form key={editor.id ?? 'new'} onSubmit={save}>
-                <div className="fields">
+        {editor && <>
+            <RecordHeading icon={editor.id ? 'edit' : 'create'} title={`${editor.id ? 'Edit' : 'New'} ${noun}`} name={editor.name}
+                back={() => { setEditor(null); setDetails(null); }} />
+            <form className="listing-full-form" key={editor.id ?? 'new'} onSubmit={save}>
+                <ListingSection icon={isCity ? 'city' : 'pin'} title="Location information">
                     <label>Name<Input name="name" required maxLength={isCity ? 100 : 120} defaultValue={editor.name} autoFocus /></label>
-                    {isCity ? <label>Province or territory<Input name="province" maxLength={100} defaultValue={editor.province} /></label> : <>
+                    <label>Slug<Input name="slug" required={!!editor.id} maxLength={isCity ? 100 : 120} defaultValue={editor.slug} /></label>
+                    <label className="review-toggle"><input type="checkbox" name="is_active" defaultChecked={Boolean(Number(editor.is_active ?? 1))} /> Active</label>
+                    {isCity ? <>
+                        <label>Province or territory<Input name="province" maxLength={100} defaultValue={editor.province} /></label>
+                        <label>Sort order<Input type="number" name="sort_order" min={-32768} max={32767} defaultValue={editor.sort_order ?? 0} /></label>
+                    </> : <>
                         {editor.id ? <div><strong>City</strong><p>{editor.city_name}</p></div> :
                             <label>City<select name="city_id" required defaultValue={cityFilter}>
                                 <option value="">Select a city</option>
                                 {cities.map(city => <option key={city.id} value={city.id}>{city.name}</option>)}
                             </select></label>}
+                        <label>Latitude<Input type="number" name="latitude" step="0.0000001" min={-90} max={90} defaultValue={editor.latitude} /></label>
+                        <label>Longitude<Input type="number" name="longitude" step="0.0000001" min={-180} max={180} defaultValue={editor.longitude} /></label>
                         <label>Area type<select name="area_type" defaultValue={editor.area_type ?? 'locality'}>
                             {Object.entries(areaTypes).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                         </select></label>
                     </>}
-                </div>
-                <div className="flex gap-2"><Button type="submit" disabled={busy}>Save {noun}</Button>
+                </ListingSection>
+                <div className="listing-save-bar"><Button type="submit" disabled={busy}>Save {noun}</Button>
                     <Button variant="outline" disabled={busy} onClick={() => setEditor(null)}>Cancel</Button></div>
             </form>
-        </section>}
-        <section aria-label={title}>
+        </>}
+        {!editor && details && <>
+            <RecordHeading icon={isCity ? 'city' : 'pin'} title={`${isCity ? 'City' : 'Area'} details`} name={details.name} back={() => setDetails(null)}>
+                <Button onClick={() => open(details)}>Edit {noun}</Button>
+            </RecordHeading>
+            <ListingSection icon="pin" title="Location information" readOnly>
+                <Detail label="Name" value={details.name} /><Detail label="Slug" value={details.slug} />
+                <Detail label="Active" value={Number(details.is_active ?? 1) ? 'Yes' : 'No'} />
+                {isCity ? <><Detail label="Province or territory" value={details.province} /><Detail label="Sort order" value={details.sort_order ?? 0} /></>
+                    : <><Detail label="City" value={details.city_name} /><Detail label="Type" value={areaTypes[details.area_type ?? 'locality']} />
+                        <Detail label="Latitude" value={details.latitude} /><Detail label="Longitude" value={details.longitude} /></>}
+            </ListingSection>
+        </>}
+        {!editor && !details && <section aria-label={title}>
             {!isCity && <label className="mb-4 max-w-xs">Filter by city<select value={cityFilter} onChange={event => setCityFilter(event.target.value)}>
                 <option value="">All cities</option>
                 {Array.from(new Map(rows?.map(row => [row.city_id, row.city_name])).entries()).map(([id, name]) =>
@@ -124,7 +149,7 @@ function LocationPage({ kind, adminName }) {
                 <thead><tr><th>Name</th><th>{isCity ? 'Province or territory' : 'City'}</th>{!isCity && <th>Type</th>}<th>Actions</th></tr></thead>
                 <tbody>
                     {filtered?.map(record => <tr key={record.id}>
-                        <td>{record.name}</td><td>{isCity ? record.province || '—' : record.city_name}</td>
+                        <td><button className="record-name-link" type="button" onClick={() => setDetails(record)}>{record.name}</button></td><td>{isCity ? record.province || '—' : record.city_name}</td>
                         {!isCity && <td>{areaTypes[record.area_type]}</td>}
                         <td><div className="row-actions">
                             <Button variant="outline" onClick={() => open(record)} disabled={busy}>Edit</Button>
@@ -134,6 +159,6 @@ function LocationPage({ kind, adminName }) {
                     {!filtered?.length && <tr><td colSpan={isCity ? 3 : 4}>{rows ? 'No locations found.' : 'Loading locations…'}</td></tr>}
                 </tbody>
             </table></div>
-        </section>
+        </section>}
     </AdminLayout>;
 }

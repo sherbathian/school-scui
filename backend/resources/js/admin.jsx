@@ -9,6 +9,8 @@ import Listings from './pages/Admin/Listings.jsx';
 
 createInertiaApp({
     resolve: name => {
+        if (name === 'Admin/Directory') return import('./pages/Admin/Directory.jsx');
+        if (name === 'Admin/BranchWorkspace') return import('./pages/Admin/BranchWorkspace.jsx');
         const pages = { 'Admin/Access': Access, 'Admin/Listings': Listings, 'Admin/Locations': Locations, 'Admin/Claims': Claims, 'Admin/BranchModules': BranchModules };
         return pages[name];
     },

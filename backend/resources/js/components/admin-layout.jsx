@@ -1,45 +1,94 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { NavigationGroup, NavigationIcon, NavigationLink } from './admin-navigation.jsx';
 import { Button } from './ui/button.jsx';
 
-export function AdminLayout({ screen, title, adminName, signOut, busy, children }) {
+const directoryLinks = [
+    ['boards', 'Boards and curricula'], ['education-levels', 'Education levels'], ['facilities', 'Facilities'],
+    ['school-groups', 'School groups'], ['listing-assignments', 'Listing assignments'], ['listing-fees', 'Listing fees'],
+    ['school-media', 'School media'], ['course-categories', 'Course categories'], ['courses', 'Courses'], ['programs', 'Programs'],
+];
+
+const communityLinks = [
+    ['books', 'Books'], ['book-inquiries', 'Book inquiries'], ['study-resources', 'Study resources'],
+    ['events', 'Events'], ['listing-leads', 'Listing leads'], ['reviews', 'Reviews'], ['saved-schools', 'Saved schools'],
+    ['school-stats', 'Daily school statistics'], ['articles', 'Articles'],
+];
+
+const serviceLinks = [
+    ['subscription-invoices', 'Subscription invoices'], ['subscription-invoice-lines', 'Invoice lines'],
+    ['subscription-payments', 'Subscription payments'], ['school-pages', 'School pages'],
+    ['school-site-settings', 'School site settings'], ['site-themes', 'Site themes'],
+    ['device-tokens', 'Device registrations'], ['personal-access-tokens', 'Personal access tokens'],
+];
+
+const platformLinks = [
+    ['organisation-members', 'Organisation members'], ['modules', 'Modules'], ['module-dependencies', 'Module dependencies'],
+    ['plans', 'Plans'], ['plan-modules', 'Plan modules'], ['plan-limits', 'Plan limits'], ['subscriptions', 'School subscriptions'],
+    ['subscription-modules', 'Subscription modules'], ['subscription-limits', 'Subscription limits'],
+    ['demo-requests', 'Demo requests'], ['otp-codes', 'OTP activity'], ['notifications', 'Notifications'],
+];
+
+export function AdminLayout({ screen, title, adminName, signOut, busy, branchNavigation, children }) {
     const [menuOpen, setMenuOpen] = useState(null);
     const name = adminName?.trim() || 'Administrator';
     const initials = name.split(/\s+/).slice(0, 2).map(word => Array.from(word)[0]).join('').toUpperCase();
 
+    const servicesActive = serviceLinks.some(([key]) => key === screen);
+    const communityActive = communityLinks.some(([key]) => key === screen);
+    const platformActive = platformLinks.some(([key]) => key === screen);
+    const directoryActive = directoryLinks.some(([key]) => key === screen);
+
     return <div className="admin-shell" data-menu={menuOpen === null ? 'auto' : menuOpen ? 'open' : 'closed'}>
         <aside className="sidebar" id="admin-navigation">
-            <Link className="brand" href="/admin/listings"><span aria-hidden="true">S</span> Schoolhouse</Link>
-            <nav aria-label="Platform admin">
-                <p>Platform admin</p>
-                <span className="nav-group">Directory</span>
-                <div className="sidebar-links">
-                    <Link href="/admin/listings" aria-current={screen === 'index' ? 'page' : undefined}>All listings</Link>
-                    <Link href="/admin/listings/create" aria-current={screen === 'create' ? 'page' : undefined}>Create listing</Link>
-                </div>
-                <Link href="/admin/claims" aria-current={screen === 'claims' ? 'page' : undefined}>Listing claims</Link>
-                <span className="nav-group">School access</span>
-                <div className="sidebar-links">
-                    <Link href="/admin/users" aria-current={screen === 'users' ? 'page' : undefined}>User accounts</Link>
-                    <Link href="/admin/members" aria-current={screen === 'members' ? 'page' : undefined}>Branch memberships</Link>
-                    <Link href="/admin/roles" aria-current={screen === 'roles' ? 'page' : undefined}>Branch roles</Link>
-                    <Link href="/admin/permissions" aria-current={screen === 'permissions' ? 'page' : undefined}>Permissions catalogue</Link>
-                </div>
-                <span className="nav-group">Locations</span>
-                <div className="sidebar-links">
-                    <Link href="/admin/cities" aria-current={screen === 'cities' ? 'page' : undefined}>Cities</Link>
-                    <Link href="/admin/areas" aria-current={screen === 'areas' ? 'page' : undefined}>Areas</Link>
-                </div>
+            <Link className="brand" href="/admin/listings">
+                <span className="brand-mark"><NavigationIcon name="school" /></span>
+                Schoolhouse
+            </Link>
+            <nav className="sidebar-nav" aria-label="Platform admin">
+                <p className="nav-heading">Directory</p>
+                <NavigationLink icon="listings" href="/admin/listings" active={screen === 'index'}>All listings</NavigationLink>
+                <NavigationLink icon="create" href="/admin/listings/create" active={screen === 'create'}>Create listing</NavigationLink>
+                <NavigationLink icon="claims" href="/admin/claims" active={screen === 'claims'}>Listing claims</NavigationLink>
+                <NavigationGroup icon="directory" label="Directory management" active={directoryActive}>
+                    {directoryLinks.map(([key, label]) => <NavigationLink key={key} href={`/admin/directory/${key}`}
+                        active={screen === key}>{label}</NavigationLink>)}
+                </NavigationGroup>
+                <p className="nav-heading">School management</p>
+                <NavigationLink icon="school" href="/admin/operations" active={screen === 'operations' && !branchNavigation}>
+                    Branch Operations
+                </NavigationLink>
+                {branchNavigation}
+                <p className="nav-heading">School access</p>
+                <NavigationLink icon="users" href="/admin/users" active={screen === 'users'}>User accounts</NavigationLink>
+                <NavigationLink icon="membership" href="/admin/members" active={screen === 'members'}>Branch memberships</NavigationLink>
+                <NavigationLink icon="shield" href="/admin/roles" active={screen === 'roles'}>Branch roles</NavigationLink>
+                <NavigationLink icon="key" href="/admin/permissions" active={screen === 'permissions'}>Permissions catalogue</NavigationLink>
+                <NavigationGroup icon="directory" label="Community and records" active={communityActive}>
+                    {communityLinks.map(([key, label]) => <NavigationLink key={key} href={`/admin/community/${key}`}
+                        active={screen === key}>{label}</NavigationLink>)}
+                </NavigationGroup>
+                <NavigationGroup icon="modules" label="Platform management" active={platformActive}>
+                    {platformLinks.map(([key, label]) => <NavigationLink key={key} href={`/admin/platform/${key}`}
+                        active={screen === key}>{label}</NavigationLink>)}
+                </NavigationGroup>
+                <NavigationGroup icon="fees" label="Billing, websites and devices" active={servicesActive}>
+                    {serviceLinks.map(([key, label]) => <NavigationLink key={key} href={`/admin/services/${key}`}
+                        active={screen === key}>{label}</NavigationLink>)}
+                </NavigationGroup>
+                <p className="nav-heading">Locations</p>
+                <NavigationLink icon="city" href="/admin/cities" active={screen === 'cities'}>Cities</NavigationLink>
+                <NavigationLink icon="pin" href="/admin/areas" active={screen === 'areas'}>Areas</NavigationLink>
             </nav>
         </aside>
         <div className="admin-surface">
             <header className="topbar">
                 <Button variant="outline" aria-label="Toggle sidebar" aria-controls="admin-navigation" aria-expanded={menuOpen ?? undefined} onClick={() => {
                     setMenuOpen(current => !(current ?? window.matchMedia('(min-width: 761px)').matches));
-                }}>☰</Button>
+                }}><NavigationIcon name="panel" /></Button>
                 <nav aria-label="Breadcrumb">
                     <span>Platform admin</span><span aria-hidden="true">›</span>
-                    {['index', 'cities', 'areas', 'claims', 'users', 'members', 'roles', 'permissions'].includes(screen) ? <span aria-current="page">{title}</span> : <>
+                    {servicesActive || communityActive || platformActive || directoryActive || ['index', 'cities', 'areas', 'claims', 'users', 'members', 'roles', 'permissions', 'operations'].includes(screen) ? <span aria-current="page">{title}</span> : <>
                         <Link href="/admin/listings">Listings</Link><span aria-hidden="true">›</span><span aria-current="page">{title}</span>
                     </>}
                 </nav>

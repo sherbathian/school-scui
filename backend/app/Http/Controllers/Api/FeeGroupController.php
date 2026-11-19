@@ -31,7 +31,7 @@ class FeeGroupController extends Controller
         $gradeIds = $this->validGradeIds($validated['grade_ids'] ?? [], $record);
         $group = DB::transaction(function () use ($record, $validated, $gradeIds): FeeGroup {
             $group = $record->feeGroups()->create(collect($validated)->except('grade_ids')->all());
-            $group->grades()->sync($gradeIds);
+            $group->grades()->syncWithPivotValues($gradeIds, ['school_id' => $group->school_id]);
 
             return $group->load('grades:id,title');
         });
@@ -56,7 +56,7 @@ class FeeGroupController extends Controller
         $group = DB::transaction(function () use ($group, $validated, $gradeIds): FeeGroup {
             $group->update(collect($validated)->except('grade_ids')->all());
             if ($gradeIds !== null) {
-                $group->grades()->sync($gradeIds);
+                $group->grades()->syncWithPivotValues($gradeIds, ['school_id' => $group->school_id]);
             }
 
             return $group->load('grades:id,title');

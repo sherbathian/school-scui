@@ -22,9 +22,10 @@ class RequireSchoolPermission
 
         $permission = $this->requiredPermission($request);
         $module = is_string($permission) ? str($permission)->before('.')->toString() : null;
+        $writing = ! in_array($request->method(), ['GET', 'HEAD', 'OPTIONS'], true);
         if ($user->isSuperAdmin()) {
             if ($module) {
-                $this->modules->assertEnabled($schoolId, $module);
+                $this->modules->assertEnabled($schoolId, $module, $writing);
             }
 
             return $next($request);
@@ -38,7 +39,7 @@ class RequireSchoolPermission
             : $user->hasSchoolPermission($school, $permission);
         abort_unless($allowed, 403, 'You do not have permission to perform this action for the selected school.');
         if ($module) {
-            $this->modules->assertEnabled($schoolId, $module);
+            $this->modules->assertEnabled($schoolId, $module, $writing);
         }
 
         return $next($request);

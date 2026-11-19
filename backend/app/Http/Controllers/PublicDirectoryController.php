@@ -19,9 +19,10 @@ class PublicDirectoryController extends Controller
         'institutes' => ['training_institute', 'Training institutes'],
     ];
 
-    public function home(): View
+    public function home(Request $request): View
     {
         return view('directory.home', [
+            'savedSlugs' => $this->savedSlugs($request),
             'listings' => $this->listings()->orderByDesc('schools.published_at')->orderByDesc('schools.id')->limit(3)->get(),
             'cities' => $this->cities(),
             'areas' => DB::table('areas')->join('cities', 'cities.id', '=', 'areas.city_id')
@@ -62,30 +63,38 @@ class PublicDirectoryController extends Controller
             ->orderBy('schools.name')->orderBy('schools.id')->paginate(12)->withQueryString();
 
         return view('directory.index', [
+            'savedSlugs' => $this->savedSlugs($request),
             'listings' => $listings, 'category' => $category, 'filters' => $filters, 'cities' => $cities, 'areas' => $areas,
             'title' => $categoryName.($selectedArea ? ' in '.$selectedArea->name.', '.$selectedCity->name : ($selectedCity ? ' in '.$selectedCity->name : '')),
         ]);
     }
 
-    public function show(string $slug): View
+    public function show(Request $request, string $slug): View
     {
-        return view('directory.profile', ['listing' => $this->listings()
+        $listing = $this->listings()
             ->addSelect('schools.seo_title', 'schools.seo_description', 'schools.established_year', 'schools.medium')
-            ->where('schools.slug', $slug)->firstOrFail()]);
+            ->where('schools.slug', $slug)->firstOrFail();
+        $this->countActivity($listing->id, 'profile_views');
+
+        return view('directory.profile', ['listing' => $listing, 'savedSlugs' => $this->savedSlugs($request)]);
     }
 
     public function collection(Request $request, string $collection): View
     {
-        $slugs = $request->session()->get("directory.{$collection}", []);
+        $slugs = $collection === 'saved' ? $this->savedSlugs($request) : $request->session()->get("directory.{$collection}", []);
         $listings = $this->listings()->whereIn('schools.slug', $slugs)->get()->keyBy('slug');
 
         return view('directory.collection', [
-            'collection' => $collection, 'listings' => collect($slugs)->map(fn ($slug) => $listings->get($slug))->filter(),
+            'collection' => $collection, 'savedSlugs' => $collection === 'saved' ? $slugs : $this->savedSlugs($request), 'listings' => collect($slugs)->map(fn ($slug) => $listings->get($slug))->filter(),
         ]);
     }
 
     public function toggle(Request $request, string $collection, string $slug): RedirectResponse
     {
+        if ($collection === 'saved' && $request->user()) {
+            return $this->toggleAccountSave($request, $slug);
+        }
+
         $key = "directory.{$collection}";
         $current = $request->session()->get($key, []);
         if (in_array($slug, $current, true)) {
@@ -94,7 +103,7 @@ class PublicDirectoryController extends Controller
             return back();
         }
 
-        $this->listings()->where('schools.slug', $slug)->firstOrFail();
+        $listing = $this->listings()->where('schools.slug', $slug)->firstOrFail();
         $current = $this->listings()->whereIn('schools.slug', $current)->pluck('schools.slug')->all();
         $limit = $collection === 'compare' ? 3 : 100;
         if (count($current) >= $limit) {
@@ -102,8 +111,54 @@ class PublicDirectoryController extends Controller
         }
 
         $request->session()->put($key, [...$current, $slug]);
+        $this->countActivity($listing->id, $collection === 'compare' ? 'compare_adds' : 'saves');
 
         return back()->with('directory_message', $collection === 'compare' ? 'Added to comparison.' : 'Listing saved.');
+    }
+
+    private function savedSlugs(Request $request): array
+    {
+        if (! $request->user()) {
+            return $request->session()->get('directory.saved', []);
+        }
+
+        return DB::table('saved_schools')->join('schools', 'schools.id', '=', 'saved_schools.school_id')
+            ->where('saved_schools.user_id', $request->user()->id)->whereNull('schools.deleted_at')
+            ->orderByDesc('saved_schools.created_at')->orderBy('schools.id')->pluck('schools.slug')->all();
+    }
+
+    private function toggleAccountSave(Request $request, string $slug): RedirectResponse
+    {
+        return DB::transaction(function () use ($request, $slug): RedirectResponse {
+            $user = $request->user();
+            DB::table('users')->where('id', $user->id)->lockForUpdate()->firstOrFail();
+            $saved = DB::table('saved_schools')->where('user_id', $user->id);
+            $schoolIds = DB::table('schools')->where('slug', $slug)->select('id');
+            if ((clone $saved)->whereIn('school_id', $schoolIds)->delete()) {
+                return back();
+            }
+            $listing = $this->listings()->where('schools.slug', $slug)->firstOrFail();
+            if ($saved->whereIn('school_id', School::publicDirectory()->select('schools.id'))->count() >= 100) {
+                return back()->with('directory_message', 'You can save up to 100 institutions.');
+            }
+
+            DB::table('saved_schools')->insert(['user_id' => $user->id, 'school_id' => $listing->id, 'created_at' => now()]);
+            $this->countActivity($listing->id, 'saves');
+
+            return back()->with('directory_message', 'Listing saved.');
+        }, 3);
+    }
+
+    private function countActivity(int $school, string $counter): void
+    {
+        $now = now();
+        $key = ['school_id' => $school, 'stat_date' => $now->toDateString()];
+        DB::table('school_stats_daily')->upsert(
+            [...$key, 'created_at' => $now, 'updated_at' => $now],
+            ['school_id', 'stat_date'],
+            ['updated_at'],
+        );
+        DB::table('school_stats_daily')->where($key)->increment($counter);
     }
 
     public function sitemap(): Response

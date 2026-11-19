@@ -43,7 +43,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:12', 'max:72'],
+            'password' => ['required', 'string', 'min:8', 'max:72'],
             'phone' => ['nullable', 'string', 'max:30'],
             'locale' => ['sometimes', Rule::in(['en', 'ur'])],
             'is_active' => ['sometimes', 'boolean'],
@@ -76,7 +76,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'email' => ['sometimes', 'required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($record->id)],
-            'password' => ['sometimes', 'nullable', 'string', 'min:12', 'max:72'],
+            'password' => ['sometimes', 'nullable', 'string', 'min:8', 'max:72'],
             'phone' => ['nullable', 'string', 'max:30'],
             'locale' => ['sometimes', Rule::in(['en', 'ur'])],
             'is_active' => ['sometimes', 'required', 'boolean'],

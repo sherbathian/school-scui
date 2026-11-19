@@ -11,6 +11,24 @@ class BranchModuleTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_branch_operations_requires_platform_access(): void
+    {
+        $branch = School::factory()->create();
+        $manager = User::factory()->create();
+        $manager->schools()->attach($branch, ['role' => 'school_admin']);
+        $platformAdmin = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);
+        $path = "/admin/branches/{$branch->id}/operations";
+
+        $this->get($path)->assertRedirect('/admin/login');
+        $this->actingAs($manager)->get($path)->assertForbidden();
+        $this->actingAs($platformAdmin)->get($path, ['X-Inertia' => 'true'])
+            ->assertOk()
+            ->assertJsonPath('component', 'Admin/BranchWorkspace')
+            ->assertJsonPath('props.branch.id', $branch->id);
+        $this->getJson("/api/schools/{$branch->id}")->assertOk();
+        $this->getJson("/api/schools/{$branch->id}/students")->assertOk();
+    }
+
     public function test_only_platform_admins_change_switches_and_dependencies_are_enforced_per_branch(): void
     {
         $first = School::factory()->create(['listing_status' => 'published', 'verified_at' => now()]);

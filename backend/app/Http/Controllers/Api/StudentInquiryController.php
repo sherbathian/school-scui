@@ -8,6 +8,7 @@ use App\Models\StudentInquiry;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
@@ -40,7 +41,12 @@ class StudentInquiryController extends Controller
     public function destroy(Request $request, int $school, int $inquiry): JsonResponse
     {
         $record = $this->accessibleSchool($request, $school, 'manage');
-        $record->studentInquiries()->findOrFail($inquiry)->delete();
+        DB::transaction(function () use ($record, $inquiry): void {
+            $row = $record->studentInquiries()->lockForUpdate()->findOrFail($inquiry);
+            DB::table('listing_leads')->where('school_id', $record->id)->where('student_inquiry_id', $inquiry)
+                ->update(['student_inquiry_id' => null, 'updated_at' => now()]);
+            $row->delete();
+        }, 3);
 
         return response()->json([], 204);
     }

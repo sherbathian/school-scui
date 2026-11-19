@@ -18,7 +18,7 @@ class AdminLocationController extends Controller
     public function cities(Request $request): JsonResponse
     {
         return response()->json(['data' => DB::table('cities')->when(! $request->boolean('all'), fn ($query) => $query->where('is_active', true))
-            ->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug', 'province'])]);
+            ->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug', 'province', 'sort_order', 'is_active'])]);
     }
 
     public function areas(int $city): JsonResponse
@@ -33,7 +33,10 @@ class AdminLocationController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
+            'slug' => ['sometimes', 'nullable', 'alpha_dash:ascii', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],
+            'sort_order' => ['sometimes', 'integer', 'between:-32768,32767'],
+            'is_active' => ['sometimes', 'boolean'],
         ]);
 
         return $this->createLocation('cities', $data, 100);
@@ -44,7 +47,11 @@ class AdminLocationController extends Controller
         $this->requireCity($city);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
+            'slug' => ['sometimes', 'nullable', 'alpha_dash:ascii', 'max:120'],
             'area_type' => ['sometimes', Rule::in(['sector', 'locality', 'housing_scheme'])],
+            'latitude' => ['sometimes', 'nullable', 'numeric', 'decimal:0,7', 'between:-90,90'],
+            'longitude' => ['sometimes', 'nullable', 'numeric', 'decimal:0,7', 'between:-180,180'],
+            'is_active' => ['sometimes', 'boolean'],
         ]);
 
         return $this->createLocation('areas', [...$data, 'city_id' => $city], 120);
@@ -54,14 +61,17 @@ class AdminLocationController extends Controller
     {
         return response()->json(['data' => DB::table('areas')->join('cities', 'cities.id', '=', 'areas.city_id')
             ->orderBy('cities.name')->orderBy('areas.name')
-            ->get(['areas.id', 'areas.name', 'areas.slug', 'areas.area_type', 'areas.city_id', 'cities.name as city_name'])]);
+            ->get(['areas.id', 'areas.name', 'areas.slug', 'areas.area_type', 'areas.city_id', 'areas.latitude', 'areas.longitude', 'areas.is_active', 'cities.name as city_name'])]);
     }
 
     public function updateCity(Request $request, int $city): JsonResponse
     {
         return $this->updateLocation('cities', $city, $request->validate([
             'name' => ['required', 'string', 'max:100', Rule::unique('cities')->ignore($city)],
+            'slug' => ['sometimes', 'required', 'alpha_dash:ascii', 'max:100', Rule::unique('cities')->ignore($city)],
             'province' => ['nullable', 'string', 'max:100'],
+            'sort_order' => ['sometimes', 'integer', 'between:-32768,32767'],
+            'is_active' => ['sometimes', 'boolean'],
         ]));
     }
 
@@ -71,7 +81,11 @@ class AdminLocationController extends Controller
 
         return $this->updateLocation('areas', $area, $request->validate([
             'name' => ['required', 'string', 'max:120', Rule::unique('areas')->where('city_id', $record->city_id)->ignore($area)],
+            'slug' => ['sometimes', 'required', 'alpha_dash:ascii', 'max:120', Rule::unique('areas')->where('city_id', $record->city_id)->ignore($area)],
             'area_type' => ['required', Rule::in(['sector', 'locality', 'housing_scheme'])],
+            'latitude' => ['sometimes', 'nullable', 'numeric', 'decimal:0,7', 'between:-90,90'],
+            'longitude' => ['sometimes', 'nullable', 'numeric', 'decimal:0,7', 'between:-180,180'],
+            'is_active' => ['sometimes', 'boolean'],
         ]));
     }
 
@@ -89,7 +103,11 @@ class AdminLocationController extends Controller
     {
         $query = DB::table($table)->where('id', $id);
         abort_unless($query->exists(), 404);
-        $query->update([...$data, 'updated_at' => now()]);
+        try {
+            $query->update([...$data, 'updated_at' => now()]);
+        } catch (UniqueConstraintViolationException) {
+            throw ValidationException::withMessages(['slug' => ['This location slug is already in use.']]);
+        }
 
         return response()->json(['data' => $query->firstOrFail(['*'])]);
     }
@@ -97,7 +115,16 @@ class AdminLocationController extends Controller
     private function deleteLocation(string $table, int $id): Response
     {
         try {
-            abort_unless(DB::table($table)->where('id', $id)->delete(), 404);
+            DB::transaction(function () use ($table, $id): void {
+                $location = DB::table($table)->where('id', $id);
+                $location->lockForUpdate()->firstOrFail();
+                $hasReferences = $table === 'cities'
+                    ? DB::table('areas')->where('city_id', $id)->exists()
+                    : DB::table('schools')->where('area_id', $id)->exists() || DB::table('courses')->where('area_id', $id)->exists()
+                        || DB::table('books')->where('area_id', $id)->exists();
+                abort_if($hasReferences, 409, 'This location is still in use.');
+                $location->delete();
+            });
         } catch (QueryException $exception) {
             if (! in_array($exception->errorInfo[0] ?? null, ['23000', '23503'], true)) {
                 throw $exception;
@@ -116,7 +143,8 @@ class AdminLocationController extends Controller
 
     private function createLocation(string $table, array $data, int $slugLimit): JsonResponse
     {
-        $slug = Str::slug($data['name']);
+        $slug = $data['slug'] ?? Str::slug($data['name']);
+        unset($data['slug']);
         validator(['name' => $slug], ['name' => ['required', "max:{$slugLimit}"]])->validate();
 
         try {

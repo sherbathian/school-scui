@@ -28,6 +28,7 @@ class AdminBranchModuleController extends Controller
             abort_if($entry['core'] || ! $entry['available'], 409, 'This module cannot be changed.');
 
             if ($data['enabled']) {
+                abort_unless($entry['entitled'], 409, 'The organisation is not entitled to this module.');
                 foreach ($entry['requires'] as $requirement) {
                     abort_unless($catalogue[$requirement]['enabled'], 409, "Enable {$catalogue[$requirement]['name']} first.");
                 }
@@ -38,6 +39,19 @@ class AdminBranchModuleController extends Controller
                 'enabled_by_user_id' => $request->user()->id, 'enabled_at' => now(),
                 'created_at' => now(), 'updated_at' => now(),
             ], ['school_id', 'module_id'], ['is_enabled', 'enabled_by_user_id', 'enabled_at', 'updated_at']);
+
+            return response()->json(['data' => $modules->forBranch($branch->id)]);
+        }, 3);
+    }
+
+    public function reset(School $branch, string $module, BranchModules $modules): JsonResponse
+    {
+        return DB::transaction(function () use ($branch, $module, $modules): JsonResponse {
+            School::query()->lockForUpdate()->findOrFail($branch->id);
+            $entry = $modules->forBranch($branch->id)->firstWhere('slug', $module);
+            abort_unless($entry, 404);
+            abort_if($entry['core'], 409, 'The core module is always enabled.');
+            DB::table('school_modules')->where('school_id', $branch->id)->where('module_id', $entry['id'])->delete();
 
             return response()->json(['data' => $modules->forBranch($branch->id)]);
         }, 3);

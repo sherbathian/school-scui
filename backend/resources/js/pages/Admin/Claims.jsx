@@ -1,12 +1,14 @@
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { api } from '../../admin-api.js';
+import { Detail, ListingSection, RecordHeading } from '../../components/admin-record.jsx';
 import { AdminLayout } from '../../components/admin-layout.jsx';
 import { Button } from '../../components/ui/button.jsx';
 
 export default function Claims({ adminName }) {
     const [results, setResults] = useState(null);
     const [page, setPage] = useState(1);
+    const [status, setStatus] = useState('pending');
     const [revision, setRevision] = useState(0);
     const [selected, setSelected] = useState(null);
     const [error, setError] = useState('');
@@ -14,14 +16,14 @@ export default function Claims({ adminName }) {
 
     useEffect(() => {
         const controller = new AbortController();
-        api(`admin/claims?page=${page}`, 'GET', undefined, controller.signal).then(result => {
+        api(`admin/claims?page=${page}&status=${status}`, 'GET', undefined, controller.signal).then(result => {
             if (page > result.last_page) setPage(result.last_page);
             else setResults(result);
         }).catch(error => {
             if (!controller.signal.aborted) setError(error.message);
         });
         return () => controller.abort();
-    }, [page, revision]);
+    }, [page, revision, status]);
 
     async function review(event) {
         event.preventDefault();
@@ -50,36 +52,45 @@ export default function Claims({ adminName }) {
 
     return <AdminLayout screen="claims" title="Listing claims" {...{ adminName, busy, signOut }}>
         <Head title="Listing claims · Schoolhouse" />
-        <div className="page-heading"><h1>Listing claims</h1></div>
         {error && <p id="feedback" data-error role="alert">{error}</p>}
-        {selected && <section className="listing-form">
-            <h2>Review {selected.school_name}</h2>
-            <p>{selected.claimant_name} · {selected.claimant_role || 'Role unspecified'}</p>
-            <p>{selected.phone} · {selected.email}</p>
-            <form key={selected.id} onSubmit={review}>
-                <div className="fields">
+        {selected ? <>
+            <RecordHeading icon="claims" title="Claim details" name={selected.school_name} back={() => setSelected(null)} />
+            <ListingSection icon="membership" title="Claimant information" readOnly>
+                <Detail label="Claimant" value={selected.claimant_name} />
+                <Detail label="Role" value={selected.claimant_role} />
+                <Detail label="Phone" value={selected.phone} />
+                <Detail label="Email" value={selected.email} />
+                <Detail label="Method" value={selected.method} />
+                <Detail label="Status" value={selected.status} />
+                <Detail label="Reviewed at" value={selected.reviewed_at} />
+                <Detail label="Review note" value={selected.review_note} wide />
+            </ListingSection>
+            {selected.status === 'pending' && <form className="listing-full-form" key={selected.id} onSubmit={review}>
+                <ListingSection icon="shield" title="Review decision">
                     <label>Decision<select name="decision" required>
                         <option value="">Select a decision</option>
                         <option value="verified">Approve verified claim</option>
                         <option value="rejected">Decline claim</option>
                     </select></label>
                     <label>Review note<textarea name="review_note" required maxLength={2000} /></label>
-                </div>
-                <div className="flex gap-2">
-                    <Button type="submit" disabled={busy}>Record decision</Button>
-                    <Button variant="outline" disabled={busy} onClick={() => setSelected(null)}>Cancel</Button>
-                </div>
-            </form>
-        </section>}
-        <section aria-label="Pending claim requests">
+                </ListingSection>
+                <div className="listing-save-bar"><Button type="submit" disabled={busy}>Record decision</Button></div>
+            </form>}
+        </> : <>
+        <div className="page-heading"><h1>Listing claims</h1></div>
+        <section aria-label="Claim requests">
+            <label className="mb-4 max-w-xs">Status<select value={status} onChange={event => { setStatus(event.target.value); setPage(1); }}>
+                <option value="pending">Pending</option><option value="verified">Approved</option>
+                <option value="rejected">Declined</option><option value="all">All claims</option>
+            </select></label>
             <div className="table-scroll"><table>
-                <thead><tr><th>Institution</th><th>Claimant</th><th>Role</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Institution</th><th>Claimant</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
                     {results?.data.map(claim => <tr key={claim.id}>
-                        <td>{claim.school_name}</td><td>{claim.claimant_name}</td><td>{claim.claimant_role || '—'}</td>
-                        <td><Button variant="outline" disabled={busy} onClick={() => { setError(''); setSelected(claim); }}>Review</Button></td>
+                        <td>{claim.school_name}</td><td>{claim.claimant_name}</td><td>{claim.status}</td>
+                        <td><Button variant="outline" disabled={busy} onClick={() => { setError(''); setSelected(claim); }}>{claim.status === 'pending' ? 'Review' : 'Details'}</Button></td>
                     </tr>)}
-                    {!results?.data.length && <tr><td colSpan={4}>{results ? 'No pending claims.' : 'Loading claims…'}</td></tr>}
+                    {!results?.data.length && <tr><td colSpan={4}>{results ? 'No matching claims.' : 'Loading claims…'}</td></tr>}
                 </tbody>
             </table></div>
             {results && <nav className="pagination" aria-label="Claim pages">
@@ -87,6 +98,6 @@ export default function Claims({ adminName }) {
                 <span>Page {page} of {results.last_page}</span>
                 <Button variant="outline" disabled={page >= results.last_page} onClick={() => setPage(current => current + 1)}>Next</Button>
             </nav>}
-        </section>
+        </section></>}
     </AdminLayout>;
 }

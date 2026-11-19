@@ -48,6 +48,8 @@ To publish a new listing, add its city and area as needed, create a draft, verif
 
 ## Tests
 
+GitHub Actions runs the PHP suite on SQLite and MySQL 8.4 and builds the frontend on pushes to `main` and pull requests. Each MySQL run uses a disposable service database.
+
 Run the full suite from `backend` on isolated SQLite:
 
 ```sh

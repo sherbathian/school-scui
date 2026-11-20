@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\School;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -38,7 +36,7 @@ class AuthController extends Controller
 
         if (! $user || ! $user->is_active
             || ! Hash::check($credentials['password'], $user->password)
-            || ($adminOnly && Gate::forUser($user)->denies('moderateListings', School::class))
+            || ($adminOnly && ! $user->canEnterSchoolhouse())
             || ! Auth::guard('web')->attempt($credentials, $remember)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],

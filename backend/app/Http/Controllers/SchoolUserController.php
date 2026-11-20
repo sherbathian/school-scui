@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\School;
+use App\Models\Student;
 use App\Models\User;
 use App\Services\SchoolRoles;
 use Illuminate\Http\JsonResponse;
@@ -24,8 +25,10 @@ class SchoolUserController extends Controller
 
         return response()->json([
             'data' => $schoolRecord->users()
+                ->leftJoin('students as linked_student', fn ($join) => $join->on('linked_student.id', '=', 'school_user.student_id')
+                    ->on('linked_student.school_id', '=', 'school_user.school_id'))
                 ->orderBy('users.name')
-                ->get(['users.id', 'users.name', 'users.email'])
+                ->get(['users.id', 'users.name', 'users.email', 'linked_student.admission_number as student_admission_number'])
                 ->map(fn (User $user) => $this->memberData($user))
                 ->values(),
         ]);
@@ -86,6 +89,7 @@ class SchoolUserController extends Controller
         $validated = $request->validate([
             'role' => ['sometimes', 'required', 'string'],
             'is_active' => ['sometimes', 'required', 'boolean'],
+            'student_admission_number' => ['sometimes', 'nullable', 'string', 'max:255'],
             'direct_permissions' => ['sometimes', 'array'],
             'direct_permissions.*' => ['string', Rule::in($this->roles->assignablePermissions())],
             'is_primary_contact' => ['sometimes', 'required', 'boolean'],
@@ -103,12 +107,26 @@ class SchoolUserController extends Controller
                 $member->syncPermissions($validated['direct_permissions']);
             }
 
-            $schoolRecord->users()->updateExistingPivot($member->id, collect($validated)->except('direct_permissions')->all());
+            $changes = collect($validated)->except(['direct_permissions', 'student_admission_number'])->all();
+            $studentRole = ($role ?? $member->pivot->role) === 'student';
+            if (! $studentRole || array_key_exists('student_admission_number', $validated)) {
+                $admission = $validated['student_admission_number'] ?? null;
+                $changes['student_id'] = null;
+                if ($admission !== null) {
+                    $student = $schoolRecord->students()->where('admission_number', $admission)->lockForUpdate()->first();
+                    if (! $studentRole || ! $student || DB::table('school_user')->where('school_id', $schoolRecord->id)
+                        ->where('student_id', $student->id)->where('user_id', '!=', $member->id)->exists()) {
+                        throw ValidationException::withMessages(['student_admission_number' => ['Choose an unlinked admission number in this branch for a student account.']]);
+                    }
+                    $changes['student_id'] = $student->id;
+                }
+            }
+            $schoolRecord->users()->updateExistingPivot($member->id, $changes);
         });
 
         $member = $schoolRecord->users()->whereKey($member->id)->firstOrFail();
 
-        return response()->json(['data' => $this->memberData($member)]);
+        return response()->json(['data' => $this->memberData($member, $member->pivot->student_id ? Student::query()->where('school_id', $school)->whereKey($member->pivot->student_id)->value('admission_number') : null)]);
     }
 
     public function destroy(Request $request, int $school, int $user): JsonResponse
@@ -129,13 +147,14 @@ class SchoolUserController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function memberData(User $user): array
+    private function memberData(User $user, ?string $admission = null): array
     {
         return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->pivot->role,
+            'student_admission_number' => $user->student_admission_number ?? $admission,
             'direct_permissions' => $user->getDirectPermissions()->pluck('name')->sort()->values()->all(),
             'is_super_admin' => $user->isSuperAdmin(),
             'is_active' => (bool) $user->pivot->is_active,

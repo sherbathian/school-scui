@@ -3,7 +3,7 @@
 @section('content')
 @php($action = $category ? route('directory.category', $category) : route('directory.index'))
 <section class="hero directory-hero"><div class="wrap">
-    <p class="breadcrumb"><a href="{{ route('directory.home') }}">Home</a> / Directory</p>
+    <p class="breadcrumb"><a href="{{ route('directory.home') }}">Home</a> / <span aria-current="page">{{ $categoryLabel ?? 'Directory' }}</span></p>
     <h1>{{ $title }}</h1>
     <p class="intro">Explore verified campuses by city, neighbourhood and institution type.</p>
     @include('directory.search')
@@ -19,6 +19,13 @@
             @if($areas->isNotEmpty())<label>Neighbourhood<select name="area"><option value="">All neighbourhoods</option>
                 @foreach($areas as $area)<option value="{{ $area->slug }}" @selected(($filters['area'] ?? '') === $area->slug)>{{ $area->name }}</option>@endforeach
             </select></label>@endif
+            <label>Curriculum or board<select name="board"><option value="">All curricula</option>@foreach($boards as $board)
+                <option value="{{ $board->slug }}" @selected(($filters['board'] ?? '') === $board->slug)>{{ $board->name }}</option>
+            @endforeach</select></label>
+            <label>Education level<select name="level"><option value="">All levels</option>@foreach($levels as $level)
+                <option value="{{ $level->slug }}" @selected(($filters['level'] ?? '') === $level->slug)>{{ $level->name }}</option>
+            @endforeach</select></label>
+            <label>Fee information<select name="has_fees"><option value="">Any listing</option><option value="1" @selected(!empty($filters['has_fees']))>Monthly fee published</option></select></label>
             <label>Sort by<select name="sort"><option value="name">Name A–Z</option><option value="recent" @selected(($filters['sort'] ?? '') === 'recent')>Recently published</option></select></label>
             <button class="button">Apply filters</button><a href="{{ $action }}">Clear filters</a>
         </form>

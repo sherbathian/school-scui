@@ -20,12 +20,12 @@ class InstituteClaimController extends Controller
 {
     public function registration(Request $request): View
     {
-        return view('directory.institute-account', ['mode' => 'register', 'listing' => $request->query('listing')]);
+        return view('directory.institute-account', ['mode' => 'register', 'listing' => $request->query('listing'), 'directoryAccount' => $request->routeIs('directory.sign-up')]);
     }
 
     public function signInPage(Request $request): View
     {
-        return view('directory.institute-account', ['mode' => 'login', 'listing' => $request->query('listing')]);
+        return view('directory.institute-account', ['mode' => 'login', 'listing' => $request->query('listing'), 'directoryAccount' => $request->routeIs('directory.sign-in')]);
     }
 
     public function register(Request $request): RedirectResponse
@@ -59,7 +59,8 @@ class InstituteClaimController extends Controller
         Auth::guard('web')->login($user->refresh());
         $request->session()->regenerate();
 
-        return $this->afterSignIn($data['listing'] ?? null);
+        return $request->routeIs('directory.sign-up.submit', 'directory.sign-in.submit')
+            ? redirect()->route('directory.dashboard') : $this->afterSignIn($data['listing'] ?? null);
     }
 
     public function login(Request $request, AuthController $auth): RedirectResponse
@@ -68,7 +69,8 @@ class InstituteClaimController extends Controller
         $data = $request->validate(['listing' => ['nullable', 'string', 'max:255']]);
         $auth->login($request);
 
-        return $this->afterSignIn($data['listing'] ?? null);
+        return $request->routeIs('directory.sign-up.submit', 'directory.sign-in.submit')
+            ? redirect()->route('directory.dashboard') : $this->afterSignIn($data['listing'] ?? null);
     }
 
     public function submissions(Request $request): View

@@ -29,11 +29,11 @@ const sections = [
     ['expenses', 'Expenses', ['expense-heads', 'Expense heads'], ['expense-add', 'Add expenses'], ['expense-search', 'Expenses list']],
 ];
 
-export default function BranchWorkspace({ branch, branches, adminName }) {
-    return <Workspace key={branch?.id ?? 'choose'} {...{ branch, branches, adminName }} />;
+export default function BranchWorkspace(props) {
+    return <Workspace key={props.branch?.id ?? 'choose'} {...props} />;
 }
 
-function Workspace({ branch, branches, adminName }) {
+function Workspace({ branch, branches, adminName, platform = true, schoolAccess, allowedModules, academicsEnabled: branchAcademicsEnabled }) {
     const [recordBusy, setRecordBusy] = useState(false);
     const [recordFeedback, setRecordFeedback] = useState(null);
     const [school, setSchool] = useState(null);
@@ -48,18 +48,21 @@ function Workspace({ branch, branches, adminName }) {
         if (!branch) return;
         const controller = new AbortController();
         const get = path => api(path, 'GET', undefined, controller.signal);
-        Promise.all([get(`schools/${branch.id}`), get(`admin/branches/${branch.id}/modules`)])
+        Promise.all([get(`schools/${branch.id}`), platform ? get(`admin/branches/${branch.id}/modules`) : null])
             .then(([schoolResult, moduleResult]) => {
                 setSchool(schoolResult.data);
-                setModules(moduleResult.data.filter(module => module.enabled).map(module => module.slug));
+                setModules(moduleResult ? moduleResult.data.filter(module => module.enabled).map(module => module.slug) : allowedModules);
             })
             .catch(error => {
                 if (!controller.signal.aborted) setError(error.message);
             });
         return () => controller.abort();
-    }, [branch]);
+    }, [branch, platform, allowedModules]);
 
-    const visible = sections.filter(([module]) => modules.includes(module));
+    const visible = sections.filter(([module]) => modules.includes(module))
+        .map(([key, label, ...views]) => [key, label, ...views.filter(([view]) =>
+            platform || (!['student-transfers', 'student-fee-discounts'].includes(view)
+                && (branchAcademicsEnabled || !['groups', 'masters'].includes(view))))]);
     const selected = visible.find(([, , ...views]) => views.some(([key]) => key === view)) ?? visible[0];
     const [module, , firstView] = selected ?? [];
     const activeView = selected?.slice(2).some(([key]) => key === view) ? view : firstView?.[0];
@@ -108,7 +111,7 @@ function Workspace({ branch, branches, adminName }) {
     let content;
     if (school && activeView) {
         const props = { school, canManage: true };
-        const academicsEnabled = modules.includes('academics');
+        const academicsEnabled = platform ? modules.includes('academics') : branchAcademicsEnabled;
         if (branchRecords) {
             content = <>
                 {recordFeedback && <p id="record-feedback" role="status" data-error={recordFeedback.error || undefined}>{recordFeedback.message}</p>}
@@ -172,11 +175,11 @@ function Workspace({ branch, branches, adminName }) {
     </div>;
 
     return <AdminLayout screen="operations" title={sectionTitle ?? 'Branch Operations'}
-        {...{ adminName, signOut, branchNavigation }} busy={signingOut}>
+        {...{ adminName, signOut, branchNavigation, platform, schoolAccess }} operations busy={signingOut}>
         <Head title={`${sectionTitle ?? 'Branch Operations'} · Schoolhouse`} />
         <div className="page-heading">
             <div><h1>Branch operations</h1>{branch && <p>{branch.name}</p>}</div>
-            {branch && <Link className="admin-link-button" href={`/admin/branches/${branch.id}/modules`}>Branch modules</Link>}
+            {platform && branch && <Link className="admin-link-button" href={`/admin/branches/${branch.id}/modules`}>Branch modules</Link>}
         </div>
         <BranchPicker branch={branch} branches={branches} onSelect={id =>
             router.visit(id ? `/admin/branches/${id}/operations` : '/admin/operations')} />

@@ -1,3 +1,5 @@
+import { csvBoolean, csvFields } from './csv-records.js';
+import DataTools from './branch/DataTools.jsx';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { api } from '../../admin-api.js';
@@ -87,6 +89,20 @@ function LocationPage({ kind, adminName }) {
         });
     }
 
+    const fields = csvFields(isCity
+        ? ['name', 'slug', 'province', 'sort_order', 'is_active']
+        : ['city_id', 'name', 'slug', 'area_type', 'latitude', 'longitude', 'is_active'],
+    isCity ? ['name'] : ['city_id', 'name']);
+
+    async function importLocation({ city_id, is_active, ...row }) {
+        const body = Object.fromEntries(Object.entries(row).filter(([, value]) => value !== ''));
+        body.is_active = csvBoolean(is_active);
+        if (!isCity && !cities.some(city => String(city.id) === city_id)) {
+            throw new Error('City ID does not match an available city.');
+        }
+        await api(isCity ? 'admin/cities' : `admin/cities/${city_id}/areas`, 'POST', body);
+    }
+
     const filtered = rows?.filter(row => !cityFilter || String(row.city_id) === cityFilter);
 
     return <AdminLayout screen={kind} {...{ title, adminName, busy }} signOut={() => run(async () => {
@@ -145,6 +161,8 @@ function LocationPage({ kind, adminName }) {
                 {Array.from(new Map(rows?.map(row => [row.city_id, row.city_name])).entries()).map(([id, name]) =>
                     <option key={id} value={id}>{name}</option>)}
             </select></label>}
+            {rows && <DataTools title={title} rows={filtered} fields={fields} canImport
+                onImport={importLocation} onImportComplete={() => refresh().catch(error => setFeedback({ error: true, message: error.message }))} />}
             <div className="table-scroll"><table>
                 <thead><tr><th>Name</th><th>{isCity ? 'Province or territory' : 'City'}</th>{!isCity && <th>Type</th>}<th>Actions</th></tr></thead>
                 <tbody>

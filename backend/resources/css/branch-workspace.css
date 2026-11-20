@@ -396,12 +396,6 @@ footer { padding: 23px 0 30px; color: #95a098; font-size: 12px; }
 .fee-payment-history ul { margin: 7px 0 0; padding-left: 17px; color: #7b8981; }
 .fee-payment-history li + li { margin-top: 4px; }
 
-.data-tools { margin: 12px 0 16px; }
-.data-tools-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.data-tools .secondary-button { min-height: 35px; margin: 0; padding: 0 12px; border-color: #e2e6f0; border-radius: 7px; color: #586bd6; font-size: 11px; }
-.export-control { display: inline-flex; align-items: center; gap: 8px; color: #738098; font-size: 11px; font-weight: 700; }
-.export-control select { height: 35px; padding: 0 10px; border: 1px solid #e2e6f0; border-radius: 7px; background: #fff; color: #394560; font: inherit; font-size: 11px; }
-.data-tools-message { margin: 8px 0 0; color: #66728b; font-size: 11px; line-height: 1.5; }
 .crud-table-wrap { width: 100%; margin: 14px 0 18px; overflow-x: auto; border: 1px solid #e8ebf2; border-radius: 9px; background: #fff; }
 .crud-table { width: 100%; border-collapse: collapse; color: #4b5670; font-size: 15px; text-align: left; }
 .crud-table th { padding: 11px 13px; background: #f4f6fb; color: #778198; font-size: 15px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; }
@@ -411,15 +405,6 @@ footer { padding: 23px 0 30px; color: #95a098; font-size: 12px; }
 .crud-table td small { display: block; margin-top: 4px; color: #9099ad; font-size: 9px; }
 .crud-table td:last-child { min-width: 145px; white-space: nowrap; }
 .crud-table td .quiet-button { margin-right: 10px; }
-.import-preview { margin-top: 12px; padding: 14px; border: 1px solid #e2e6f0; border-radius: 9px; background: #f9faff; }
-.import-preview > div:first-child { display: grid; gap: 4px; }
-.import-preview > div:first-child strong { color: #303a54; font-size: 12px; }
-.import-preview > div:first-child span { color: #828ba0; font-size: 10px; }
-.import-preview ul { max-height: 130px; margin: 9px 0; padding-left: 18px; overflow: auto; color: #58647d; font-size: 10px; }
-.import-preview li { margin: 4px 0; }
-.import-preview li.invalid { color: #a44f45; }
-.import-preview-actions { display: flex; align-items: center; gap: 12px; }
-.import-preview-actions .primary-button { margin: 0; }
 .active-module-page .school-edit-form,
 .active-module-page .add-academic-form,
 .active-module-page .add-grade-form,

@@ -133,6 +133,29 @@ class User extends Authenticatable
         }
     }
 
+    public function canEnterSchoolhouse(): bool
+    {
+        return $this->is_active && ($this->isSuperAdmin() || $this->activeSchools()->exists());
+    }
+
+    /** @return list<string> */
+    public function schoolhouseOperationModules(School $school): array
+    {
+        $modules = match ($this->schoolAccessRole($school)) {
+            'admin', 'school_admin', 'owner', 'group_admin' => ['academics', 'students', 'attendance', 'guardians', 'inquiries', 'staff', 'fees', 'expenses'],
+            'teacher' => ['attendance'],
+            'account', 'accountant', 'group_accountant' => ['fees', 'expenses'],
+            default => [],
+        };
+        $permissions = $this->permissionsForSchool($school);
+
+        return array_values(array_filter($modules, fn (string $module) => in_array(
+            $module.'.manage',
+            $permissions,
+            true,
+        )));
+    }
+
     public function canManageSchool(School $school): bool
     {
         return $this->hasSchoolPermission($school, 'schools.manage');

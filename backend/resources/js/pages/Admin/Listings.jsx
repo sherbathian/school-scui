@@ -1,3 +1,5 @@
+import { csvFields, loadCsvPages } from './csv-records.js';
+import DataTools from './branch/DataTools.jsx';
 import { api } from '../../admin-api.js';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -6,6 +8,24 @@ import { Detail, ListingSection } from '../../components/admin-record.jsx';
 import { AdminLayout } from '../../components/admin-layout.jsx';
 import { Button } from '../../components/ui/button.jsx';
 import { Input } from '../../components/ui/input.jsx';
+
+const listingCsvFields = csvFields([
+    'name', 'slug', 'institute_type', 'short_name', 'branch_name', 'tagline', 'description',
+    'city_id', 'area_id', 'address_line', 'phone', 'email', 'website_url', 'gender_type', 'medium',
+    'established_year', 'latitude', 'longitude', 'whatsapp', 'social_links', 'seo_title', 'seo_description',
+], ['name', 'institute_type']);
+
+async function importListing(row) {
+    const body = Object.fromEntries(Object.entries(row).filter(([, value]) => value !== ''));
+    if (body.social_links) {
+        try {
+            body.social_links = JSON.parse(body.social_links);
+        } catch {
+            throw new Error('Social links must be a JSON object keyed by platform.');
+        }
+    }
+    await api('admin/listings', 'POST', body);
+}
 
 const types = { school: 'School', college: 'College', university: 'University', training_institute: 'Training institute' };
 const typeIcons = { school: 'school', college: 'academics', university: 'city', training_institute: 'staff' };
@@ -192,6 +212,10 @@ function Workspace({ run, busy, onError }) {
     return <>
         <div className="page-heading listing-page-heading"><div><h1><NavigationIcon name="directory" /> Directory listings</h1><p>Review and manage institute profiles on Taleemfinder.</p></div>
             <Link className="admin-link-button primary" href="/admin/listings/create"><NavigationIcon name="create" /> New listing</Link></div>
+        <DataTools title="Directory listings" rows={[]} fields={listingCsvFields}
+            exportFields={[...listingCsvFields, ...csvFields(['id', 'group_id', 'status', 'listing_status', 'verified_at', 'published_at'])]}
+            loadExportRows={() => loadCsvPages('admin/listings', filters)} canImport
+            onImport={importListing} onImportComplete={() => refresh(value => value + 1)} />
         <div className="metrics" aria-label="Listing totals">
             {Object.entries({ published: 'Published', needs_verification: 'Awaiting verification', suspended: 'Suspended' }).map(([key, label]) =>
                 <button key={key} type="button" className="metric-button" data-kind={key}
@@ -311,7 +335,7 @@ export default function Listings({ administrator, adminName, screen = 'index', l
         const { email, password, remember } = event.currentTarget.elements;
         run(async () => {
             await api('admin/login', 'POST', { email: email.value, password: password.value, remember: remember.checked });
-            window.location.assign('/admin/listings');
+            window.location.assign('/admin/dashboard');
         });
     }
 
@@ -326,11 +350,11 @@ export default function Listings({ administrator, adminName, screen = 'index', l
 
     if (!administrator) {
         return <main className="login-page">
-            <Head title="Platform admin sign in · Schoolhouse" />
+            <Head title="Schoolhouse sign in" />
             <div className="login-content">
                 <a className="brand" href="/"><span aria-hidden="true">S</span> Schoolhouse</a>
                 <h1>Sign in to Schoolhouse</h1>
-                <p>Use your platform administrator account.</p>
+                <p>Use your Schoolhouse account.</p>
                 <p id="feedback" role="status" data-error={feedback?.error || undefined}>{feedback?.message}</p>
                 <form id="sign-in" method="post" onSubmit={signIn}>
                     <Field label="Email address" name="email" type="email" autoComplete="username" required placeholder="you@example.com" />

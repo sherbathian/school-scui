@@ -29,7 +29,7 @@ const platformLinks = [
     ['demo-requests', 'Demo requests'], ['otp-codes', 'OTP activity'], ['notifications', 'Notifications'],
 ];
 
-export function AdminLayout({ screen, title, adminName, signOut, busy, branchNavigation, children }) {
+export function AdminLayout({ screen, title, adminName, signOut, busy, branchNavigation, platform = true, role, operations = false, schoolAccess = [], children }) {
     const [menuOpen, setMenuOpen] = useState(null);
     const name = adminName?.trim() || 'Administrator';
     const initials = name.split(/\s+/).slice(0, 2).map(word => Array.from(word)[0]).join('').toUpperCase();
@@ -41,11 +41,19 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, branchNav
 
     return <div className="admin-shell" data-menu={menuOpen === null ? 'auto' : menuOpen ? 'open' : 'closed'}>
         <aside className="sidebar" id="admin-navigation">
-            <Link className="brand" href="/admin/listings">
+            <Link className="brand" href="/admin/dashboard">
                 <span className="brand-mark"><NavigationIcon name="school" /></span>
                 Schoolhouse
             </Link>
-            <nav className="sidebar-nav" aria-label="Platform admin">
+            <nav className="sidebar-nav" aria-label="Schoolhouse navigation">
+                <NavigationLink icon="modules" href="/admin/dashboard" active={screen === 'dashboard'}>Dashboard</NavigationLink>
+                {!platform && <>
+                    {operations && <NavigationLink icon="school" href="/admin/operations" active={screen === 'operations' && !branchNavigation}>Branch Operations</NavigationLink>}
+                    {branchNavigation}
+                    {schoolAccess.includes('members') && <NavigationLink icon="membership" href="/admin/members" active={screen === 'members'}>Branch memberships</NavigationLink>}
+                    {schoolAccess.includes('roles') && <NavigationLink icon="shield" href="/admin/roles" active={screen === 'roles'}>Branch roles</NavigationLink>}
+                </>}
+                {platform && <>
                 <p className="nav-heading">Directory</p>
                 <NavigationLink icon="listings" href="/admin/listings" active={screen === 'index'}>All listings</NavigationLink>
                 <NavigationLink icon="create" href="/admin/listings/create" active={screen === 'create'}>Create listing</NavigationLink>
@@ -79,6 +87,7 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, branchNav
                 <p className="nav-heading">Locations</p>
                 <NavigationLink icon="city" href="/admin/cities" active={screen === 'cities'}>Cities</NavigationLink>
                 <NavigationLink icon="pin" href="/admin/areas" active={screen === 'areas'}>Areas</NavigationLink>
+                </>}
             </nav>
         </aside>
         <div className="admin-surface">
@@ -87,8 +96,8 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, branchNav
                     setMenuOpen(current => !(current ?? window.matchMedia('(min-width: 761px)').matches));
                 }}><NavigationIcon name="panel" /></Button>
                 <nav aria-label="Breadcrumb">
-                    <span>Platform admin</span><span aria-hidden="true">›</span>
-                    {servicesActive || communityActive || platformActive || directoryActive || ['index', 'cities', 'areas', 'claims', 'users', 'members', 'roles', 'permissions', 'operations'].includes(screen) ? <span aria-current="page">{title}</span> : <>
+                    <span>{platform ? 'Platform admin' : role ?? 'School management'}</span><span aria-hidden="true">›</span>
+                    {servicesActive || communityActive || platformActive || directoryActive || ['dashboard', 'index', 'cities', 'areas', 'claims', 'users', 'members', 'roles', 'permissions', 'operations'].includes(screen) ? <span aria-current="page">{title}</span> : <>
                         <Link href="/admin/listings">Listings</Link><span aria-hidden="true">›</span><span aria-current="page">{title}</span>
                     </>}
                 </nav>

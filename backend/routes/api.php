@@ -123,6 +123,7 @@ Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSc
     Route::patch('/schools/{school}/users/{user}', [SchoolUserController::class, 'update']);
     Route::delete('/schools/{school}/users/{user}', [SchoolUserController::class, 'destroy']);
     Route::get('/schools/{school}/roles', [SchoolRoleController::class, 'index']);
+    Route::get('/schools/{school}/roles/{role}/assigned-users', [SchoolRoleController::class, 'assignedUsers'])->whereNumber('role');
     Route::post('/schools/{school}/roles', [SchoolRoleController::class, 'store']);
     Route::patch('/schools/{school}/roles/{role}', [SchoolRoleController::class, 'update']);
     Route::delete('/schools/{school}/roles/{role}', [SchoolRoleController::class, 'destroy']);
@@ -181,6 +182,8 @@ Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSc
     Route::post('/schools/{school}/legacy-fee-types', [LegacyFeeTypeController::class, 'store']);
     Route::patch('/schools/{school}/legacy-fee-types/{feeType}', [LegacyFeeTypeController::class, 'update']);
     Route::delete('/schools/{school}/legacy-fee-types/{feeType}', [LegacyFeeTypeController::class, 'destroy']);
+    Route::get('/schools/{school}/fee-years', [FeeInvoiceController::class, 'years']);
+    Route::get('/schools/{school}/fee-students', [FeeInvoiceController::class, 'students']);
     Route::get('/schools/{school}/fee-invoices', [FeeInvoiceController::class, 'index']);
     Route::post('/schools/{school}/fee-invoices', [FeeInvoiceController::class, 'store']);
     Route::delete('/schools/{school}/fee-invoices/{feeInvoice}', [FeeInvoiceController::class, 'destroy']);

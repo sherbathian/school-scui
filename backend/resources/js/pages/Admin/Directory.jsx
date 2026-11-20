@@ -1,3 +1,5 @@
+import { csvBoolean, loadCsvPages } from './csv-records.js';
+import DataTools from './branch/DataTools.jsx';
 import { serviceResources } from './service-fields.js';
 import { communityResources } from './community-fields.js';
 import { platformResources } from './platform-fields.js';
@@ -208,6 +210,25 @@ export function Catalogue({ resource, title, schoolId, branchScoped = false, bus
     const fixedBranchField = !branchScoped ? undefined : resource !== 'student-transfers' ? 'school_id'
         : editor?.id && String(editor.to_school_id) === String(schoolId) ? 'to_school_id' : 'from_school_id';
 
+    const csvEnabled = ['boards', 'education-levels', 'facilities', 'school-groups', 'listing-fees',
+        'course-categories', 'courses', 'programs', 'student-fee-discounts'].includes(resource);
+    const csvColumns = fields.filter(([, , type]) => type !== 'read-only');
+    const csvFields = csvColumns.map(([key, , type, , required]) => ({
+        key, label: key, required: (key !== 'school_id' || !branchScoped) && (required || type === 'required'),
+    }));
+
+    async function importRecord(row) {
+        const body = {};
+        for (const [name, , type, fallback] of csvColumns) {
+            const value = row[name];
+            if (type === 'checkbox') body[name] = csvBoolean(value, fallback);
+            else if (value !== '') body[name] = value;
+            else if (fallback !== undefined) body[name] = fallback;
+        }
+        if (branchScoped) body.school_id = schoolId;
+        await api(path, 'POST', body);
+    }
+
     const editableFields = fields.filter(([, , type]) => type !== 'read-only');
     const formFields = personalToken && !editor?.id ? [['name', 'Name', 'required'], ['days', 'Valid for days (1–30)', 'integer', 7]]
         : deviceToken && !editor?.id ? [...editableFields, ['token', 'Push registration token', 'password', undefined, true]]
@@ -264,6 +285,9 @@ export function Catalogue({ resource, title, schoolId, branchScoped = false, bus
                 {options?.schools?.map(branch => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
             </select>
         </label>}
+        {csvEnabled && <DataTools key={`${resource}-${filter}`} title={title} rows={[]} fields={csvFields}
+            loadExportRows={() => loadCsvPages(path, { school_id: filter })} canImport
+            onImport={importRecord} onImportComplete={() => setReload(value => value + 1)} />}
         <div className="table-scroll"><table>
             <thead><tr><th>Record</th><th>{isTransfer ? 'From / To' : hasSchool ? 'Branch' : (isPlatform || isCommunity || isService) ? 'Summary' : 'Slug'}</th><th>Actions</th></tr></thead>
             <tbody>
@@ -351,7 +375,10 @@ function RecordForm({ fields, editor, options, busy, save, close, upload, fixedB
                             {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                         </select></label>;
                     }
-                    if (type === 'textarea') return <label key={name}>{label}<textarea name={name} required={required} defaultValue={value} /></label>;
+                    if (type === 'textarea') return <label key={name}>{label}
+                        {name === 'content' && <small>Use a JSON list of heading, paragraph, or list blocks. Heading and paragraph use text. List uses items.</small>}
+                        <textarea name={name} required={required} defaultValue={value} />
+                    </label>;
                     const numeric = ['integer', 'money'].includes(type);
                     return <label key={name}>{label}<Input name={name} required={required || type === 'required' || fallback !== undefined}
                         type={numeric ? 'number' : type === 'required' ? 'text' : type}

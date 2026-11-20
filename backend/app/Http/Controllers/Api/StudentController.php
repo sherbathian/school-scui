@@ -275,6 +275,7 @@ class StudentController extends Controller
             'section_id' => ['required', 'integer'],
             'academic_year' => ['sometimes', 'string', 'regex:/^\d{4}-\d{4}$/', 'max:20'],
             'enrolled_on' => ['sometimes', 'date'],
+            'new_only' => ['sometimes', 'boolean'],
         ]);
         $activeSession = $schoolRecord->schoolSessions()->where('is_current', true)->first();
         if (! $activeSession) {
@@ -310,8 +311,12 @@ class StudentController extends Controller
             ]);
         }
 
-        $enrollment = DB::transaction(function () use ($studentRecord, $schoolRecord, $gradeId, $sectionId, $enrolledOn, $previousEnrollmentEndDate, $academicYear): Enrollment {
+        $enrollment = DB::transaction(function () use ($studentRecord, $schoolRecord, $gradeId, $sectionId, $enrolledOn, $previousEnrollmentEndDate, $academicYear, $validated): Enrollment {
             $studentRecord = Student::query()->whereKey($studentRecord->id)->lockForUpdate()->firstOrFail();
+            if (($validated['new_only'] ?? false) && $studentRecord->enrollments()
+                ->where('academic_year', $academicYear)->where('status', 'active')->exists()) {
+                throw ValidationException::withMessages(['student' => ['Use the move-class action to change an existing enrollment.']]);
+            }
             $studentRecord->enrollments()
                 ->where('status', 'active')
                 ->update(['status' => 'completed', 'ended_on' => $previousEnrollmentEndDate]);

@@ -15,15 +15,39 @@ use Illuminate\Validation\ValidationException;
 
 class FeeInvoiceController extends Controller
 {
+    public function students(Request $request, int $school): JsonResponse
+    {
+        $record = $this->accessibleSchool($request, $school, 'manage');
+        $validated = $request->validate([
+            'academic_year' => ['sometimes', 'string', 'regex:/^\d{4}-\d{4}$/'],
+            'historical' => ['sometimes', 'boolean'],
+        ]);
+        $historical = $validated['historical'] ?? false;
+        $year = $validated['academic_year'] ?? $this->activeAcademicYear($record);
+        $this->validateAcademicYear($record, $year, $historical);
+
+        return response()->json(['data' => $record->students()->when(! $historical, fn ($query) => $query->where('status', 'active'))
+            ->whereHas('enrollments', fn ($query) => $query->where('academic_year', $year)
+                ->when(! $historical, fn ($query) => $query->where('status', 'active')))
+            ->orderBy('last_name')->orderBy('first_name')->get(['id', 'admission_number', 'first_name', 'last_name', 'status'])]);
+    }
+
+    public function years(Request $request, int $school): JsonResponse
+    {
+        $record = $this->accessibleSchool($request, $school, 'manage');
+
+        return response()->json(['data' => $record->configuredAcademicYears()]);
+    }
+
     public function index(Request $request, int $school): JsonResponse
     {
         $schoolRecord = $this->accessibleSchool($request, $school, 'manage');
         $validated = $request->validate([
             'academic_year' => ['required', 'string', 'regex:/^\d{4}-\d{4}$/', 'max:20'],
+            'historical' => ['sometimes', 'boolean'],
         ]);
-        if ($validated['academic_year'] !== $this->activeAcademicYear($schoolRecord)) {
-            throw ValidationException::withMessages(['academic_year' => ['Fee invoices must use the school’s active academic year.']]);
-        }
+        $historical = $validated['historical'] ?? false;
+        $this->validateAcademicYear($schoolRecord, $validated['academic_year'], $historical);
         $invoices = $schoolRecord->feeInvoices()
             ->with(['student:id,admission_number,first_name,last_name', 'feeType:id,title', 'payments' => fn ($query) => $query->orderBy('paid_on')->orderBy('id')])
             ->where('academic_year', $validated['academic_year'])
@@ -42,17 +66,18 @@ class FeeInvoiceController extends Controller
             'student_id' => ['required', 'integer'],
             'fee_type_id' => ['required', 'integer'],
             'academic_year' => ['required', 'string', 'regex:/^\d{4}-\d{4}$/', 'max:20'],
+            'historical' => ['sometimes', 'boolean'],
             'due_date' => ['sometimes', 'nullable', 'date'],
+            'import_amount' => ['sometimes', 'numeric', 'gt:0', 'regex:/^\d{1,8}(\.\d{1,2})?$/'],
         ]);
-        if ($validated['academic_year'] !== $this->activeAcademicYear($schoolRecord)) {
-            throw ValidationException::withMessages(['academic_year' => ['Fee invoices must use the school’s active academic year.']]);
-        }
+        $historical = $validated['historical'] ?? false;
+        $this->validateAcademicYear($schoolRecord, $validated['academic_year'], $historical);
         $feeType = $schoolRecord->legacyFeeTypes()
             ->where('status', 'active')
             ->where('academic_year', $validated['academic_year'])
             ->findOrFail($validated['fee_type_id']);
         $student = $schoolRecord->students()
-            ->where('status', 'active')
+            ->when(! $historical, fn ($query) => $query->where('status', 'active'))
             ->whereHas('enrollments', fn (Builder $query) => $query->where('academic_year', $validated['academic_year']))
             ->findOrFail($validated['student_id']);
 
@@ -72,7 +97,7 @@ class FeeInvoiceController extends Controller
             'fee_type_id' => $feeType->id,
             'academic_year' => $validated['academic_year'],
             'description' => $feeType->title,
-            'amount_cents' => $feeType->amount_cents,
+            'amount_cents' => isset($validated['import_amount']) ? $this->toCents($validated['import_amount']) : $feeType->amount_cents,
             'due_date' => $validated['due_date'] ?? null,
             'status' => 'open',
         ])->load(['student:id,admission_number,first_name,last_name', 'feeType:id,title', 'payments']);
@@ -101,6 +126,7 @@ class FeeInvoiceController extends Controller
             'amount' => ['required', 'numeric', 'gt:0', 'regex:/^\d{1,8}(\.\d{1,2})?$/'],
             'paid_on' => ['sometimes', 'date', 'before_or_equal:today'],
             'reference' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'csv_import' => ['sometimes', 'boolean'],
         ]);
         $amountCents = $this->toCents($validated['amount']);
 
@@ -108,6 +134,13 @@ class FeeInvoiceController extends Controller
             $invoice = $schoolRecord->feeInvoices()->whereKey($feeInvoice)->lockForUpdate()->firstOrFail();
             if ($invoice->status === 'void') {
                 throw ValidationException::withMessages(['invoice' => ['Payments cannot be added to a void invoice.']]);
+            }
+
+            if ($validated['csv_import'] ?? false) {
+                $reference = trim($validated['reference'] ?? '');
+                if ($reference === '' || $invoice->payments()->whereRaw('lower(reference) = ?', [strtolower($reference)])->exists()) {
+                    throw ValidationException::withMessages(['reference' => ['Provide a unique payment reference for this invoice.']]);
+                }
             }
 
             $balanceCents = $invoice->amount_cents - $invoice->payments()->sum('amount_cents');
@@ -144,6 +177,15 @@ class FeeInvoiceController extends Controller
         [$whole, $fraction] = array_pad(explode('.', (string) $amount, 2), 2, '');
 
         return ((int) $whole * 100) + (int) str_pad($fraction, 2, '0');
+    }
+
+    private function validateAcademicYear(School $school, string $year, bool $historical): void
+    {
+        if ($historical ? ! in_array($year, $school->configuredAcademicYears(), true) : $year !== $this->activeAcademicYear($school)) {
+            throw ValidationException::withMessages(['academic_year' => [
+                $historical ? 'Choose an academic year configured for this branch.' : 'Fee invoices must use the school’s active academic year.',
+            ]]);
+        }
     }
 
     private function activeAcademicYear(School $school): string

@@ -27,14 +27,18 @@ class LegacyFeeTypeController extends Controller
     public function store(Request $request, int $school): JsonResponse
     {
         $record = $this->accessibleSchool($request, $school, 'manage');
-        $activeYear = $this->activeAcademicYear($record);
         $validated = $request->validate([
+            'historical' => ['sometimes', 'boolean'],
             'title' => ['required', 'string', 'max:150'],
             'academic_year' => ['required', 'string', 'regex:/^\d{4}-\d{4}$/', 'max:20'],
             'amount' => ['required', 'numeric', 'gt:0', 'regex:/^\d{1,8}(\.\d{1,2})?$/'],
         ]);
-        if ($validated['academic_year'] !== $activeYear) {
-            throw ValidationException::withMessages(['academic_year' => ['Fee items must use the school’s active academic year.']]);
+        $historical = $validated['historical'] ?? false;
+        if ($historical ? ! in_array($validated['academic_year'], $record->configuredAcademicYears(), true)
+            : $validated['academic_year'] !== $this->activeAcademicYear($record)) {
+            throw ValidationException::withMessages(['academic_year' => [
+                $historical ? 'Choose an academic year configured for this branch.' : 'Fee items must use the school’s active academic year.',
+            ]]);
         }
         $this->validateUniqueTitle($validated['title'], $validated['academic_year'], $record);
         $type = $record->legacyFeeTypes()->create([

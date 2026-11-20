@@ -35,7 +35,7 @@ class School extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
-            ->withPivot(['role', 'is_active', 'is_primary_contact'])
+            ->withPivot(['role', 'is_active', 'is_primary_contact', 'student_id'])
             ->withTimestamps();
     }
 
@@ -117,6 +117,14 @@ class School extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    /** @return list<string> */
+    public function configuredAcademicYears(): array
+    {
+        return $this->schoolSessions()->orderByDesc('starts_on')->get(['starts_on', 'ends_on'])
+            ->map(fn (SchoolSession $session) => $session->starts_on->format('Y').'-'.$session->ends_on->format('Y'))
+            ->unique()->values()->all();
     }
 
     public function schoolSessions(): HasMany

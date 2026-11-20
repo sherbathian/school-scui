@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\School;
+use App\Models\User;
 use App\Services\SchoolRoles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,6 +41,37 @@ class SchoolRoleController extends Controller
                     'action' => str($permission->name)->after('.')->headline()->toString(),
                 ])->values(),
         ]]);
+    }
+
+    public function assignedUsers(Request $request, int $school, int $role): JsonResponse
+    {
+        $branch = $this->accessibleSchool($request, $school);
+        $record = Role::query()->where('guard_name', 'web')->where(function ($query) use ($request, $school): void {
+            $query->where('team_id', $school);
+            if ($request->user()->isSuperAdmin()) {
+                $query->orWhereNull('team_id');
+            }
+        })->findOrFail($role);
+
+        $users = DB::table('model_has_roles as assignment')
+            ->join('users', 'users.id', '=', 'assignment.model_id')
+            ->where('assignment.team_id', $record->team_id ?? 0)
+            ->where('assignment.role_id', $record->id)
+            ->where('assignment.model_type', (new User)->getMorphClass());
+        if ($record->team_id !== null) {
+            $users->join('school_user as membership', 'membership.user_id', '=', 'users.id')
+                ->where('membership.school_id', $branch->id)
+                ->addSelect('membership.is_active as membership_active');
+        }
+
+        return response()->json(['data' => $users->addSelect('users.id', 'users.name', 'users.email', 'users.is_active')
+            ->orderBy('users.name')->orderBy('users.id')->get()
+            ->map(fn (object $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'is_active' => (bool) $user->is_active && (bool) ($user->membership_active ?? true),
+            ])]);
     }
 
     public function store(Request $request, int $school): JsonResponse

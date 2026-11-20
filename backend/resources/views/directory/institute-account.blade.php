@@ -1,12 +1,12 @@
 @extends('directory.layout')
-@section('title', $mode === 'register' ? 'Institute registration' : 'Institute sign-in')
+@section('title', $mode === 'register' ? 'Create account' : 'Sign in')
 @section('robots')<meta name="robots" content="noindex">@endsection
 @section('content')
 <div class="wrap block">
     <section class="panel institute-form">
-        <h1>{{ $mode === 'register' ? 'Create an institute account' : 'Sign in to your institute account' }}</h1>
+        <h1>{{ $mode === 'register' ? ($directoryAccount ? 'Create your TaleemFinder account' : 'Create an institute account') : ($directoryAccount ? 'Sign in to TaleemFinder' : 'Sign in to your institute account') }}</h1>
         @if($errors->any())<p role="alert">{{ $errors->first() }}</p>@endif
-        <form method="post" action="{{ $mode === 'register' ? route('institute.register') : route('login') }}">
+        <form method="post" action="{{ $mode === 'register' ? route($directoryAccount ? 'directory.sign-up' : 'institute.register') : route($directoryAccount ? 'directory.sign-in' : 'login') }}">
             @csrf
             <input type="hidden" name="listing" value="{{ is_string($listing) ? $listing : '' }}">
             @if($mode === 'register')<label>Full name<input name="name" required maxlength="150" autocomplete="name" value="{{ old('name') }}"></label>@endif
@@ -19,9 +19,9 @@
             <button class="button teal">{{ $mode === 'register' ? 'Create account' : 'Sign in' }}</button>
         </form>
         @if($mode === 'register')
-            <p>Already registered? <a href="{{ route('login', is_string($listing) ? ['listing' => $listing] : []) }}">Sign in</a></p>
+            <p>Already registered? <a href="{{ route($directoryAccount ? 'directory.sign-in' : 'login', is_string($listing) ? ['listing' => $listing] : []) }}">Sign in</a></p>
         @else
-            <p><a href="{{ route('institute.register', is_string($listing) ? ['listing' => $listing] : []) }}">Create an account</a></p>
+            <p><a href="{{ route($directoryAccount ? 'directory.sign-up' : 'institute.register', is_string($listing) ? ['listing' => $listing] : []) }}">Create an account</a></p>
         @endif
     </section>
 </div>

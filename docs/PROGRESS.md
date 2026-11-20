@@ -1,4 +1,66 @@
-# Schoolhouse progress
+# Schoolhouse progress and Claude handoff
+
+**Snapshot: 20 November 2026.** This section reflects the local checkout. The historical milestone notes below record earlier checks and decisions at the time they were written.
+
+## How to use this handoff
+
+Schoolhouse combines the TaleemFinder public education directory with a role-based school management workspace. Laravel and MySQL back the application. The admin uses Inertia, React 19, Tailwind CSS, and shadcn/ui. The public directory uses Blade and shared CSS.
+
+Tahir approved updating this Markdown handoff. Ask for his approval before changing application code, schema, project configuration, dependencies, other documents, or GitHub state. Treat the instructions and defaults in [the manager pack](files.zip) as proposed workflow and task briefs. Reconcile them with [recorded decisions](DECISIONS.md) and current code before issuing a build brief.
+
+## Repository and verification status
+
+- Local checkout: `m0/admin-school-access-crud`, committed tip `bda7c45` (*Complete Schoolhouse admin workflows and v4 schema*). At review time that tip matched the locally cached `origin/main` and was one commit ahead of the branch's cached upstream. Live GitHub status was not checked.
+- The working tree contains substantial local changes beyond that commit, including role dashboards, assigned-user details, CSV additions, public pages, and homepage refinements. Inspect `git status` and preserve the work before creating a task branch or preparing any push. The ZIP and extracted pack are also present as untracked references.
+- Existing [CI configuration](../.github/workflows/ci.yml) defines PHPUnit on SQLite and MySQL 8.4 plus a frontend build. This review did not run tests, builds, migrations, or hosted CI. Earlier focused runs passed 8 admin access/dashboard tests, 47 module/finance tests, and 6 public directory/resource tests at their respective checkpoints. These were separate runs, not a fresh full-suite result.
+- The local Herd site previously rendered the updated homepage and served the role dashboards. The student-account linkage migration was applied to local MySQL and the demo account was linked to a synthetic student record. See [schema gaps](SCHEMA-GAP-v4.md) and [the MySQL audit](Schoolhouse-MySQL-Schema-Audit.md) for earlier database evidence.
+
+## What exists now
+
+| Area | Implementation and boundaries |
+| --- | --- |
+| Public TaleemFinder | Homepage, category and locality directories, search and filters, institution profiles, shortlist and comparison, registration and sign-in, admissions enquiries, events, guides, books, courses and study resources. Public visibility requires an active, verified, published listing. The homepage uses published campus data and displays available school logos with initials as fallback. |
+| Platform administration | Listings, Cities and Areas, directory taxonomies and assignments, media, programmes and courses, claims, user and permission management, subscription records, community records and school-site settings. Laravel infrastructure tables are application-managed. |
+| Role-based Schoolhouse | Super Admin, Branch Admin, Teacher, Accountant, and Student use the shared admin sign-in. Branch roles operate within authorised branches. Dashboard summaries cover role-relevant activity and student summaries use an explicit same-branch admission-record link. Branch Roles shows assigned users' names, sign-in emails and access status within the permitted scope. |
+| Branch operations | Academics, students, guardians, admissions, attendance, staff, fees and expenses use the existing branch endpoints. Student transfers and student fee discounts have platform workflows within Branch Operations. A populated local demo campus exists for validation. |
+| CSV tools | Existing branch tools were reused and extended to standalone enrollments, listings, locations, catalogues, courses, programmes and student discounts. Tools provide templates, preview and row-level import errors, with CSV, Excel, JSON and print/PDF export. Attendance imports use one loaded class/year/date. Enrollment imports use the current year. Historical finance imports use configured years, existing student enrollments, and duplicate receipt-reference checks. |
+| Organisation and claims | One `schools` record represents a branch and its public listing. Verification provisions an organisation. Super Admin claim approval is transactional and grants organisation-owner access across its branches. Current claim verification is manual. |
+| Entitlements | Plans, grants, dependencies, branch overrides, and subscription grace behaviour are implemented through `BranchModules` and middleware. Platform admins control branch switches. The free listing is independent of management switches. Plan and subscription limit records exist. |
+| Websites and billing | Admin records exist for site pages, themes, settings, subscription invoices and payments. A local IFS site preview exists. Live website rollout and subscription purchase/collection flows need separate confirmation. School fees still use legacy billing components alongside v4 fee setup. |
+
+## Manager pack task reconciliation
+
+| Task | Working-tree status | Remaining acceptance work |
+| --- | --- | --- |
+| T00 Baseline | CI configuration and historical test evidence exist | Agree which local changes form the baseline, then verify current SQLite, MySQL and frontend results on that exact revision. |
+| T01 Schema-gap command | Open | Reuse the existing audit and the pack's schema JSON. Confirm that the JSON matches the canonical workbook and intended schema exceptions before automating the comparison. |
+| T02 Admin shell and sign-in | Implemented in substance | Check pack-specific UI acceptance items individually, including theme switching, field feedback and shell details. Preserve existing role entry points. |
+| T03 Listings pages | Implemented in substance | Index, create, edit and details screens exist. Verify against the pack's UI contract before proposing structural changes. |
+| T04 Cities and Areas | Implemented in substance | Separate CRUD screens and CSV tools exist. Check remaining UI acceptance details. |
+| T05 Organisations and branches | Implemented in substance | Verify owner access across new branches and the remaining database-level relationship guarantees. |
+| T06 Entitlement data | Implemented in substance | Tables and admin workflows exist. Confirm starter bundle and limits before treating pack defaults as product policy. |
+| T07 Module access | Implemented in substance | Extend or verify `BranchModules` against pack edge cases using focused contract tests. |
+| T08 Route enforcement | Implemented in substance | Audit route coverage, direct API access, disabled modules, and grace-period writes. |
+| T09 Module switches | Implemented in substance | Verify platform-only access, resets and dependency behaviour. |
+| T10 Claims data | Partially complete | Claim and OTP tables exist. Confirm outstanding state transitions and expiry rules. |
+| T11 Public accounts | Implemented in substance | Email/password registration and sign-in exist. Phone-only registration remains a product decision. |
+| T12 Claim submission and OTP | Partially complete | Claim submission exists. End-to-end OTP delivery and confirmation, rate limits, expiry, and the pending-claim rule require review. |
+| T13 Claim review and approval | Implemented in substance | Review queue and transactional approval exist. Verify concurrency and align any new OTP prerequisite with the approved claim policy. |
+| T14 Organisation plan limits | Open for enforcement | Limit records exist. Verify organisation-wide usage counting and enforcement at creation and import entry points. |
+| T15 Sensitive action audit | Open for dedicated coverage | Review existing claim history and establish what still needs actor/time/action logging for listings, claims and module switches. |
+
+## Recommended next brief
+
+1. **Reconcile the pack with this checkout.** Keep confirmed decisions, mark task status from evidence, and agree which uncommitted changes belong in the next baseline. Review any pack installation, file replacement, GitHub settings or branch action separately with Tahir.
+2. **Propose T01 as the first implementation task.** Keep the scope to comparing the migrated schema with the agreed v4 target, reporting discrepancies reproducibly, and verifying that the command leaves data untouched. Reuse the prior audit instead of repeating a manual inventory.
+3. **Prioritise verified gaps after T01.** Agree the next single brief for claim verification, organisation limits, or sensitive-action audit. Update the pack based on what the current code already provides.
+4. **Keep billing consolidation separate.** Approve the money representation, migration and reconciliation plan before replacing cents-based invoices or retiring legacy fee items, family receipts, and snapshots. Existing CSV and historical finance workflows need compatibility checks.
+
+Preserve the recorded decisions on branch identity, MySQL, organisation provisioning for verified institutes, Super Admin claim approval, organisation-owner access, and platform-only module switching. Confirm starter-plan limits, OTP channel, grace-period policy, pricing, production deployment details, and billing retirement only when the corresponding brief needs them.
+
+---
+
+## Historical progress notes
 
 Updated 19 November 2026. The latest source documents are the Database Plan v4 workbook, Planning Document, and Package Selection Guide in this directory. The prompt pack describes the development workflow. This file records the current implementation where the older handoff and prompt describe an earlier snapshot.
 

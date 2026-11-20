@@ -132,6 +132,36 @@ class FeeManagementTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('title');
     }
 
+    public function test_historical_csv_finance_accepts_configured_years_and_rejects_duplicate_receipts(): void
+    {
+        $school = School::factory()->create();
+        $admin = $this->schoolAdminFor($school);
+        SchoolSession::factory()->for($school)->create([
+            'starts_on' => '2025-08-01', 'ends_on' => '2026-06-30', 'is_current' => false,
+        ]);
+        $student = $this->enrolledStudentFor($school);
+        $student->enrollments()->update(['academic_year' => '2025-2026', 'status' => 'completed']);
+        $student->update(['status' => 'leave']);
+        $path = "/api/schools/{$school->id}";
+        $this->actingAs($admin, 'sanctum')->getJson("{$path}/fee-years")->assertJsonPath('data.1', '2025-2026');
+        $feeItem = ['title' => 'Opening balance', 'amount' => '100.00', 'academic_year' => '2025-2026'];
+        $this->postJson("{$path}/legacy-fee-types", $feeItem)->assertUnprocessable();
+        $feeType = $this->postJson("{$path}/legacy-fee-types", [...$feeItem, 'historical' => true])->assertCreated()->json('data.id');
+        $this->getJson("{$path}/fee-students?historical=1&academic_year=2025-2026")->assertJsonPath('data.0.id', $student->id);
+
+        $invoice = $this->postJson("{$path}/fee-invoices", [
+            'student_id' => $student->id, 'fee_type_id' => $feeType, 'academic_year' => '2025-2026',
+            'historical' => true, 'import_amount' => '83.50',
+        ])->assertCreated()->assertJsonPath('data.amount', '83.50')->json('data.id');
+
+        $receipt = ['amount' => '20.00', 'reference' => 'import-1', 'paid_on' => '2025-09-01', 'csv_import' => true];
+        $this->postJson("{$path}/fee-invoices/{$invoice}/payments", $receipt)->assertOk()->assertJsonPath('data.balance', '63.50');
+        $this->postJson("{$path}/fee-invoices/{$invoice}/payments", [...$receipt, 'reference' => 'IMPORT-1'])
+            ->assertUnprocessable()->assertJsonValidationErrors('reference');
+        $this->getJson("{$path}/fee-invoices?historical=1&academic_year=2025-2026")->assertJsonPath('data.0.balance', '63.50');
+        $this->getJson("{$path}/fee-invoices?historical=1&academic_year=2024-2025")->assertUnprocessable();
+    }
+
     private function enrolledStudentFor(School $school): Student
     {
         $student = Student::factory()->for($school)->create();

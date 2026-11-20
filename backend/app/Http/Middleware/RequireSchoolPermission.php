@@ -34,6 +34,12 @@ class RequireSchoolPermission
         $school = $user->activeSchools()->whereKey($schoolId)->first();
         abort_unless($school, 404);
 
+        if ($permission === 'schools.view' && $request->route()->uri() === 'api/schools/{school}') {
+            return $next($request);
+        }
+
+        abort_if($user->schoolAccessRole($school) === 'student', 403);
+
         $allowed = is_array($permission)
             ? collect($permission)->contains(fn (string $name) => $user->hasSchoolPermission($school, $name))
             : $user->hasSchoolPermission($school, $permission);
@@ -67,7 +73,7 @@ class RequireSchoolPermission
             'attendance' => 'attendance',
             'grades', 'sections', 'subjects', 'sessions' => 'academics',
             'staff', 'staff-lookups' => 'staff',
-            'fee-types', 'legacy-fee-types', 'fee-discounts', 'fee-groups', 'fee-masters', 'fee-invoices', 'family-fee-receipts' => 'fees',
+            'fee-years', 'fee-students', 'fee-types', 'legacy-fee-types', 'fee-discounts', 'fee-groups', 'fee-masters', 'fee-invoices', 'family-fee-receipts' => 'fees',
             'expenses', 'expense-heads' => 'expenses',
             default => 'schools',
         };

@@ -60,6 +60,9 @@ const studentImportFields = [
   ...[...guardianFields, 'is_guardian_other'].map((key) => ({ key: `guardian_${key}`, label: `guardian_${key}` })),
 ]
 
+const enrollmentFields = ['admission_number', 'grade', 'section', 'academic_year', 'enrolled_on']
+  .map((key) => ({ key, label: key, required: ['admission_number', 'grade', 'section'].includes(key) }))
+
 const studentExportFields = [
   ...studentProfileFields.map(([key]) => key), 'guardian_id', 'guardian_source_parent_id', ...guardianFields.map((key) => `guardian_${key}`),
   'guardian_is_guardian_other', 'grade', 'section', 'academic_year', 'enrollment_history', 'source_data', 'source_guardian_data',
@@ -118,7 +121,7 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
   const academicYear = school.active_session?.academic_year || currentAcademicYear()
   const [attendanceOpen, setAttendanceOpen] = useState(attendanceOnly)
   const [attendanceDate, setAttendanceDate] = useState(todayDate)
-  const attendanceYear = school.active_session?.academic_year || currentAcademicYear()
+  const [attendanceYear, setAttendanceYear] = useState(school.active_session?.academic_year || currentAcademicYear())
   const [attendanceGradeId, setAttendanceGradeId] = useState('')
   const [attendanceSectionId, setAttendanceSectionId] = useState('')
   const [attendanceRows, setAttendanceRows] = useState([])
@@ -326,6 +329,9 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
   }
 
   async function importEnrollment(row) {
+    if (row.academic_year && row.academic_year !== academicYear) {
+      throw new Error('Enrollment CSV rows must use the current academic year.')
+    }
     const matchParams = new URLSearchParams({ page: '1', per_page: '100', search: row.admission_number, sort: 'admission_number', direction: 'asc' })
     const matchingRows = await readPage(await apiRequest(`/api/schools/${school.id}/students?${matchParams}`))
     const student = matchingRows.data.find((item) => item.admission_number.toLowerCase() === row.admission_number.toLowerCase())
@@ -338,9 +344,8 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
     if (!grade || !section) throw new Error('Grade and section must match an active assigned class in this school.')
     await readData(await apiRequest(`/api/schools/${school.id}/students/${student.id}/enrollments`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ grade_id: grade.id, section_id: section.id, academic_year: academicYear }),
+      body: JSON.stringify({ grade_id: grade.id, section_id: section.id, academic_year: academicYear, enrolled_on: row.enrolled_on || undefined, new_only: true }),
     }))
-    await refreshStudentPage()
   }
 
   async function enrollStudent(event, student) {
@@ -481,6 +486,9 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
   }
 
   async function importAttendance(records) {
+    if (records.some(row => (row.academic_year && row.academic_year !== attendanceYear) || (row.attendance_date && row.attendance_date !== attendanceDate))) {
+      throw new Error('CSV dates and academic years must match the loaded class register.')
+    }
     const byAdmission = new Map(records.map((record) => [record.admission_number.toLowerCase(), record.status.toLowerCase()]))
     if (records.length !== attendanceRows.length || attendanceRows.some((row) => !byAdmission.has(row.student.admission_number.toLowerCase()))) {
       throw new Error('Include exactly one row for every student in the loaded class register.')
@@ -526,6 +534,15 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
             </> : null}
           </section> : <>
           {rosterVisible && <DataTools title="Students" rows={students.map(exportStudentRow)} loadExportRows={async () => (await loadAllStudents()).map(exportStudentRow)} onImportComplete={refreshStudentPage} fields={studentImportFields} exportFields={studentExportFields} canImport={canManage} onImport={importStudent} />}
+          {rosterVisible && <DataTools title="Enrollments" rows={[]} fields={enrollmentFields}
+            exportFields={[...enrollmentFields, { key: 'status', label: 'status' }, { key: 'ended_on', label: 'ended_on' }]}
+            canImport={canManage && academicsEnabled && Boolean(school.active_session)} onImport={importEnrollment}
+            onImportComplete={refreshStudentPage}
+            loadExportRows={async () => (await loadAllStudents()).flatMap(student => student.enrollments.map(enrollment => ({
+              admission_number: student.admission_number, grade: enrollment.grade.title, section: enrollment.section.title,
+              academic_year: enrollment.academic_year, enrolled_on: enrollment.enrolled_on, ended_on: enrollment.ended_on,
+              status: enrollment.status,
+            })))} />}
           <span className="active-year-label">Active academic year <strong>{academicYear}</strong></span>
           {error ? <p className="form-error" role="alert">{error}</p> : null}
           {loading ? <p className="muted-copy" role="status">Loading student roster…</p> : null}
@@ -636,7 +653,13 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
               {attendanceOpen ? (
                 <section className="attendance-panel" aria-label="Class attendance">
                   <form className="attendance-filter-form" onSubmit={loadAttendance}>
-                    <div className="attendance-year-field"><span>Academic year</span><strong>{school.active_session?.academic_year || attendanceYear}</strong></div>
+                    <label className="attendance-filter-field">Academic year<select value={attendanceYear} onChange={(event) => {
+                      setAttendanceYear(event.target.value)
+                      setAttendanceLoaded(false)
+                    }}>
+                      {[...new Set([school.active_session?.academic_year || currentAcademicYear(), ...(school.academic_years ?? [])])].map(year =>
+                        <option key={year} value={year}>{year}</option>)}
+                    </select></label>
                     <label className="attendance-filter-field" htmlFor={`attendance-grade-${school.id}`}>Grade<select id={`attendance-grade-${school.id}`} value={attendanceGradeId} onChange={(event) => {
                       setAttendanceGradeId(event.target.value)
                       setAttendanceSectionId('')
@@ -663,7 +686,7 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
                   </form>
                   {attendanceLoaded && attendanceRows.length ? (
                     <>
-                      <DataTools title={`Attendance ${attendanceDate}`} rows={attendanceRows.map((row) => ({ admission_number: row.student.admission_number, student: `${row.student.first_name} ${row.student.last_name}`, status: row.status || '' }))} fields={[{ key: 'admission_number', label: 'admission_number', required: true }, { key: 'student', label: 'student' }, { key: 'status', label: 'status', required: true }]} canImport={canTakeAttendance} onImportBatch={importAttendance} />
+                      <DataTools title={`Attendance ${attendanceDate}`} rows={attendanceRows.map((row) => ({ admission_number: row.student.admission_number, student: `${row.student.first_name} ${row.student.last_name}`, status: row.status || '', academic_year: attendanceYear, attendance_date: attendanceDate }))} fields={[{ key: 'admission_number', label: 'admission_number', required: true }, { key: 'student', label: 'student' }, { key: 'status', label: 'status', required: true }, { key: 'academic_year', label: 'academic_year' }, { key: 'attendance_date', label: 'attendance_date' }]} canImport={canTakeAttendance} onImportBatch={importAttendance} />
                       <ul className="attendance-list">
                         {attendanceRows.map((row) => (
                           <li key={row.enrollment_id}>

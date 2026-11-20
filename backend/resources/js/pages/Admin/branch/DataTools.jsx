@@ -1,8 +1,9 @@
+import '../../../../css/data-tools.css'
 import { useRef, useState } from 'react'
 
 function csvCell(value) {
   const text = value == null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value)
-  const safeText = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text
+  const safeText = /^[=+\-@\t\r]/.test(text) && !/^-\d+(?:\.\d+)?$/.test(text) ? `'${text}` : text
   return `"${safeText.replaceAll('"', '""')}"`
 }
 
@@ -123,6 +124,7 @@ export default function DataTools({ title, rows, fields, exportFields = fields, 
     const file = event.target.files?.[0]
     event.target.value = ''
     setMessage('')
+    setPreparedRows([])
     if (!file) return
     if (!file.name.toLowerCase().endsWith('.csv') || file.size > 5 * 1024 * 1024) {
       setMessage('Choose a CSV file smaller than 5 MB.')
@@ -137,7 +139,7 @@ export default function DataTools({ title, rows, fields, exportFields = fields, 
       const normalized = parsed.map(({ line, values, hasExtraValues }) => {
         const record = Object.fromEntries(fields.map((field) => {
           const matchedHeader = Object.keys(values).find((header) => header.toLowerCase() === field.key.toLowerCase() || header.toLowerCase() === field.label.toLowerCase())
-          return [field.key, matchedHeader ? values[matchedHeader].trim() : '']
+          return [field.key, matchedHeader ? values[matchedHeader].trim().replace(/^'(?=[=+\-@])/, '') : '']
         }))
         const missing = fields.filter((field) => field.required && !record[field.key]).map((field) => field.label)
         return { line, record, error: hasExtraValues ? 'Row has more values than headers.' : missing.length ? `Missing ${missing.join(', ')}.` : '' }
@@ -190,9 +192,9 @@ export default function DataTools({ title, rows, fields, exportFields = fields, 
     <section className="data-tools" aria-label={`${title} import and export`}>
       <div className="data-tools-actions">
         {canImport ? <>
-          <button className="quiet-button" type="button" onClick={() => downloadFile(`${title.toLowerCase().replaceAll(' ', '-')}-template.csv`, [headers].map((line) => line.map(csvCell).join(',')).join('\r\n'), 'text/csv;charset=utf-8')}>CSV template</button>
-          <button className="secondary-button" type="button" onClick={() => fileInput.current?.click()}>Import CSV</button>
-          <input ref={fileInput} className="visually-hidden" type="file" accept=".csv,text/csv" onChange={selectFile} />
+          <button className="quiet-button" type="button" disabled={busy} onClick={() => downloadFile(`${title.toLowerCase().replaceAll(' ', '-')}-template.csv`, [headers].map((line) => line.map(csvCell).join(',')).join('\r\n'), 'text/csv;charset=utf-8')}>CSV template</button>
+          <button className="secondary-button" type="button" disabled={busy} onClick={() => fileInput.current?.click()}>Import CSV</button>
+          <input ref={fileInput} hidden type="file" accept=".csv,text/csv" onChange={selectFile} />
         </> : null}
         <label className="export-control">Export
           <select aria-label={`Export ${title} as`} value="" disabled={busy} onChange={(event) => { const format = event.target.value; event.target.value = ''; if (format) void exportData(format) }}>
@@ -201,8 +203,8 @@ export default function DataTools({ title, rows, fields, exportFields = fields, 
         </label>
       </div>
       {preparedRows.length ? <div className="import-preview">
-        <div><strong>CSV preview</strong><span>{preparedRows.length} rows ready. Existing validation will run when each row is saved.</span></div>
-        <ul>{preparedRows.slice(0, 4).map((entry) => <li key={entry.line} className={entry.error ? 'invalid' : ''}>Row {entry.line}: {entry.error || Object.values(entry.record).filter(Boolean).join(' · ')}</li>)}</ul>
+        <div><strong>CSV preview</strong><span>{preparedRows.length} rows detected. The server checks each submission before saving.</span></div>
+        <ul>{preparedRows.map((entry) => <li key={entry.line} className={entry.error ? 'invalid' : ''}>Row {entry.line}: {entry.error || Object.values(entry.record).filter(Boolean).join(' · ')}</li>)}</ul>
         <div className="import-preview-actions"><button className="primary-button small-button" type="button" disabled={busy || preparedRows.every((entry) => entry.error) || (onImportBatch && preparedRows.some((entry) => entry.error))} onClick={importRows}>{busy ? 'Importing…' : 'Import valid rows'}</button><button className="quiet-button" type="button" onClick={() => setPreparedRows([])}>Cancel</button></div>
       </div> : null}
       {message ? <p className="data-tools-message" role="status">{message}</p> : null}

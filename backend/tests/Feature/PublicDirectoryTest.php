@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\School;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PublicDirectoryTest extends TestCase
@@ -39,6 +40,24 @@ class PublicDirectoryTest extends TestCase
         $visible->forceFill(['listing_status' => 'suspended'])->save();
         $this->get('/saved')->assertDontSee($visible->name);
         $this->get('/compare')->assertDontSee($visible->name);
+    }
+
+    public function test_public_cards_display_an_existing_logo_only_for_visible_listings(): void
+    {
+        Storage::fake('public')->put('logos/campus.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg=='));
+        $school = School::factory()->create([
+            'logo_path' => 'logos/campus.png', 'listing_status' => 'published', 'verified_at' => now(),
+        ]);
+        $missing = School::factory()->create([
+            'logo_path' => 'logos/missing.png', 'listing_status' => 'published', 'verified_at' => now(),
+        ]);
+
+        $url = route('directory.logo', $school->slug);
+        $this->get('/')->assertOk()->assertSee($url)->assertDontSee(route('directory.logo', $missing->slug));
+        $this->get('/schools')->assertOk()->assertSee($url);
+        $this->get($url)->assertOk()->assertHeader('Content-Type', 'image/png');
+        $school->forceFill(['listing_status' => 'suspended'])->save();
+        $this->get($url)->assertNotFound();
     }
 
     public function test_directory_filters_by_city_area_keyword_and_type(): void

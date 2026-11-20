@@ -102,6 +102,7 @@ class SchoolController extends Controller
             'status' => $school->status,
             'role' => $user->isSuperAdmin() ? 'super_admin' : $user->schoolAccessRole($school),
             'permissions' => $user->permissionsForSchool($school),
+            'academic_years' => $school->configuredAcademicYears(),
             'active_session' => ($session = $school->schoolSessions->first()) ? [
                 'id' => $session->id,
                 'title' => $session->title,

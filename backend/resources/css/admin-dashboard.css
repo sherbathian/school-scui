@@ -323,3 +323,7 @@
     .branch-picker-popover p { padding: 8px 10px; }
     .branch-picker .branch-picker-clear { margin-top: 3px; font-size: .8rem; }
 }
+
+@media (max-width: 760px) {
+    .admin-main .dashboard-metrics { grid-template-columns: 1fr; }
+}

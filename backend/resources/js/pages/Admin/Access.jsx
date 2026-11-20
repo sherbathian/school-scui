@@ -9,6 +9,34 @@ import { Input } from '../../components/ui/input.jsx';
 const titles = { users: 'User accounts', members: 'Branch memberships', roles: 'Branch roles', permissions: 'Permissions catalogue' };
 const labels = { users: 'user', members: 'membership', roles: 'role' };
 
+function AssignedUsers({ role, branch, platform }) {
+    const [users, setUsers] = useState(null);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (role.team_id === null && !platform) return;
+        const controller = new AbortController();
+        api(`schools/${branch.id}/roles/${role.id}/assigned-users`, 'GET', undefined, controller.signal)
+            .then(result => { if (!controller.signal.aborted) setUsers(result.data); })
+            .catch(error => { if (!controller.signal.aborted) setError(error.message); });
+        return () => controller.abort();
+    }, [branch.id, role.id, role.team_id, platform]);
+
+    return <section className="mt-4" aria-label="Assigned users">
+        <h2 className="mb-3">Assigned users</h2>
+        {role.team_id === null && !platform ? <p>Only Super Admins can view platform role assignments.</p>
+            : error ? <p role="alert">{error}</p>
+            : !users ? <p role="status">Loading assigned users…</p>
+            : users.length === 0 ? <p>No users are assigned to this role.</p>
+            : <div className="table-scroll"><table>
+                <thead><tr><th>Name</th><th>Sign-in email</th><th>Access status</th></tr></thead>
+                <tbody>{users.map(user => <tr key={user.id}>
+                    <td>{user.name}</td><td>{user.email}</td><td>{user.is_active ? 'Active' : 'Inactive'}</td>
+                </tr>)}</tbody>
+            </table></div>}
+    </section>;
+}
+
 function PermissionPicker({ permissions, selected = [], name }) {
     return <fieldset className="access-permissions">
         <legend>{name === 'direct_permissions' ? 'Direct permissions' : 'Role permissions'}</legend>
@@ -33,18 +61,23 @@ function UserFields({ record }) {
     </>;
 }
 
-function MemberFields({ record, roles, permissions }) {
-    const validRole = roles.some(role => role.name === record.role);
+function MemberFields({ record, roles, permissions, platform }) {
+    const choices = platform ? roles : roles.filter(role => role.name !== 'admin' || record.role === 'admin');
+    const validRole = choices.some(role => role.name === record.role);
+    const [role, setRole] = useState(validRole ? record.role : '');
     return <>
         {record.id ? <p>{record.name} · {record.email}</p> :
             <label>Account email<Input name="email" type="email" required placeholder="person@example.com" /></label>}
-        <label>Branch role<select name="role" defaultValue={validRole ? record.role : ''} required>
+        <label>Branch role<select name="role" value={role} onChange={event => setRole(event.target.value)} required>
             <option value="">Select a role</option>
-            {roles.map(role => <option key={role.id} value={role.name}>{role.name}</option>)}
+            {choices.map(role => <option key={role.id} value={role.name}>{role.name}</option>)}
         </select></label>
         <label className="review-toggle"><input type="checkbox" name="is_active" defaultChecked={record.is_active ?? true} /> Membership active</label>
         <label className="review-toggle"><input type="checkbox" name="is_primary_contact" defaultChecked={record.is_primary_contact ?? false} /> Primary contact</label>
-        {record.id && <PermissionPicker name="direct_permissions" {...{ permissions }} selected={record.direct_permissions} />}
+        {record.id && role === 'student' && <label>Linked student admission number
+            <Input name="student_admission_number" defaultValue={record.student_admission_number ?? ''} />
+        </label>}
+        {platform && record.id && <PermissionPicker name="direct_permissions" {...{ permissions }} selected={record.direct_permissions} />}
     </>;
 }
 
@@ -56,11 +89,11 @@ function RoleFields({ record, permissions }) {
     </>;
 }
 
-export default function Access({ screen, branch, branches, adminName, adminId }) {
-    return <AccessPage key={screen + ':' + (branch?.id ?? '')} {...{ screen, branch, branches, adminName, adminId }} />;
+export default function Access({ screen, branch, branches, adminName, adminId, platform = true, schoolAccess, operations }) {
+    return <AccessPage key={screen + ':' + (branch?.id ?? '')} {...{ screen, branch, branches, adminName, adminId, platform, schoolAccess, operations }} />;
 }
 
-function AccessPage({ screen, branch, branches, adminName, adminId }) {
+function AccessPage({ screen, branch, branches, adminName, adminId, platform = true, schoolAccess, operations }) {
     const branchScreen = screen === 'members' || screen === 'roles';
     const title = titles[screen];
     const noun = labels[screen];
@@ -115,7 +148,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
         if (screen === 'members') {
             data.is_primary_contact = form.has('is_primary_contact');
             if (editor.id) {
-                data.direct_permissions = form.getAll('direct_permissions');
+                if (platform) data.direct_permissions = form.getAll('direct_permissions');
                 if (data.role === editor.role) delete data.role;
             }
         }
@@ -156,10 +189,10 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
     }
 
     function canEdit(record) {
-        return screen !== 'permissions' && !record.is_super_admin && !record.is_immutable && record.team_id !== null;
+        return screen !== 'permissions' && (platform || screen !== 'members' || !['admin', 'school_admin'].includes(record.role)) && !record.is_super_admin && !record.is_immutable && record.team_id !== null;
     }
 
-    return <AdminLayout {...{ screen, title, adminName, busy }} signOut={() => run(async () => {
+    return <AdminLayout {...{ screen, title, adminName, busy, platform, schoolAccess, operations }} signOut={() => run(async () => {
         await api('logout', 'POST');
         window.location.assign('/admin/login');
     })}>
@@ -181,7 +214,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
             <form className="listing-full-form" key={editor.id ?? 'new'} onSubmit={save}>
                 <ListingSection icon="shield" title="Access information">
                     {screen === 'users' && <UserFields record={editor} />}
-                    {screen === 'members' && <MemberFields record={editor} {...{ roles, permissions }} />}
+                    {screen === 'members' && <MemberFields record={editor} {...{ roles, permissions, platform }} />}
                     {screen === 'roles' && <RoleFields record={editor} {...{ permissions }} />}
                 </ListingSection>
                 <div className="listing-save-bar"><Button type="submit" disabled={busy}>Save {noun}</Button>
@@ -199,6 +232,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
                 {screen === 'users' && <Detail label="Private phone" value={details.phone} />}
                 {screen === 'roles' && <Detail label="Granted permissions" value={details.permissions.join(', ') || '—'} wide />}
             </ListingSection>
+            {screen === 'roles' && <AssignedUsers key={details.id} role={details} {...{ branch, platform }} />}
         </>}
         {!editor && !details && (!branchScreen || branch) && <section aria-label={title}>
             {screen === 'permissions' && <p className="mb-4">Assign application permissions in Branch roles or Branch memberships.</p>}
@@ -208,7 +242,11 @@ function AccessPage({ screen, branch, branches, adminName, adminId }) {
                 <tbody>
                     {visible?.map(record => <tr key={record.id}>
                         {cells(record).map((value, index) => <td key={columns[index]}>{index === 0
-                            ? <button type="button" className="record-name-link" onClick={() => setDetails(record)}>{value}</button> : value}
+                            ? <button type="button" className="record-name-link" onClick={() => setDetails(record)}>{value}</button>
+                            : screen === 'roles' && index === 2 && (platform || record.team_id !== null)
+                                ? <button type="button" className="record-name-link" aria-label={`View assigned users for ${record.name}`}
+                                    onClick={() => setDetails(record)}>{value}</button>
+                                : value}
                             {index === 0 && record.email && <small className="listing-context">{record.email}</small>}</td>)}
                         {noun && <td><div className="row-actions">
                             {canEdit(record) ? <>

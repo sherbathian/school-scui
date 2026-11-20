@@ -1,13 +1,17 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Api\AdminCommunityController;
 use App\Http\Controllers\Api\AdminDirectoryController;
 use App\Http\Controllers\Api\AdminPlatformController;
 use App\Http\Controllers\Api\AdminServicesController;
 use App\Http\Controllers\InstituteClaimController;
 use App\Http\Controllers\PublicDirectoryController;
+use App\Http\Controllers\PublicResourcesController;
+use App\Http\Controllers\SchoolPagePreviewController;
 use App\Http\Resources\AdminListingResource;
 use App\Models\School;
+use App\Services\BranchModules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,14 +24,52 @@ Route::get('/directory', [PublicDirectoryController::class, 'index'])->name('dir
 Route::get('/{category}/{citySlug?}/{areaSlug?}', [PublicDirectoryController::class, 'index'])
     ->whereIn('category', array_keys(PublicDirectoryController::TYPES))->name('directory.category');
 Route::get('/institutions/{slug}', [PublicDirectoryController::class, 'show'])->name('directory.profile');
+Route::post('/institutions/{slug}/enquire', [PublicDirectoryController::class, 'enquire'])
+    ->middleware('throttle:6,1')->name('directory.enquire');
+Route::get('/institutions/{slug}/logo', [PublicDirectoryController::class, 'logo'])->name('directory.logo');
+Route::get('/institutions/{slug}/media/{media}', [PublicDirectoryController::class, 'media'])
+    ->whereNumber('media')->name('directory.media');
 Route::get('/{collection}', [PublicDirectoryController::class, 'collection'])
     ->whereIn('collection', ['saved', 'compare'])->name('directory.collection');
 Route::post('/{collection}/{slug}', [PublicDirectoryController::class, 'toggle'])
     ->whereIn('collection', ['saved', 'compare'])->name('directory.toggle');
+Route::get('/{resource}', [PublicResourcesController::class, 'index'])
+    ->whereIn('resource', array_keys(PublicResourcesController::PAGES))->name('directory.resources');
+Route::get('/{resource}/{record}', [PublicResourcesController::class, 'show'])
+    ->whereIn('resource', array_keys(PublicResourcesController::PAGES))->name('directory.resource');
+Route::get('/study-resources/{record}/download', [PublicResourcesController::class, 'download'])
+    ->whereNumber('record')->middleware('throttle:30,1')->name('directory.study-download');
+Route::post('/books/{book}/enquire', [PublicResourcesController::class, 'enquireBook'])
+    ->whereNumber('book')->middleware(['auth', 'throttle:8,1'])->name('directory.book-enquiry');
+Route::get('/short-courses/{record?}', fn (?string $record = null) => redirect(
+    $record ? route('directory.resource', ['courses', $record]) : route('directory.resources', 'courses')
+));
+Route::redirect('/saved-schools', '/saved');
+Route::redirect('/guides', '/parent-guides');
+Route::redirect('/about-taleem-finder', '/about');
+Route::redirect('/find-my-school', '/directory');
+Route::view('/for-schools', 'directory.for-schools')->name('directory.for-schools');
+Route::get('/{topic}', [PublicResourcesController::class, 'policy'])
+    ->whereIn('topic', ['community-privacy', 'terms-of-use', 'copyright-takedown'])->name('directory.policy');
 Route::get('/sitemap.xml', [PublicDirectoryController::class, 'sitemap'])->name('directory.sitemap');
+Route::get('/local/school-preview/{school}/{page?}', SchoolPagePreviewController::class)
+    ->where(['school' => '[a-z0-9-]+', 'page' => '[a-z0-9_-]+'])->name('local.school-page-preview');
 Route::view('/about', 'directory.about')->name('directory.about');
 Route::view('/contact', 'directory.contact')->name('directory.contact');
 
+Route::get('/signup', [InstituteClaimController::class, 'registration'])->name('directory.sign-up');
+Route::post('/signup', [InstituteClaimController::class, 'register'])->middleware('throttle:6,1')->name('directory.sign-up.submit');
+Route::get('/login', [InstituteClaimController::class, 'signInPage'])->name('directory.sign-in');
+Route::post('/login', [InstituteClaimController::class, 'login'])->middleware('throttle:6,1')->name('directory.sign-in.submit');
+Route::get('/dashboard', function (Request $request) {
+    if ($request->user()?->canEnterSchoolhouse()) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    return $request->user() ? response()->view('directory.dashboard')->header('Cache-Control', 'private, no-store')
+        : redirect()->route('directory.sign-in');
+})->name('directory.dashboard');
+Route::redirect('/add-school', '/for-schools');
 Route::get('/institute/register', [InstituteClaimController::class, 'registration'])->name('institute.register');
 Route::post('/institute/register', [InstituteClaimController::class, 'register'])->middleware('throttle:6,1');
 Route::get('/institute/sign-in', [InstituteClaimController::class, 'signInPage'])->name('login');
@@ -75,11 +117,11 @@ $adminPage = function (Request $request, ?int $listing = null) {
     };
 
     if ($administrator) {
-        Gate::authorize('moderateListings', School::class);
-
-        if ($request->routeIs('admin.login')) {
-            return redirect()->route('admin.listings');
+        if ($request->routeIs('admin.login') && $request->user()->canEnterSchoolhouse()) {
+            return redirect()->route('admin.dashboard');
         }
+
+        Gate::authorize('moderateListings', School::class);
     } elseif ($screen !== 'index') {
         return redirect()->route('admin.login');
     }
@@ -98,6 +140,9 @@ $adminPage = function (Request $request, ?int $listing = null) {
         ] : null,
     ])->toResponse($request)->header('Cache-Control', 'no-store');
 };
+
+Route::get('/admin/dashboard/{branch?}', AdminDashboardController::class)
+    ->middleware('auth')->whereNumber('branch')->name('admin.dashboard');
 
 Route::get('/admin/login', $adminPage)->name('admin.login');
 Route::get('/admin/listings', $adminPage)->name('admin.listings');
@@ -143,6 +188,7 @@ Route::get('/admin/platform/{resource}', function (Request $request, string $res
 
     return Inertia::render('Admin/Directory', [
         'resource' => $resource,
+        'schoolId' => $request->integer('school_id') ?: null,
         'adminName' => $request->user()->name,
     ])->toResponse($request)->header('Cache-Control', 'no-store');
 })->whereIn('resource', array_keys(AdminPlatformController::RESOURCES));
@@ -178,15 +224,43 @@ $accessPage = function (Request $request, string $screen, ?int $branch = null) {
         return redirect()->route('admin.login');
     }
 
-    Gate::authorize('moderateListings', School::class);
-    $school = $branch !== null ? School::query()->findOrFail($branch, ['id', 'name']) : null;
+    $user = $request->user();
+    $platform = Gate::allows('moderateListings', School::class);
+    abort_unless($platform || (in_array($screen, ['operations', 'members', 'roles'], true) && $user->canEnterSchoolhouse()), 403);
+    $branches = $platform ? School::query() : $user->activeSchools();
+    $school = $branch !== null ? (clone $branches)->findOrFail($branch) : null;
+    $accessibleBranches = ! $platform ? $branches->orderBy('name')->get() : collect();
+    if (! $platform && $screen !== 'operations') {
+        $permission = $screen === 'members' ? 'users.manage' : 'roles.manage';
+        $eligibleBranches = $accessibleBranches->filter(fn (School $item) => $user->hasSchoolPermission($item, $permission));
+        abort_if($eligibleBranches->isEmpty() || ($school && ! $eligibleBranches->contains($school)), 403);
+        $school ??= $eligibleBranches->first();
+        $branchOptions = $eligibleBranches->map->only('id', 'name')->values();
+    } else {
+        $branchOptions = $platform ? $branches->orderBy('name')->get(['id', 'name']) : $accessibleBranches->map->only('id', 'name');
+    }
+    $allowedModules = ! $platform && $school && $screen === 'operations' ? $user->schoolhouseOperationModules($school) : [];
+    abort_if(! $platform && $school && $screen === 'operations' && $allowedModules === [], 403);
+    $enabledModules = ! $platform && $school && $screen === 'operations' ? app(BranchModules::class)->forBranch($school->id)
+        ->where('enabled', true)->pluck('slug')->all() : [];
+    $schoolAccess = [];
+    foreach (['members' => 'users.manage', 'roles' => 'roles.manage'] as $section => $permission) {
+        if ($accessibleBranches->contains(fn (School $item) => $user->hasSchoolPermission($item, $permission))) {
+            $schoolAccess[] = $section;
+        }
+    }
     Inertia::setRootView('admin.app');
 
     return Inertia::render($screen === 'operations' ? 'Admin/BranchWorkspace' : 'Admin/Access', [
         'screen' => $screen,
-        'branch' => $school,
+        'branch' => $school?->only('id', 'name'),
         'branches' => in_array($screen, ['members', 'roles', 'operations'], true)
-            ? School::query()->orderBy('name')->get(['id', 'name']) : [],
+            ? $branchOptions : [],
+        'platform' => $platform,
+        'schoolAccess' => $schoolAccess,
+        'operations' => $platform || $accessibleBranches->contains(fn (School $item) => $user->schoolhouseOperationModules($item) !== []),
+        'allowedModules' => array_values(array_intersect($enabledModules, $allowedModules)),
+        'academicsEnabled' => in_array('academics', $enabledModules, true) && $user->hasSchoolPermission($school, 'academics.view'),
         'adminName' => $request->user()->name,
         'adminId' => $request->user()->id,
     ])->toResponse($request)->header('Cache-Control', 'no-store');

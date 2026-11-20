@@ -157,7 +157,7 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
                     : <FeeSetup {...props} academicsEnabled={academicsEnabled} activeSection={activeView} />;
                 break;
             case 'expenses':
-                content = <ExpenseManagement {...props} activeView={activeView} />;
+                content = <ExpenseManagement key={activeView} {...props} activeView={activeView} onNavigate={navigate} />;
                 break;
         }
     }
@@ -177,9 +177,9 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
     return <AdminLayout screen="operations" title={sectionTitle ?? 'Branch Operations'}
         {...{ adminName, signOut, branchNavigation, platform, schoolAccess }} operations busy={signingOut}>
         <Head title={`${sectionTitle ?? 'Branch Operations'} · Schoolhouse`} />
-        <div className="page-heading">
-            <div><h1>Branch operations</h1>{branch && <p>{branch.name}</p>}</div>
-            {platform && branch && <Link className="admin-link-button" href={`/admin/branches/${branch.id}/modules`}>Branch modules</Link>}
+        <div className="page-heading branch-page-heading">
+            <div><h1>{sectionTitle ?? 'Branch Operations'}</h1>{branch && <p>{branch.name}</p>}</div>
+            {platform && branch && activeView !== 'expense-add' && <Link className="admin-link-button" href={`/admin/branches/${branch.id}/modules`}>Branch modules</Link>}
         </div>
         <BranchPicker branch={branch} branches={branches} onSelect={id =>
             router.visit(id ? `/admin/branches/${id}/operations` : '/admin/operations')} />

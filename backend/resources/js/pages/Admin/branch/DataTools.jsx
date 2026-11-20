@@ -190,17 +190,20 @@ export default function DataTools({ title, rows, fields, exportFields = fields, 
 
   return (
     <section className="data-tools" aria-label={`${title} import and export`}>
-      <div className="data-tools-actions">
-        {canImport ? <>
-          <button className="quiet-button" type="button" disabled={busy} onClick={() => downloadFile(`${title.toLowerCase().replaceAll(' ', '-')}-template.csv`, [headers].map((line) => line.map(csvCell).join(',')).join('\r\n'), 'text/csv;charset=utf-8')}>CSV template</button>
-          <button className="secondary-button" type="button" disabled={busy} onClick={() => fileInput.current?.click()}>Import CSV</button>
-          <input ref={fileInput} hidden type="file" accept=".csv,text/csv" onChange={selectFile} />
-        </> : null}
-        <label className="export-control">Export
-          <select aria-label={`Export ${title} as`} value="" disabled={busy} onChange={(event) => { const format = event.target.value; event.target.value = ''; if (format) void exportData(format) }}>
-            <option value="">Choose format</option><option value="csv">CSV</option><option value="excel">Excel (.xls)</option><option value="json">JSON</option><option value="pdf">Print / PDF</option>
-          </select>
-        </label>
+      <div className="data-tools-bar">
+        <strong className="data-tools-title">{title}</strong>
+        <div className="data-tools-actions">
+          {canImport ? <>
+            <button className="quiet-button" type="button" disabled={busy} onClick={() => downloadFile(`${title.toLowerCase().replaceAll(' ', '-')}-template.csv`, [headers].map((line) => line.map(csvCell).join(',')).join('\r\n'), 'text/csv;charset=utf-8')}>CSV template</button>
+            <button className="secondary-button" type="button" disabled={busy} onClick={() => fileInput.current?.click()}>Import CSV</button>
+            <input ref={fileInput} hidden type="file" accept=".csv,text/csv" onChange={selectFile} />
+          </> : null}
+          <label className="export-control">Export
+            <select aria-label={`Export ${title} as`} value="" disabled={busy} onChange={(event) => { const format = event.target.value; event.target.value = ''; if (format) void exportData(format) }}>
+              <option value="">Choose format</option><option value="csv">CSV</option><option value="excel">Excel (.xls)</option><option value="json">JSON</option><option value="pdf">Print / PDF</option>
+            </select>
+          </label>
+        </div>
       </div>
       {preparedRows.length ? <div className="import-preview">
         <div><strong>CSV preview</strong><span>{preparedRows.length} rows detected. The server checks each submission before saving.</span></div>

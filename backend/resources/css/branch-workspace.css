@@ -250,7 +250,30 @@ footer { padding: 23px 0 30px; color: #95a098; font-size: 12px; }
 .student-summary { flex: 1; min-width: 180px; display: grid; gap: 4px; }
 .student-summary strong { color: #38594a; font-size: 12px; }
 .student-summary span { color: #86948c; font-size: 10px; }
-.enrollment-form { flex: 1 1 100%; display: grid; grid-template-columns: 85px minmax(120px, 1fr) 65px minmax(120px, 1fr) 90px minmax(120px, 1fr) auto auto; align-items: center; gap: 8px; padding-top: 10px; }
+.enrollment-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px 16px;
+    padding: 14px 16px;
+}
+.enrollment-form > label { display: grid; gap: 5px; flex: 1 1 145px; min-width: 0; font-size: .8125rem; }
+.enrollment-form select { width: 100%; }
+.enrollment-year { display: grid; gap: 5px; flex: 0 0 auto; color: #4b6659; font-size: .8125rem; font-weight: 600; }
+.enrollment-year strong {
+    display: inline-flex;
+    align-items: center;
+    align-self: start;
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 7px;
+    background: #e8efed;
+    color: #29483d;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.enrollment-actions { display: flex; align-items: center; justify-content: flex-end; flex: 0 0 auto; gap: 10px; margin-inline-start: auto; }
+.enrollment-actions button { width: auto; min-height: 36px; white-space: nowrap; }
 .student-edit-form { flex: 1 1 100%; display: grid; grid-template-columns: 100px minmax(120px, 1fr) 70px minmax(120px, 1fr) 70px minmax(120px, 1fr) auto auto; align-items: center; gap: 8px; }
 .student-edit-form label { color: #4b6659; font-size: 11px; font-weight: 600; }
 .student-edit-form input { min-width: 0; height: 36px; padding: 0 10px; border: 1px solid #dce5dc; border-radius: 7px; background: white; color: #29483d; font: inherit; font-size: 12px; }
@@ -481,7 +504,7 @@ footer { padding: 23px 0 30px; color: #95a098; font-size: 12px; }
   .section-item { flex-wrap: wrap; padding: 9px 0; }
   .section-item > span:first-child { flex: 1 1 40%; }
   .section-edit-form { flex-wrap: wrap; }
-  .student-create-form, .enrollment-form { grid-template-columns: 1fr; }
+  .student-create-form { grid-template-columns: 1fr; }
   .student-edit-form { grid-template-columns: 1fr; }
   .attendance-filter-form { grid-template-columns: 1fr; }
   .attendance-filter-form .small-button { justify-self: start; }
@@ -934,3 +957,58 @@ footer { padding: 23px 0 30px; color: #95a098; font-size: 12px; }
 @media (max-width: 760px) { .family-fee-receipts .expense-list-toolbar > .module-search, .family-fee-receipts .expense-list-toolbar > .data-tools { flex-basis: 100%; } }
 
 }
+
+.branch-page-heading h1 { font-size: clamp(1.5rem, 2.5vw, 1.875rem); font-weight: 700; }
+.branch-workspace .academic-section-heading h4 { font-size: 1rem; font-weight: 700; }
+.branch-workspace .crud-table th {
+    font-size: .8125rem;
+    font-weight: 700;
+    letter-spacing: .015em;
+    text-transform: none;
+}
+.branch-workspace .student-roster-list { padding: 0; border: 0; background: transparent; }
+.student-roster-table caption {
+    padding: 12px 13px;
+    border-bottom: 1px solid #e8ebf2;
+    background: #fff;
+    color: #35415c;
+    text-align: left;
+    font-size: .9375rem;
+    font-weight: 700;
+}
+
+.branch-workspace .crud-table tbody td {
+    padding: 9px 12px;
+    font-size: .8125rem;
+    line-height: 1.4;
+}
+.branch-workspace .crud-table tbody td strong { font-size: inherit; }
+.branch-workspace .crud-table tbody td small {
+    margin-top: 3px;
+    font-size: .75rem;
+    color: #66728b;
+}
+.branch-workspace .guardian-table td { min-width: 0; }
+.branch-workspace .guardian-table td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.branch-workspace .guardian-table td:last-child { min-width: 130px; }
+.branch-workspace .guardian-table tbody td:last-child .table-action { margin-right: 4px; }
+
+.expense-heads-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    padding: 14px 16px;
+}
+.expense-heads-toolbar > .module-search { flex: 1 1 220px; max-width: 360px; margin: 0; }
+.expense-heads-toolbar > button { margin: 0; }
+.branch-workspace .expense-heads-card > .data-tools {
+    margin: 0;
+    padding: 10px 16px;
+    border: 0;
+    border-block: 1px solid #e8ebf2;
+    border-radius: 0;
+    background: #f9fafc;
+}
+.expense-heads-card > .crud-table-wrap { margin: 0; border: 0; border-radius: 0; }

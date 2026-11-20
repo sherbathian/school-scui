@@ -54,6 +54,13 @@ const resources = {
     ]],
 };
 
+const relationshipListColumns = {
+    'module-dependencies': [['Module', 'module_id', 'modules'], ['Requires module', 'requires_module_id', 'modules']],
+    'plan-modules': [['Plan', 'plan_id', 'plans'], ['Module', 'module_id', 'modules']],
+    subscriptions: [['Organisation', 'school_group_id', 'school_groups'], ['Plan', 'plan_id', 'plans'], ['Status', 'status']],
+    'subscription-modules': [['Subscription', 'school_subscription_id', 'school_subscriptions'], ['Module', 'module_id', 'modules'], ['Source', 'source']],
+};
+
 const assignmentTypes = [
     ['boards', 'Boards and curricula'],
     ['education-levels', 'Education levels'],
@@ -196,7 +203,9 @@ export function Catalogue({ resource, title, schoolId, branchScoped = false, bus
     }
 
     const isTransfer = resource === 'student-transfers';
-    const branchName = id => options?.schools?.find(item => String(item.id) === String(id))?.name ?? '—';
+    const optionName = (type, id) => options?.[type]?.find(item => String(item.id) === String(id))?.name;
+    const branchName = id => optionName('schools', id) ?? '—';
+    const relationshipColumns = relationshipListColumns[resource];
     const hasSchool = fields.some(([name]) => name === 'school_id');
     const editingGroup = resource === 'school-groups' && editor?.id;
 
@@ -289,13 +298,19 @@ export function Catalogue({ resource, title, schoolId, branchScoped = false, bus
             loadExportRows={() => loadCsvPages(path, { school_id: filter })} canImport
             onImport={importRecord} onImportComplete={() => setReload(value => value + 1)} />}
         <div className="table-scroll"><table>
-            <thead><tr><th>Record</th><th>{isTransfer ? 'From / To' : hasSchool ? 'Branch' : (isPlatform || isCommunity || isService) ? 'Summary' : 'Slug'}</th><th>Actions</th></tr></thead>
+            <thead><tr>{relationshipColumns ? relationshipColumns.map(([heading]) => <th key={heading}>{heading}</th>) : <>
+                <th>Record</th><th>{isTransfer ? 'From / To' : hasSchool ? 'Branch' : (isPlatform || isCommunity || isService) ? 'Summary' : 'Slug'}</th>
+            </>}<th>Actions</th></tr></thead>
             <tbody>
                 {records?.data.map(row => {
-                    const label = row.name || row.title || row.label || row.caption || row.url || row.path || row.invoice_no || row.description || row.parent_name || row.stat_date || row.transfer_date || row.limit_key || row.purpose || `Record #${row.id}`;
+                    const relationshipValues = relationshipColumns?.map(([, key, type]) => type
+                        ? optionName(type, row[key]) ?? (options ? 'Unavailable' : 'Loading…')
+                        : row[key]?.replaceAll('_', ' ') ?? '—');
+                    const label = relationshipValues?.[0] ?? (row.name || row.title || row.label || row.caption || row.url || row.path || row.invoice_no || row.description || row.parent_name || row.stat_date || row.transfer_date || row.limit_key || row.purpose || `Record #${row.id}`);
                     return <tr key={row.id}>
                         <td><button className="record-name-link" type="button" disabled={!options} onClick={() => setDetails(row)}>{label}</button></td>
-                        <td>{isTransfer ? `${branchName(row.from_school_id)} → ${branchName(row.to_school_id)}` : hasSchool ? branchName(row.school_id) : row.slug ?? row.status ?? row.role ?? row.channel ?? (notifications ? (row.read ? 'Read' : 'Unread') : '—')}</td>
+                        {relationshipValues ? relationshipValues.slice(1).map((value, index) =>
+                            <td key={relationshipColumns[index + 1][1]}>{value}</td>) : <td>{isTransfer ? `${branchName(row.from_school_id)} → ${branchName(row.to_school_id)}` : hasSchool ? branchName(row.school_id) : row.slug ?? row.status ?? row.role ?? row.channel ?? (notifications ? (row.read ? 'Read' : 'Unread') : '—')}</td>}
                         <td><div className="row-actions">
                             {hasAttachment(row) &&
                                 <a className="admin-link-button" href={`/api/${path}/${row.id}/download`}>Download</a>}
@@ -304,11 +319,11 @@ export function Catalogue({ resource, title, schoolId, branchScoped = false, bus
                             {otp && <Button variant="outline" disabled={busy || Boolean(row.consumed_at)} onClick={() => invalidate(row)}>Invalidate</Button>}
                             {notifications && <Button variant="outline" disabled={busy} onClick={() => toggleRead(row)}>Mark {row.read ? 'unread' : 'read'}</Button>}
                             {!otp && !notifications && <Button variant="outline" disabled={busy || !options} onClick={() => setEditor(row)}>Edit</Button>}
-                            {!otp && !row.protected && <Button variant="outline" disabled={busy} onClick={() => remove(row, label)}>{personalToken || deviceToken ? 'Revoke' : 'Delete'}</Button>}
+                            {!otp && !row.protected && <Button variant="outline" disabled={busy} onClick={() => remove(row, relationshipValues?.join(' / ') ?? label)}>{personalToken || deviceToken ? 'Revoke' : 'Delete'}</Button>}
                         </div></td>
                     </tr>;
                 })}
-                {!records?.data.length && <tr><td colSpan={3}>{records ? 'No records found.' : 'Loading records…'}</td></tr>}
+                {!records?.data.length && <tr><td colSpan={(relationshipColumns?.length ?? 2) + 1}>{records ? 'No records found.' : 'Loading records…'}</td></tr>}
             </tbody>
         </table></div>
         {records?.last_page > 1 && <nav aria-label="Directory pagination" className="mt-4 flex items-center gap-3">

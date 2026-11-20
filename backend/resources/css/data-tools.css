@@ -23,3 +23,12 @@
 .admin-main .data-tools button:disabled { cursor: default; opacity: .6; }
 .admin-main .data-tools .primary-button { background: var(--green); color: white; }
 .admin-main .data-tools .export-control { display: inline-flex; gap: .5rem; align-items: center; }
+
+.data-tools-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+}
+.data-tools-title { font-size: .875rem; font-weight: 700; }

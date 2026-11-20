@@ -357,8 +357,9 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ grade_id: Number(gradeId), section_id: Number(sectionId), academic_year: academicYear }),
       }))
-      await refreshStudentPage()
       setActiveStudentId(null)
+      // Keep the roster mounted so refreshing rows does not reset the page scroll.
+      await loadStudentPage()
     } catch (enrollError) {
       setError(enrollError.message)
     }
@@ -510,10 +511,10 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
       </button> : null}
       {open ? (
         <div className="academic-panel">
-          <div className="academic-section-heading">
+          {!standalone && <div className="academic-section-heading">
             <h4>Students</h4>
             <span>{studentMeta.total}</span>
-          </div>
+          </div>}
           {selectedStudentId ? <section className="student-profile-page" aria-label="Student profile">
             <button className="quiet-button student-back-button" type="button" onClick={onCloseStudent}>← Back to students</button>
             {detailLoading ? <p className="muted-copy" role="status">Loading student profile…</p> : null}
@@ -570,13 +571,14 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
             <div className="student-form-actions"><button className="primary-button small-button" type="submit">Save student</button><button className="quiet-button" type="button" onClick={() => setShowStudentForm(false)}>Cancel</button></div>
           </form> : null}
           {!loading && rosterVisible && filteredStudents.length ? (
-            <div className="crud-table-wrap"><table className="crud-table student-roster-table"><colgroup><col className="student-column" /><col className="contact-column" /><col className="enrollment-column" /><col className="actions-column" /></colgroup><thead><tr><th>{studentSortHeader('Student', 'student_name')}</th><th>{studentSortHeader('Contact', 'phone')}</th><th>{studentSortHeader('Current enrollment', 'grade')}</th><th>Actions</th></tr></thead><tbody>
+            <section className="student-roster-list" aria-label="Student list">
+            <div className="crud-table-wrap"><table className="crud-table student-roster-table"><caption>Student list</caption><colgroup><col className="student-column" /><col className="contact-column" /><col className="enrollment-column" /><col className="actions-column" /></colgroup><thead><tr><th>{studentSortHeader('Student', 'student_name')}</th><th>{studentSortHeader('Contact', 'phone')}</th><th>{studentSortHeader('Current enrollment', 'grade')}</th><th>Actions</th></tr></thead><tbody>
               {filteredStudents.map((student) => {
                 const displayedEnrollment = enrollmentForYear(student)
 
                 return (
                 <Fragment key={student.id}>
-                  <tr className="student-row">
+                  <tr>
                     <td><strong>{studentName(student)}</strong><small>{student.admission_number} · {student.status}</small></td>
                     <td>{student.phone || '—'}<small>{student.email || 'No email on file'}</small></td>
                     <td>{displayedEnrollment ? `${displayedEnrollment.grade.title} · ${displayedEnrollment.section.title}` : student.status === 'active' ? 'Not enrolled this year' : 'Archived'}<small>{displayedEnrollment?.academic_year || ''}{displayedEnrollment ? ` · ${displayedEnrollment.status}` : ''}</small></td>
@@ -620,28 +622,36 @@ export default function StudentRoster({ school, canManage, canTakeAttendance, ex
                     </> : null}
                   </section></td></tr> : null}
                   {activeStudentId === student.id ? <tr className="student-expanded-row"><td colSpan="4"><form className="enrollment-form" onSubmit={(event) => enrollStudent(event, student)}>
-                      <label htmlFor={`enrollment-grade-${student.id}`}>Grade</label>
-                      <select id={`enrollment-grade-${student.id}`} value={gradeId} onChange={(event) => {
+                      <label>Grade
+                      <select value={gradeId} onChange={(event) => {
                         setGradeId(event.target.value)
                         setSectionId('')
                       }} required>
                         <option value="">Choose a grade</option>
                         {grades.filter((grade) => grade.status === 'active').map((grade) => <option key={grade.id} value={grade.id}>{grade.title}</option>)}
                       </select>
-                      <label htmlFor={`enrollment-section-${student.id}`}>Section</label>
-                      <select id={`enrollment-section-${student.id}`} value={sectionId} onChange={(event) => setSectionId(event.target.value)} required>
+                      </label>
+                      <label>Section
+                      <select value={sectionId} onChange={(event) => setSectionId(event.target.value)} required>
                         <option value="">Choose a section</option>
                         {availableSections.map((section) => <option key={section.id} value={section.id}>{section.title}</option>)}
                       </select>
-                      <span className="active-year-label">Academic year <strong>{school.active_session?.academic_year || academicYear}</strong></span>
-                      <button className="primary-button small-button" type="submit" disabled={!sectionId}>Save enrollment</button>
-                      <button className="quiet-button" type="button" onClick={() => setActiveStudentId(null)}>Cancel</button>
+                      </label>
+                      <div className="enrollment-year">
+                        <span>Academic year</span>
+                        <strong>{school.active_session?.academic_year || academicYear}</strong>
+                      </div>
+                      <div className="enrollment-actions">
+                        <button className="quiet-button" type="button" onClick={() => setActiveStudentId(null)}>Cancel</button>
+                        <button className="primary-button small-button" type="submit" disabled={!gradeId || !sectionId}>Save enrollment</button>
+                      </div>
                   </form></td></tr> : null}
                   {lifecycleStudentId === student.id ? <tr className="student-expanded-row"><td colSpan="4"><form className="student-lifecycle-form" onSubmit={(event) => lifecycleMode === 'withdraw' ? saveWithdrawal(event, student) : saveRejoining(event, student)}><div><p className="eyebrow">Student status</p><h4>{lifecycleMode === 'withdraw' ? 'Withdraw student' : 'Rejoin student'}</h4><p>{lifecycleMode === 'withdraw' ? 'Record the leaving date and reason. Their active enrollment will be closed.' : 'Choose the class and rejoining date. A new active enrollment will be created for the current session.'}</p></div>{lifecycleMode === 'rejoin' ? <><label>Grade<select value={gradeId} onChange={(event) => { setGradeId(event.target.value); setSectionId('') }} required><option value="">Choose grade</option>{grades.filter((grade) => grade.status === 'active').map((grade) => <option key={grade.id} value={grade.id}>{grade.title}</option>)}</select></label><label>Section<select value={sectionId} onChange={(event) => setSectionId(event.target.value)} required><option value="">Choose section</option>{availableSections.map((section) => <option key={section.id} value={section.id}>{section.title}</option>)}</select></label><span className="active-year-label">Current session <strong>{academicYear}</strong></span></> : null}<label>{lifecycleMode === 'withdraw' ? 'Withdrawal date' : 'Rejoining date'}<input type="date" value={lifecycleDate} onChange={(event) => setLifecycleDate(event.target.value)} required /></label><label className="lifecycle-reason">Reason / notes<textarea rows="2" value={lifecycleReason} onChange={(event) => setLifecycleReason(event.target.value)} /></label><div className="student-form-actions"><button className="primary-button small-button" type="submit" disabled={lifecycleMode === 'rejoin' && !sectionId}>{lifecycleMode === 'withdraw' ? 'Confirm withdrawal' : 'Confirm rejoining'}</button><button className="quiet-button" type="button" onClick={() => setLifecycleStudentId(null)}>Cancel</button></div></form></td></tr> : null}
                 </Fragment>
                 )
               })}
             </tbody></table></div>
+            </section>
           ) : null}
           {!loading && rosterVisible && filteredStudents.length > 0 ? <TablePagination meta={studentMeta} page={safeStudentPage} perPage={studentPageSize} label="students" onPageChange={setStudentPage} onPerPageChange={setStudentPageSize} /> : null}
           {!loading && rosterVisible && filteredStudents.length === 0 ? <p className="muted-copy">No students match this search. Add a student or import a student CSV to get started.</p> : null}

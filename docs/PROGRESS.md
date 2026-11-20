@@ -10,10 +10,25 @@ Tahir approved updating this Markdown handoff. Ask for his approval before chang
 
 ## Repository and verification status
 
-- Local checkout: `m0/admin-school-access-crud`, committed tip `bda7c45` (*Complete Schoolhouse admin workflows and v4 schema*). At review time that tip matched the locally cached `origin/main` and was one commit ahead of the branch's cached upstream. Live GitHub status was not checked.
-- The working tree contains substantial local changes beyond that commit, including role dashboards, assigned-user details, CSV additions, public pages, and homepage refinements. Inspect `git status` and preserve the work before creating a task branch or preparing any push. The ZIP and extracted pack are also present as untracked references.
-- Existing [CI configuration](../.github/workflows/ci.yml) defines PHPUnit on SQLite and MySQL 8.4 plus a frontend build. This review did not run tests, builds, migrations, or hosted CI. Earlier focused runs passed 8 admin access/dashboard tests, 47 module/finance tests, and 6 public directory/resource tests at their respective checkpoints. These were separate runs, not a fresh full-suite result.
-- The local Herd site previously rendered the updated homepage and served the role dashboards. The student-account linkage migration was applied to local MySQL and the demo account was linked to a synthetic student record. See [schema gaps](SCHEMA-GAP-v4.md) and [the MySQL audit](Schoolhouse-MySQL-Schema-Audit.md) for earlier database evidence.
+- The previous published baseline is GitHub main commit `c6ebc42` (*Complete role dashboards, CSV workflows and public directory polish*). This increment contains the follow-up platform and Branch Operations fixes documented below.
+- The [CI workflow](../.github/workflows/ci.yml) runs PHPUnit on SQLite and MySQL 8.4 and builds the frontend. This increment passed **119 tests and 1,396 assertions locally**, and the production frontend build succeeded. Hosted CI results for this increment still need confirmation.
+- The student-account linkage migration was previously applied to local Herd MySQL. See [schema gaps](SCHEMA-GAP-v4.md) and [the MySQL audit](Schoolhouse-MySQL-Schema-Audit.md) for earlier database evidence. This increment adds no migration.
+- The manager-pack ZIP and extracted reference folder remain local. Treat them as planning inputs if Tahir shares them separately.
+
+## Latest increment · Platform administration and IFS Branch Operations
+
+| Area | Shipped behaviour |
+| --- | --- |
+| Platform relationship lists | Module dependencies shows module and prerequisite names. Plan modules shows plan and module names. School subscriptions shows organisation, plan, and status. Subscription modules shows subscription, module, and grant source. Labels use the existing options API. |
+| Branch Operations layout | Each selected operation has its own page heading. Tables use smaller text and tighter rows. Guardian IDs stay on one line. Shared CSV toolbars now identify the dataset, including the separate Students and Enrollments imports. |
+| Student roster and enrollment | Fixed roster column alignment and added a Student list caption. Grade, Section, and the academic year have dedicated space in the inline form. Save requires both Grade and Section. After saving, the roster refreshes in place and retains search and pagination. |
+| Expenses | Expense heads combines search, add, CSV and the table in one card. Add expenses opens a blank entry form directly and hides the Branch modules shortcut. Saving clears the form. Expenses list owns filtering, CSV, edit and delete. |
+
+### Local IFS demo
+
+- IFS is branch ID 1 in the local environment. The prior subscription was cancelled. A separate local trial enables all eight Branch Operations modules through 20 December 2026. The cancelled record and shared Silver plan were preserved. This is local database state and is not provisioned by the GitHub commit.
+- The [IFS demo CSV pack](../outputs/ifs-branch-operations-demo.zip) contains 28 synthetic CSVs and an import-order guide. It uses academic year 2026–2027. The pack includes 12 students, eight guardian households and five staff records. Fee masters, staff leave balances and student fee discounts require IFS-specific numeric IDs.
+- Local screenshots confirmed sample grades, guardians, students and expenses in IFS. The complete pack was not replayed end to end during this increment.
 
 ## What exists now
 

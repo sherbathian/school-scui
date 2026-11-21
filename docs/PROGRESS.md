@@ -73,6 +73,15 @@ Tahir approved updating this Markdown handoff. Ask for his approval before chang
 
 Preserve the recorded decisions on branch identity, MySQL, organisation provisioning for verified institutes, Super Admin claim approval, organisation-owner access, and platform-only module switching. Confirm starter-plan limits, OTP channel, grace-period policy, pricing, production deployment details, and billing retirement only when the corresponding brief needs them.
 
+## Reporting and dashboards
+
+| Task | Status | Evidence and remaining work |
+| --- | --- | --- |
+| R0 · Install the manager pack | done | Reporting spec and briefs added. Product decisions recorded. |
+| R1 · Dashboard framework | todo | Implement the dashboard framework. |
+| R2 · Non-finance widgets | todo | Add role-appropriate widgets after R1. |
+| R3 · Report centre v1 | todo | Build the report centre subject to the paid `reports` entitlement. |
+
 ---
 
 ## Historical progress notes

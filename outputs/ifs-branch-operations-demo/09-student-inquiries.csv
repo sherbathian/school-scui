@@ -1,0 +1,4 @@
+first_name,last_name,guardian_name,requested_grade_id,inquiry_date,status,notes
+Hana,Demo,Demo Inquiry Parent 1,Demo Grade 2,2026-11-20,new,Synthetic admissions inquiry
+Rehan,Demo,Demo Inquiry Parent 2,Demo Grade 1,2026-11-20,new,Synthetic admissions inquiry
+Anaya,Demo,Demo Inquiry Parent 3,Demo Grade 2,2026-11-20,new,Synthetic admissions inquiry

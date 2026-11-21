@@ -1,0 +1,9374 @@
+{
+ "version": "v4",
+ "tables": {
+  "attendance_records": {
+   "area": "Students",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "enrollment_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "attendance_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "marked_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "enrollment_id"
+     ],
+     "references": "enrollments",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "marked_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "cache": {
+   "area": "Laravel infrastructure",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "key",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key",
+     "status": "Existing"
+    },
+    {
+     "name": "value",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "expiration",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "cache_locks": {
+   "area": "Laravel infrastructure",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "key",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key",
+     "status": "Existing"
+    },
+    {
+     "name": "owner",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "expiration",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "departments": {
+   "area": "Human resources",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "designations": {
+   "area": "Human resources",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "enrollments": {
+   "area": "Students",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "student_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "grade_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "section_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "academic_year",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'active'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "enrolled_on",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "ended_on",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "grade_id",
+      "section_id"
+     ],
+     "references": "grade_section",
+     "referenced_columns": [
+      "school_id",
+      "grade_id",
+      "section_id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "student_id"
+     ],
+     "references": "students",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "expense_heads": {
+   "area": "Expenses",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "expenses": {
+   "area": "Expenses",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "expense_head_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Changed"
+    },
+    {
+     "name": "name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "invoice_number",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "expense_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "amount",
+     "type": "numeric",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "attachment_path",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "expense_head_id"
+     ],
+     "references": "expense_heads",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "failed_jobs": {
+   "area": "Laravel infrastructure",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "uuid",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "connection",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "queue",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "payload",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "exception",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "failed_at",
+     "type": "datetime",
+     "nullable": false,
+     "default": "CURRENT_TIMESTAMP",
+     "key": "Index",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "fee_discounts": {
+   "area": "Fees and receipts",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "discount_type",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "value",
+     "type": "numeric",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "fee_group_grade": {
+   "area": "Fees and receipts",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "fee_group_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "Changed"
+    },
+    {
+     "name": "grade_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key; Index",
+     "status": "Changed"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "grade_id"
+     ],
+     "references": "grades",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "fee_group_id"
+     ],
+     "references": "fee_groups",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "fee_groups": {
+   "area": "Fees and receipts",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "allows_discount",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "fee_invoices": {
+   "area": "Fees and receipts",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "student_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "due_date",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'open'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "invoice_no",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index (school_id, invoice_no)",
+     "status": "New"
+    },
+    {
+     "name": "school_session_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "billing_month",
+     "type": "varchar(7)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index (school_id, student_id, billing_month)",
+     "status": "New"
+    },
+    {
+     "name": "subtotal",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "discount_total",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "fine_total",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "total_amount",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "paid_total",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [
+    "fee_type_id",
+    "academic_year",
+    "description",
+    "amount_cents"
+   ],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "student_id"
+     ],
+     "references": "students",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id",
+      "school_session_id"
+     ],
+     "references": "school_sessions",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "fee_masters": {
+   "area": "Fees and receipts",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "school_session_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "fee_group_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "fee_type_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "due_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "amount",
+     "type": "numeric",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "fine_type",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'none'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "fine_value",
+     "type": "numeric",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "billing_month",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'1970-01'",
+     "key": "Unique index",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "fee_type_id"
+     ],
+     "references": "fee_types",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "fee_group_id"
+     ],
+     "references": "fee_groups",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "school_session_id"
+     ],
+     "references": "school_sessions",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "fee_payments": {
+   "area": "Fees and receipts",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "fee_invoice_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "paid_on",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "reference",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "recorded_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "amount",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "payment_method",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'cash'",
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [
+    "amount_cents"
+   ],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "fee_invoice_id"
+     ],
+     "references": "fee_invoices",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "recorded_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "fee_types": {
+   "area": "Fees and receipts",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "grade_section": {
+   "area": "Academics",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "grade_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "section_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "section_id"
+     ],
+     "references": "sections",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id",
+      "grade_id"
+     ],
+     "references": "grades",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "grade_subject": {
+   "area": "Academics",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "grade_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "subject_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "subject_id"
+     ],
+     "references": "subjects",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id",
+      "grade_id"
+     ],
+     "references": "grades",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "grades": {
+   "area": "Academics",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'active'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "guardians": {
+   "area": "Students",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "father_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "father_phone",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "father_occupation",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "father_cnic",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "mother_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "mother_phone",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "mother_occupation",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "mother_cnic",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "is_guardian_other",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_relation",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_email",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_phone",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_occupation",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_cnic",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_address",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "deleted_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "father_doc_path",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "mother_doc_path",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_doc_path",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "source_parent_id",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "source_data",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "job_batches": {
+   "area": "Laravel infrastructure",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key",
+     "status": "Existing"
+    },
+    {
+     "name": "name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "total_jobs",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "pending_jobs",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "failed_jobs",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "failed_job_ids",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "options",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "cancelled_at",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "finished_at",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "jobs": {
+   "area": "Laravel infrastructure",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "queue",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "payload",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "attempts",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "reserved_at",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "available_at",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "leave_types": {
+   "area": "Human resources",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "migrations": {
+   "area": "Laravel infrastructure",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "migration",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "batch",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "model_has_permissions": {
+   "area": "Permissions",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "permission_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "model_type",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "model_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "team_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Index",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "permission_id"
+     ],
+     "references": "permissions",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "model_has_roles": {
+   "area": "Permissions",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "role_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "model_type",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "model_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "team_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Index",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "role_id"
+     ],
+     "references": "roles",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "password_reset_tokens": {
+   "area": "Laravel infrastructure",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "email",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key",
+     "status": "Existing"
+    },
+    {
+     "name": "token",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "permissions": {
+   "area": "Permissions",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "guard_name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "role_has_permissions": {
+   "area": "Permissions",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "permission_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "role_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "role_id"
+     ],
+     "references": "roles",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "permission_id"
+     ],
+     "references": "permissions",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "roles": {
+   "area": "Permissions",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "team_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "guard_name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "school_sessions": {
+   "area": "Academics",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "starts_on",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "ends_on",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "is_current",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "current_marker",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'active'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "school_user": {
+   "area": "School access",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "role",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'teacher'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "is_primary_contact",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "schools": {
+   "area": "School access",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "slug",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'active'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "deleted_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "institute_type",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'school'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "group_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "short_name",
+     "type": "varchar(80)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "tagline",
+     "type": "varchar(160)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "gender_type",
+     "type": "varchar(15)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "medium",
+     "type": "varchar(30)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "established_year",
+     "type": "smallint",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "city_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "area_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "address_line",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "latitude",
+     "type": "decimal(10,7)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "longitude",
+     "type": "decimal(10,7)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "phone",
+     "type": "varchar(30)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "whatsapp",
+     "type": "varchar(30)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "email",
+     "type": "varchar(190)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "website_url",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "social_links",
+     "type": "json",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "logo_path",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "cover_path",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "fee_min",
+     "type": "decimal(10,2)",
+     "nullable": true,
+     "default": null,
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "fee_max",
+     "type": "decimal(10,2)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "rating_avg",
+     "type": "decimal(3,2)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "rating_count",
+     "type": "integer",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "listing_status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'draft'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "claim_status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'unclaimed'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "source",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'admin_created'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "verified_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "published_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_featured",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "featured_until",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "seo_title",
+     "type": "varchar(160)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "seo_description",
+     "type": "varchar(300)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "branch_name",
+     "type": "varchar(100)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "branch_code",
+     "type": "varchar(20)",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index (group_id, branch_code)",
+     "status": "New"
+    },
+    {
+     "name": "is_main_branch",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "group_id"
+     ],
+     "references": "school_groups",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "city_id"
+     ],
+     "references": "cities",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "area_id"
+     ],
+     "references": "areas",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "sections": {
+   "area": "Academics",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'active'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "sessions": {
+   "area": "Laravel infrastructure",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key",
+     "status": "Existing"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "ip_address",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "user_agent",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "payload",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "last_activity",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "staff": {
+   "area": "Human resources",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key; Unique index (school_id, user_id)",
+     "status": "Changed"
+    },
+    {
+     "name": "designation_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Changed"
+    },
+    {
+     "name": "department_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Changed"
+    },
+    {
+     "name": "staff_no",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "first_name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "last_name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "father_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "mother_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "gender",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "marital_status",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "birth_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "joining_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "email",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "phone",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "emergency_contact_number",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "cnic",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "photo_path",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "address",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "qualification",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "work_experience",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "basic_salary",
+     "type": "numeric",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "bank_account_title",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "bank_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "bank_branch_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "bank_account_number",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'active'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "deleted_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "department_id"
+     ],
+     "references": "departments",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "designation_id"
+     ],
+     "references": "designations",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "department_id"
+     ],
+     "references": "departments",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "designation_id"
+     ],
+     "references": "designations",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "staff_leave_balances": {
+   "area": "Human resources",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "staff_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "leave_type_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_session_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "allocated",
+     "type": "numeric",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "used",
+     "type": "numeric",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_session_id"
+     ],
+     "references": "school_sessions",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "leave_type_id"
+     ],
+     "references": "leave_types",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "staff_id"
+     ],
+     "references": "staff",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "student_fee_charges": {
+   "area": "Fees and receipts",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "fee_master_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Changed"
+    },
+    {
+     "name": "school_session_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "Changed"
+    },
+    {
+     "name": "student_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "billing_month",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "amount",
+     "type": "numeric",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "due_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'open'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "fee_invoice_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "discount_amount",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "student_id"
+     ],
+     "references": "students",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id",
+      "school_session_id"
+     ],
+     "references": "school_sessions",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "fee_master_id"
+     ],
+     "references": "fee_masters",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id",
+      "fee_invoice_id"
+     ],
+     "references": "fee_invoices",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "student_inquiries": {
+   "area": "Students",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "first_name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "last_name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_phone",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_email",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "requested_grade_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Changed"
+    },
+    {
+     "name": "inquiry_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "source",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'new'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "notes",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "student_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Changed"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "listing_lead_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "student_id"
+     ],
+     "references": "students",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "school_id",
+      "requested_grade_id"
+     ],
+     "references": "grades",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id",
+      "listing_lead_id"
+     ],
+     "references": "listing_leads",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "student_lifecycle_events": {
+   "area": "Students",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "student_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "Changed"
+    },
+    {
+     "name": "event_type",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "event_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "reason",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "student_id"
+     ],
+     "references": "students",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "students": {
+   "area": "Students",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "admission_number",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "first_name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "last_name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'active'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "guardian_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "Existing"
+    },
+    {
+     "name": "gender",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "religion",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "email",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "phone",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "address",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "photo_path",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "birth_date",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "b_form_number",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "b_form_document_path",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "admission_date",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "leave_date",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "previous_school_details",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "note",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "deleted_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "full_name",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "admission_type",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "previous_admission_number",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [
+    "admitted_class",
+    "current_class_label",
+    "caste_or_tribe",
+    "fee_rate",
+    "fee_amount",
+    "fee_waiver",
+    "arrears_due",
+    "withdrawn_from_class",
+    "source_marks_obtained",
+    "source_marks_percentage",
+    "source_data",
+    "source_guardian_data"
+   ],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id",
+      "guardian_id"
+     ],
+     "references": "guardians",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "subjects": {
+   "area": "Academics",
+   "status": "Existing",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID); Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index; Index",
+     "status": "Existing"
+    },
+    {
+     "name": "title",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "status",
+     "type": "varchar",
+     "nullable": false,
+     "default": "'active'",
+     "key": "Index",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "users": {
+   "area": "School access",
+   "status": "Existing \u2013 change",
+   "phase": "Built",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "Existing"
+    },
+    {
+     "name": "name",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "email",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "Existing"
+    },
+    {
+     "name": "email_verified_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "password",
+     "type": "varchar",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "remember_token",
+     "type": "varchar",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "is_super_admin",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "Existing"
+    },
+    {
+     "name": "phone",
+     "type": "varchar(30)",
+     "nullable": true,
+     "default": null,
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "phone_verified_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "locale",
+     "type": "varchar(5)",
+     "nullable": false,
+     "default": "'en'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "last_login_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "cities": {
+   "area": "Directory lookups",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "province",
+     "type": "varchar(100)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "areas": {
+   "area": "Directory lookups",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "city_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(120)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(120)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index (city_id, slug)",
+     "status": "New"
+    },
+    {
+     "name": "area_type",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'locality'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "latitude",
+     "type": "decimal(10,7)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "longitude",
+     "type": "decimal(10,7)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "city_id"
+     ],
+     "references": "cities",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "boards": {
+   "area": "Directory lookups",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "kind",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'board'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "facilities": {
+   "area": "Directory lookups",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "kind",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'facility'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "icon",
+     "type": "varchar(60)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "education_levels": {
+   "area": "Directory lookups",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "school_groups": {
+   "area": "Public directory",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "website_url",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "logo_path",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'active'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "school_board": {
+   "area": "Public directory",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "board_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "board_id"
+     ],
+     "references": "boards",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "school_facility": {
+   "area": "Public directory",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "facility_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "facility_id"
+     ],
+     "references": "facilities",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "school_education_level": {
+   "area": "Public directory",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "education_level_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "education_level_id"
+     ],
+     "references": "education_levels",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "school_media": {
+   "area": "Public directory",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "kind",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'photo'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "path",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "url",
+     "type": "varchar(500)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "caption",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "alt_text",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_approved",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "uploaded_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "uploaded_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "school_listing_fees": {
+   "area": "Public directory",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "education_level_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "label",
+     "type": "varchar(100)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "monthly_fee",
+     "type": "decimal(10,2)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "admission_fee",
+     "type": "decimal(10,2)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "annual_charges",
+     "type": "decimal(10,2)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "currency",
+     "type": "char(3)",
+     "nullable": false,
+     "default": "'PKR'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "effective_from",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "last_confirmed_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "notes",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "education_level_id"
+     ],
+     "references": "education_levels",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "programs": {
+   "area": "Courses and programs",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "title",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index (school_id, slug)",
+     "status": "New"
+    },
+    {
+     "name": "level",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'bachelor'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "field",
+     "type": "varchar(100)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "duration_months",
+     "type": "smallint",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "fee_amount",
+     "type": "decimal(10,2)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "fee_period",
+     "type": "varchar(20)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "eligibility",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "admission_open",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'active'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "course_categories": {
+   "area": "Courses and programs",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "courses": {
+   "area": "Courses and programs",
+   "status": "New",
+   "phase": "P1 Directory",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "provider_name",
+     "type": "varchar(150)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "city_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "area_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "course_category_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "title",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(170)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "summary",
+     "type": "varchar(300)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "duration_value",
+     "type": "smallint",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "duration_unit",
+     "type": "varchar(10)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "mode",
+     "type": "varchar(15)",
+     "nullable": false,
+     "default": "'onsite'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "fee",
+     "type": "decimal(10,2)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "next_start_date",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'draft'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "city_id"
+     ],
+     "references": "cities",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "area_id"
+     ],
+     "references": "areas",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "course_category_id"
+     ],
+     "references": "course_categories",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "listing_claims": {
+   "area": "Claims and verification",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "claimant_name",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "claimant_role",
+     "type": "varchar(100)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "phone",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "email",
+     "type": "varchar(190)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "method",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'phone_otp'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "document_path",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'pending'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "reviewed_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "reviewed_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "review_note",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "verified_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "reviewed_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "otp_codes": {
+   "area": "Claims and verification",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "channel",
+     "type": "varchar(10)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "destination",
+     "type": "varchar(190)",
+     "nullable": false,
+     "default": null,
+     "key": "Index (destination, purpose)",
+     "status": "New"
+    },
+    {
+     "name": "purpose",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "code_hash",
+     "type": "varchar(255)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "attempts",
+     "type": "tinyint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "expires_at",
+     "type": "datetime",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "consumed_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "ip_address",
+     "type": "varchar(45)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "saved_schools": {
+   "area": "Engagement",
+   "status": "New",
+   "phase": "P3 Engagement",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "listing_leads": {
+   "area": "Engagement",
+   "status": "New",
+   "phase": "P3 Engagement",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "parent_name",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "phone",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "email",
+     "type": "varchar(190)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "grade_interested",
+     "type": "varchar(60)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "message",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "source",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'profile_page'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'new'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "student_inquiry_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "consent_given",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "ip_address",
+     "type": "varchar(45)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "school_id",
+      "student_inquiry_id"
+     ],
+     "references": "student_inquiries",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "reviews": {
+   "area": "Engagement",
+   "status": "New",
+   "phase": "P3 Engagement",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "rating",
+     "type": "tinyint",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "title",
+     "type": "varchar(150)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "body",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "relationship",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'parent'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'pending'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "moderated_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "moderated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "school_reply",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "replied_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "school_replied_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "moderated_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "replied_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "events": {
+   "area": "Engagement",
+   "status": "New",
+   "phase": "P3 Engagement",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "title",
+     "type": "varchar(180)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(200)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "event_type",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'other'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "starts_at",
+     "type": "datetime",
+     "nullable": false,
+     "default": null,
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "ends_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "venue",
+     "type": "varchar(200)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "city_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "registration_url",
+     "type": "varchar(500)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'draft'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "city_id"
+     ],
+     "references": "cities",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "created_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "school_stats_daily": {
+   "area": "Engagement",
+   "status": "New",
+   "phase": "P3 Engagement",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index (school_id, stat_date)",
+     "status": "New"
+    },
+    {
+     "name": "stat_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "profile_views",
+     "type": "integer",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "saves",
+     "type": "integer",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "compare_adds",
+     "type": "integer",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "leads",
+     "type": "integer",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "articles": {
+   "area": "Content",
+   "status": "New",
+   "phase": "P3 Engagement",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "title",
+     "type": "varchar(200)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(220)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "excerpt",
+     "type": "varchar(300)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "body",
+     "type": "longtext",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "cover_path",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "author_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'draft'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "published_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "seo_title",
+     "type": "varchar(160)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "seo_description",
+     "type": "varchar(300)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "site",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'finder'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "author_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "books": {
+   "area": "Community",
+   "status": "New",
+   "phase": "P4 Community",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "city_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "area_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "title",
+     "type": "varchar(200)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "author",
+     "type": "varchar(150)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "subject",
+     "type": "varchar(80)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "education_level_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "board_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "condition",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'good'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "listing_type",
+     "type": "varchar(10)",
+     "nullable": false,
+     "default": "'sell'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "price",
+     "type": "decimal(10,2)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "photo_path",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'available'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "expires_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "city_id"
+     ],
+     "references": "cities",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "area_id"
+     ],
+     "references": "areas",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "education_level_id"
+     ],
+     "references": "education_levels",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "board_id"
+     ],
+     "references": "boards",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "book_inquiries": {
+   "area": "Community",
+   "status": "New",
+   "phase": "P4 Community",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "book_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "message",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'open'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "book_id"
+     ],
+     "references": "books",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "study_resources": {
+   "area": "Community",
+   "status": "New",
+   "phase": "P4 Community",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "title",
+     "type": "varchar(200)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "subject",
+     "type": "varchar(80)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "education_level_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "file_path",
+     "type": "varchar(255)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "download_count",
+     "type": "integer",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'pending'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "education_level_id"
+     ],
+     "references": "education_levels",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "plans": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "price_monthly",
+     "type": "decimal(10,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_default",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "school_subscriptions": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_group_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "plan_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'active'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "starts_at",
+     "type": "datetime",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "ends_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "grace_ends_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "payment_reference",
+     "type": "varchar(100)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_group_id"
+     ],
+     "references": "school_groups",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "plan_id"
+     ],
+     "references": "plans",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "notifications": {
+   "area": "Laravel infrastructure",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "char(36)",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key",
+     "status": "New"
+    },
+    {
+     "name": "type",
+     "type": "varchar(255)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "notifiable_type",
+     "type": "varchar(255)",
+     "nullable": false,
+     "default": null,
+     "key": "Index (notifiable_type, notifiable_id)",
+     "status": "New"
+    },
+    {
+     "name": "notifiable_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "data",
+     "type": "text",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "read_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "plan_limits": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "plan_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index (plan_id, limit_key)",
+     "status": "New"
+    },
+    {
+     "name": "limit_key",
+     "type": "varchar(50)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "limit_value",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "plan_id"
+     ],
+     "references": "plans",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "site_themes": {
+   "area": "Institute websites",
+   "status": "New",
+   "phase": "P5 Websites & mobile",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "preview_path",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "version",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'1.0.0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_premium",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "settings_schema",
+     "type": "json",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "school_site_settings": {
+   "area": "Institute websites",
+   "status": "New",
+   "phase": "P5 Websites & mobile",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index",
+     "status": "New"
+    },
+    {
+     "name": "site_theme_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "subdomain",
+     "type": "varchar(63)",
+     "nullable": true,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "site_enabled",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "primary_color",
+     "type": "varchar(7)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "secondary_color",
+     "type": "varchar(7)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "font_family",
+     "type": "varchar(60)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "homepage_sections",
+     "type": "json",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "menu_items",
+     "type": "json",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "footer_text",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "analytics_id",
+     "type": "varchar(40)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "published_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "site_theme_id"
+     ],
+     "references": "site_themes",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "school_pages": {
+   "area": "Institute websites",
+   "status": "New",
+   "phase": "P5 Websites & mobile",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "title",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index (school_id, slug)",
+     "status": "New"
+    },
+    {
+     "name": "page_type",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'custom'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "content",
+     "type": "longtext",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_published",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "show_in_menu",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "seo_title",
+     "type": "varchar(160)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "seo_description",
+     "type": "varchar(300)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "personal_access_tokens": {
+   "area": "Mobile app",
+   "status": "New",
+   "phase": "P5 Websites & mobile",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "tokenable_type",
+     "type": "varchar(255)",
+     "nullable": false,
+     "default": null,
+     "key": "Index (tokenable_type, tokenable_id)",
+     "status": "New"
+    },
+    {
+     "name": "tokenable_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(255)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "token",
+     "type": "varchar(64)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "abilities",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "last_used_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "expires_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "device_tokens": {
+   "area": "Mobile app",
+   "status": "New",
+   "phase": "P5 Websites & mobile",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "token",
+     "type": "varchar(255)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "platform",
+     "type": "varchar(10)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "app_version",
+     "type": "varchar(20)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "last_seen_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "school_group_user": {
+   "area": "Public directory",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "school_group_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "user_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "role",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'owner'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_group_id"
+     ],
+     "references": "school_groups",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "student_transfers": {
+   "area": "Students",
+   "status": "New",
+   "phase": "P3 Engagement",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "from_school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "to_school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "from_student_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "to_student_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "transfer_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "reason",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "transferred_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "from_school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "to_school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "transferred_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "from_school_id",
+      "from_student_id"
+     ],
+     "references": "students",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "to_school_id",
+      "to_student_id"
+     ],
+     "references": "students",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "student_fee_discounts": {
+   "area": "Fees and receipts",
+   "status": "New",
+   "phase": "P3 Engagement",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "student_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "fee_discount_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "school_session_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "starts_on",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "ends_on",
+     "type": "date",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "note",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id",
+      "student_id"
+     ],
+     "references": "students",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id",
+      "fee_discount_id"
+     ],
+     "references": "fee_discounts",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id",
+      "school_session_id"
+     ],
+     "references": "school_sessions",
+     "referenced_columns": [
+      "school_id",
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "modules": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "slug",
+     "type": "varchar(50)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "module_group",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'management'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "applies_to",
+     "type": "json",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_core",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "sort_order",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": []
+  },
+  "module_dependencies": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "module_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "requires_module_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "module_id"
+     ],
+     "references": "modules",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "requires_module_id"
+     ],
+     "references": "modules",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "plan_modules": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "plan_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "module_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "plan_id"
+     ],
+     "references": "plans",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "module_id"
+     ],
+     "references": "modules",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "subscription_modules": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_subscription_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "module_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "source",
+     "type": "varchar(15)",
+     "nullable": false,
+     "default": "'addon'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "starts_at",
+     "type": "datetime",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "ends_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "granted_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "note",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_subscription_id"
+     ],
+     "references": "school_subscriptions",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "module_id"
+     ],
+     "references": "modules",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "granted_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "subscription_limits": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_subscription_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Unique index (school_subscription_id, limit_key)",
+     "status": "New"
+    },
+    {
+     "name": "limit_key",
+     "type": "varchar(50)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "limit_value",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "reason",
+     "type": "varchar(255)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_subscription_id"
+     ],
+     "references": "school_subscriptions",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    }
+   ]
+  },
+  "school_modules": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "module_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key; Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "is_enabled",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "enabled_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "enabled_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "module_id"
+     ],
+     "references": "modules",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "enabled_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "demo_requests": {
+   "area": "Marketing site",
+   "status": "New",
+   "phase": "P2 Claim & plans",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "name",
+     "type": "varchar(150)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "institute_name",
+     "type": "varchar(150)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "institute_type",
+     "type": "varchar(30)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "phone",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "email",
+     "type": "varchar(190)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "city",
+     "type": "varchar(100)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "branches",
+     "type": "smallint",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "students_estimate",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "message",
+     "type": "text",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "source_site",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": "'marketing'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'new'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "assigned_to_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "school_group_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "assigned_to_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "school_group_id"
+     ],
+     "references": "school_groups",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "subscription_invoices": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P6 Billing",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "school_group_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "invoice_no",
+     "type": "varchar(30)",
+     "nullable": false,
+     "default": null,
+     "key": "Unique index",
+     "status": "New"
+    },
+    {
+     "name": "period_start",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "period_end",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "subtotal",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "discount_total",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "total_amount",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "status",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'unpaid'",
+     "key": "Index",
+     "status": "New"
+    },
+    {
+     "name": "due_date",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "issued_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "school_group_id"
+     ],
+     "references": "school_groups",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    }
+   ]
+  },
+  "subscription_invoice_lines": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P6 Billing",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "subscription_invoice_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "school_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "module_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "plan_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "description",
+     "type": "varchar(200)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "quantity",
+     "type": "smallint",
+     "nullable": false,
+     "default": "'1'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "unit_price",
+     "type": "decimal(10,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "amount",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": "'0'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "subscription_invoice_id"
+     ],
+     "references": "subscription_invoices",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "cascade"
+    },
+    {
+     "columns": [
+      "school_id"
+     ],
+     "references": "schools",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "module_id"
+     ],
+     "references": "modules",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    },
+    {
+     "columns": [
+      "plan_id"
+     ],
+     "references": "plans",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  },
+  "subscription_payments": {
+   "area": "Plans and limits",
+   "status": "New",
+   "phase": "P6 Billing",
+   "columns": [
+    {
+     "name": "id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Primary key (auto ID)",
+     "status": "New"
+    },
+    {
+     "name": "subscription_invoice_id",
+     "type": "integer",
+     "nullable": false,
+     "default": null,
+     "key": "Foreign key; Index",
+     "status": "New"
+    },
+    {
+     "name": "amount",
+     "type": "decimal(12,2)",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "paid_on",
+     "type": "date",
+     "nullable": false,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "method",
+     "type": "varchar(20)",
+     "nullable": false,
+     "default": "'bank_transfer'",
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "reference",
+     "type": "varchar(100)",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "recorded_by_user_id",
+     "type": "integer",
+     "nullable": true,
+     "default": null,
+     "key": "Foreign key",
+     "status": "New"
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": true,
+     "default": null,
+     "key": "\u2014",
+     "status": "New"
+    }
+   ],
+   "removed_columns": [],
+   "foreign_keys": [
+    {
+     "columns": [
+      "subscription_invoice_id"
+     ],
+     "references": "subscription_invoices",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "restrict"
+    },
+    {
+     "columns": [
+      "recorded_by_user_id"
+     ],
+     "references": "users",
+     "referenced_columns": [
+      "id"
+     ],
+     "on_delete": "set null"
+    }
+   ]
+  }
+ },
+ "note": "Generated from Schoolhouse-Database-Plan-v4.xlsx. Types are families (integer, text, decimal, datetime, json); lengths are not compared."
+}

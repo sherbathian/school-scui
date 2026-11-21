@@ -1,0 +1,31 @@
+IFS Branch Operations demo imports
+
+All records are synthetic. In Schoolhouse, open Branch Operations and select IFS.
+Import the numbered CSVs in order. Use Import CSV, review the preview, then save.
+Use a test branch or a local test database when entering these records.
+
+01–07  Academics, guardians, students and enrollments
+       The examples use academic year 2026-2027. If IFS already has this year,
+       skip 01 and use the existing session. Confirm it is the active academic
+       year before importing enrollments. If IFS uses another academic year,
+       update academic_year and relevant dates before importing.
+08     Attendance. Load the matching Demo grade and section on 2026-11-20.
+       Each file includes the three demo students for that register. If the
+       register contains other students, include their rows too before import.
+09     Admissions / Student inquiries
+10–13  Staff lookups and staff directory
+14–18  Fee setup. For 17, open requires-ifs-ids and replace both tokens with the
+       actual numeric IDs from the IFS fee group and fee-type exports. Then
+       open that fee master's Assign students panel and import 18.
+19–21  Legacy fee items, then Invoices & payments. Select 2026-2027. Use the
+       Student invoices importer for 20 and the Payment history importer for 21.
+22–23  Expenses. Import the heads before the expenses.
+
+Optional templates under requires-ifs-ids:
+- Staff leave balances: open the intended staff member and replace the leave
+  type and session tokens with IDs from IFS.
+- Student fee discounts: replace the four tokens with the numeric IDs for IFS,
+  the student, the discount rule and the session.
+
+The demo names and identifiers let you identify imported records. Run each
+file once. Some import screens can create duplicates when files are rerun.

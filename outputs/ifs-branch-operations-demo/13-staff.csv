@@ -1,0 +1,6 @@
+staff_no,first_name,last_name,designation,department,gender,birth_date,joining_date,basic_salary,status
+IFS-DEMO-T001,Ayesha,Demo,Demo Teacher,Demo Academics,female,1991-04-12,2026-08-01,40500,active
+IFS-DEMO-T002,Faris,Demo,Demo Teacher,Demo Academics,male,1992-04-12,2026-08-01,42000,active
+IFS-DEMO-T003,Hiba,Demo,Demo Teacher,Demo Academics,female,1993-04-12,2026-08-01,43500,active
+IFS-DEMO-T004,Kamal,Demo,Demo Teacher,Demo Academics,male,1994-04-12,2026-08-01,45000,active
+IFS-DEMO-T005,Sana,Demo,Demo Office Assistant,Demo Administration,female,1995-04-12,2026-08-01,46500,active

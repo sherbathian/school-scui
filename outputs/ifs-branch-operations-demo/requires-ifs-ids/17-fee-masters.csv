@@ -1,0 +1,2 @@
+fee_group_id,fee_type_id,billing_month,due_date,amount,fine_type,fine_value
+IFS_FEE_GROUP_ID,IFS_FEE_TYPE_ID,2026-11,2026-11-30,3000,none,0

@@ -1,0 +1,13 @@
+admission_number,first_name,last_name,guardian_source_parent_id,gender,status,admission_date
+IFS-DEMO-S001,Amina,Demo,IFS-DEMO-F001,female,active,2026-11-16
+IFS-DEMO-S002,Bilal,Demo,IFS-DEMO-F001,male,active,2026-11-16
+IFS-DEMO-S003,Dania,Demo,IFS-DEMO-F001,female,active,2026-11-16
+IFS-DEMO-S004,Hamza,Demo,IFS-DEMO-F002,male,active,2026-11-16
+IFS-DEMO-S005,Iqra,Demo,IFS-DEMO-F002,female,active,2026-11-16
+IFS-DEMO-S006,Junaid,Demo,IFS-DEMO-F002,male,active,2026-11-16
+IFS-DEMO-S007,Mariam,Demo,IFS-DEMO-F003,female,active,2026-11-16
+IFS-DEMO-S008,Omar,Demo,IFS-DEMO-F004,male,active,2026-11-16
+IFS-DEMO-S009,Sara,Demo,IFS-DEMO-F005,female,active,2026-11-16
+IFS-DEMO-S010,Zain,Demo,IFS-DEMO-F006,male,active,2026-11-16
+IFS-DEMO-S011,Noor,Demo,IFS-DEMO-F007,female,active,2026-11-16
+IFS-DEMO-S012,Yusuf,Demo,IFS-DEMO-F008,male,active,2026-11-16

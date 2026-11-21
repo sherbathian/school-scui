@@ -1,0 +1,3 @@
+title,discount_type,value,description
+Demo Sibling Discount,percentage,10,Synthetic sibling discount
+Demo Fixed Discount,fixed,300,Synthetic flat discount

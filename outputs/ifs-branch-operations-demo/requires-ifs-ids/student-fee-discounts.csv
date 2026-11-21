@@ -1,0 +1,2 @@
+school_id,student_id,fee_discount_id,school_session_id,starts_on,ends_on,note
+IFS_SCHOOL_ID,IFS_STUDENT_ID,IFS_DISCOUNT_ID,IFS_SESSION_ID,2026-11-01,2026-11-30,Synthetic sibling discount

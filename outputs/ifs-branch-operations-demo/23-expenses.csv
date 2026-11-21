@@ -1,0 +1,3 @@
+expense_head_id,name,invoice_number,expense_date,amount,description
+Demo Classroom Supplies,Whiteboard markers,IFS-DEMO-E001,2026-11-20,1250,Synthetic expense
+Demo Utilities,Electricity,IFS-DEMO-E002,2026-11-20,8000,Synthetic expense

@@ -1,0 +1,4 @@
+admission_number,status,academic_year,attendance_date
+IFS-DEMO-S004,present,2026-2027,2026-11-20
+IFS-DEMO-S005,present,2026-2027,2026-11-20
+IFS-DEMO-S006,late,2026-2027,2026-11-20

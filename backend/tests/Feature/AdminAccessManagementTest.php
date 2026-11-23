@@ -112,6 +112,29 @@ class AdminAccessManagementTest extends TestCase
         $this->deleteJson("{$rolePath}/{$id}")->assertNoContent();
     }
 
+    public function test_platform_admin_cannot_remove_a_super_admin_branch_membership(): void
+    {
+        $branch = School::factory()->create();
+        $member = $this->admin();
+        $membership = ['school_id' => $branch->id, 'user_id' => $member->id, 'role' => 'admin'];
+        $member->schools()->attach($branch, ['role' => 'admin']);
+
+        $response = $this->actingAs($this->admin(), 'sanctum')
+            ->deleteJson("/api/schools/{$branch->id}/users/{$member->id}");
+
+        $this->assertDatabaseHas('school_user', $membership);
+        $response->assertUnprocessable()->assertJsonValidationErrors('user');
+    }
+
+    public function test_branch_admin_cannot_open_platform_user_accounts(): void
+    {
+        $branch = School::factory()->create();
+        $manager = User::factory()->create(['is_active' => true]);
+        $manager->schools()->attach($branch, ['role' => 'admin']);
+
+        $this->withoutVite()->actingAs($manager)->get('/admin/users')->assertForbidden();
+    }
+
     private function admin(): User
     {
         return User::factory()->create(['is_active' => true, 'is_super_admin' => true]);

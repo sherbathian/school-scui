@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Grade;
 use App\Models\School;
 use App\Models\SchoolSession;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -111,6 +112,25 @@ class FeeStructureTest extends TestCase
         $this->postJson($path, $payload)->assertUnprocessable()->assertJsonValidationErrors('fee_type_id');
         $this->deleteJson("/api/schools/{$school->id}/fee-groups/{$group->id}")
             ->assertUnprocessable()->assertJsonValidationErrors('fee_group');
+    }
+
+    public function test_student_profile_includes_the_academic_year_of_a_monthly_charge(): void
+    {
+        $school = School::factory()->create();
+        $student = Student::factory()->for($school)->create();
+        $session = SchoolSession::factory()->for($school)->create(['starts_on' => '2026-08-01', 'ends_on' => '2027-06-30']);
+        $group = $school->feeGroups()->create(['title' => 'Primary']);
+        $type = $school->feeTypes()->create(['title' => 'Tuition']);
+        $dates = ['school_session_id' => $session->id, 'billing_month' => '2026-09', 'due_date' => '2026-09-15'];
+        $master = $school->feeMasters()->create([...$dates, 'fee_group_id' => $group->id, 'fee_type_id' => $type->id, 'amount' => '3000.00']);
+        $student->feeCharges()->create([...$dates, 'school_id' => $school->id, 'fee_master_id' => $master->id, 'amount' => '3000.00']);
+
+        $this->actingAs($this->feeAdmin($school), 'sanctum')
+            ->getJson("/api/schools/{$school->id}/students/{$student->id}")
+            ->assertOk()
+            ->assertJsonPath('data.fee_history.0.kind', 'monthly')
+            ->assertJsonPath('data.fee_history.0.fee_type', 'Tuition')
+            ->assertJsonPath('data.fee_history.0.academic_year', '2026-2027');
     }
 
     private function feeAdmin(School $school): User

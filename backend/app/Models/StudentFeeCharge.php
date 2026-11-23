@@ -23,4 +23,9 @@ class StudentFeeCharge extends Model
     {
         return $this->belongsTo(FeeMaster::class);
     }
+
+    public function schoolSession(): BelongsTo
+    {
+        return $this->belongsTo(SchoolSession::class);
+    }
 }

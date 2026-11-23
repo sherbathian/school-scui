@@ -254,7 +254,7 @@ $accessPage = function (Request $request, string $screen, ?int $branch = null) {
     return Inertia::render($screen === 'operations' ? 'Admin/BranchWorkspace' : 'Admin/Access', [
         'screen' => $screen,
         'branch' => $school?->only('id', 'name'),
-        'branches' => in_array($screen, ['members', 'roles', 'operations'], true)
+        'branches' => in_array($screen, ['users', 'members', 'roles', 'operations'], true)
             ? $branchOptions : [],
         'platform' => $platform,
         'schoolAccess' => $schoolAccess,

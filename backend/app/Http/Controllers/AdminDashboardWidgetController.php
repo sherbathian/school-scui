@@ -26,12 +26,12 @@ final class AdminDashboardWidgetController extends Controller
         if (! $platform) {
             $id = $request->query('branch');
             $branches = $user->activeSchools();
-            if (! is_string($id) || ! ctype_digit($id)) {
+            if (! is_string($id) || ! ctype_digit($id) || strlen($id) > 10) {
                 abort_unless($branches->lazyById()->contains(
                     fn (School $school) => $registry->allows($definition, $user, false, $school),
                 ), 403);
 
-                return response()->json(['message' => 'A numeric branch ID is required.'], 422);
+                return response()->json(['message' => 'A numeric branch ID of at most 10 digits is required.'], 422);
             }
 
             $branch = $branches->find($id);

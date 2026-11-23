@@ -52,6 +52,30 @@ class DashboardWidgetTest extends TestCase
         $this->getJson(self::URL.'unknown?branch=bad')->assertForbidden()->assertExactJson($denied->json());
     }
 
+    public function test_platform_admin_cannot_request_a_branch_widget(): void
+    {
+        $school = School::factory()->create();
+        $platform = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);
+
+        $this->actingAs($platform)->getJson(self::URL.'branch.attendance_today?branch='.$school->id)
+            ->assertForbidden();
+    }
+
+    public function test_branch_admin_cannot_request_a_platform_widget(): void
+    {
+        $school = School::factory()->create();
+
+        $this->actingAs($this->member($school))->getJson(self::URL.'platform.claims_queue')->assertForbidden();
+    }
+
+    public function test_branch_id_may_not_exceed_ten_digits(): void
+    {
+        $school = School::factory()->create();
+
+        $this->actingAs($this->member($school))
+            ->getJson(self::URL.'branch.attendance_today?branch=10000000000')->assertUnprocessable();
+    }
+
     public function test_missing_or_nonnumeric_branch_is_invalid_and_unavailable_branches_share_a_denial(): void
     {
         $school = School::factory()->create();
@@ -119,6 +143,32 @@ class DashboardWidgetTest extends TestCase
         $this->enrollment($other);
         $this->getJson(self::URL.'branch.class_strength?branch='.$school->id)->assertOk()
             ->assertJsonPath('data.items', [['label' => $current->grade->title, 'value' => 1]]);
+    }
+
+    public function test_class_strength_matches_the_unfiltered_rosters_active_students_by_current_grade(): void
+    {
+        $school = School::factory()->create();
+        $this->actingAs($this->member($school));
+        $first = $this->enrollment($school);
+        $duplicate = $this->enrollment($school, ['student_id' => $first->student_id]);
+        $previousYear = $this->enrollment($school, ['academic_year' => '2025-2026']);
+        $withdrawn = $this->enrollment($school, ['status' => 'withdrawn']);
+        $archived = Student::factory()->for($school)->create(['status' => 'inactive']);
+        $this->enrollment($school, ['student_id' => $archived->id]);
+
+        $roster = collect($this->getJson("/api/schools/{$school->id}/students")->assertOk()->json('data'))->keyBy('id');
+        $this->assertSame($duplicate->id, $roster[$first->student_id]['current_enrollment']['id']);
+        $this->assertSame('2025-2026', $roster[$previousYear->student_id]['current_enrollment']['academic_year']);
+        $this->assertNull($roster[$withdrawn->student_id]['current_enrollment']);
+        $this->assertSame('inactive', $roster[$archived->id]['status']);
+
+        $counts = $roster->filter(fn (array $student) => $student['status'] === 'active' && $student['current_enrollment'] !== null)
+            ->groupBy('current_enrollment.grade.id')
+            ->map(fn ($students) => ['label' => $students->first()['current_enrollment']['grade']['title'], 'value' => $students->count()])
+            ->values()->all();
+        $response = $this->getJson(self::URL.'branch.class_strength?branch='.$school->id)->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private');
+        $this->assertEqualsCanonicalizing($counts, $response->json('data.items'));
     }
 
     public function test_platform_widgets_return_listing_status_and_pending_claim_age(): void

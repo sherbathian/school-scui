@@ -131,6 +131,32 @@ class SchoolManagementTest extends TestCase
             );
     }
 
+    public function test_branch_admin_can_change_memberships_only_in_their_own_branch(): void
+    {
+        $branch = $this->createSchool('North School', 'north-school');
+        $otherBranch = $this->createSchool('South School', 'south-school');
+        $manager = User::factory()->create(['is_active' => true]);
+        $existing = User::factory()->create();
+        $candidate = User::factory()->create();
+        $manager->schools()->attach($branch, ['role' => 'admin']);
+        $existing->schools()->attach($otherBranch, ['role' => 'teacher']);
+        $otherPath = "/api/schools/{$otherBranch->id}/users";
+        $ownPath = "/api/schools/{$branch->id}/users";
+        $assignment = ['email' => $candidate->email, 'role' => 'teacher'];
+
+        $this->actingAs($manager, 'sanctum')->postJson($otherPath, $assignment)->assertNotFound();
+        $this->deleteJson("{$otherPath}/{$existing->id}")->assertNotFound();
+        $this->assertSame([$existing->id], $otherBranch->users()->pluck('users.id')->all());
+        $this->assertDatabaseHas('school_user', [
+            'school_id' => $otherBranch->id, 'user_id' => $existing->id, 'role' => 'teacher', 'is_active' => true,
+        ]);
+
+        $this->postJson($ownPath, $assignment)->assertCreated()->assertJsonPath('data.role', 'teacher');
+        $this->assertDatabaseHas('school_user', ['school_id' => $branch->id, 'user_id' => $candidate->id]);
+        $this->deleteJson("{$ownPath}/{$candidate->id}")->assertNoContent();
+        $this->assertDatabaseMissing('school_user', ['school_id' => $branch->id, 'user_id' => $candidate->id]);
+    }
+
     private function superAdmin(): User
     {
         $user = User::factory()->create();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\School;
 use App\Services\BranchModules;
+use App\Services\Dashboard\WidgetRegistry;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminDashboardController extends Controller
 {
-    public function __invoke(Request $request, BranchModules $modules, ?int $branch = null): Response
+    public function __invoke(Request $request, BranchModules $modules, WidgetRegistry $widgets, ?int $branch = null): Response
     {
         $user = $request->user();
         abort_unless($user->canEnterSchoolhouse(), 403);
@@ -113,6 +114,7 @@ class AdminDashboardController extends Controller
             'branch' => $school?->only('id', 'name'),
             'branches' => $schools->map->only('id', 'name')->values(),
             'cards' => $cards,
+            'widgets' => $widgets->layout($user, $platform, $school),
             'studentLinked' => $studentLinked,
             'schoolAccess' => $school ? array_values(array_filter(['members', 'roles'], fn (string $screen) => in_array(
                 $screen === 'members' ? 'users.manage' : 'roles.manage', $permissions, true,

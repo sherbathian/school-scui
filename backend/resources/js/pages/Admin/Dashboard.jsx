@@ -1,11 +1,13 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { api } from '../../admin-api.js';
 import { AdminLayout } from '../../components/admin-layout.jsx';
 import { NavigationIcon } from '../../components/admin-navigation.jsx';
 import { BranchPicker } from '../../components/branch-picker.jsx';
 
-export default function Dashboard({ adminName, platform, role, branch, branches, cards, operations, schoolAccess, reportDate, studentLinked }) {
+const WidgetGrid = lazy(() => import('../../components/dashboard/WidgetGrid.jsx'));
+
+export default function Dashboard({ adminName, platform, role, branch, branches, cards, widgets = [], operations, schoolAccess, reportDate, studentLinked }) {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
     const title = `${role} dashboard`;
@@ -38,6 +40,9 @@ export default function Dashboard({ adminName, platform, role, branch, branches,
                 <div className="metric-copy"><span>{label}</span><strong>{typeof value === 'number' ? value.toLocaleString() : value}</strong></div>
             </div>)}
         </div>
+        {widgets.length > 0 && <Suspense fallback={<p role="status">Loading dashboard widgets…</p>}>
+            <WidgetGrid widgets={widgets} />
+        </Suspense>}
         {role === 'Student' && !studentLinked && <section><h2>My reports</h2><p>Personal attendance and fees will appear when your sign-in is linked to your student record.</p></section>}
         {Object.keys(cards).length === 0 && <p>No summaries are available for your permissions at this branch.</p>}
     </AdminLayout>;

@@ -354,3 +354,8 @@
 .dashboard-widget-loading {
     min-height: 4rem;
 }
+
+.dashboard-widget-chart {
+    min-width: 0;
+    height: 210px;
+}

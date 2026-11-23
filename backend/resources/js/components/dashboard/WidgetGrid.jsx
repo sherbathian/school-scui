@@ -26,7 +26,7 @@ function WidgetCard({ widget }) {
             <h2>{widget.title}</h2>
             {failed ? <p role="alert">Could not load this widget.</p> : response ? <>
                 <time dateTime={response.asOf}>As of {new Date(response.asOf).toLocaleString()}</time>
-                <WidgetData {...response} />
+                <WidgetData type={response.type} data={response.data} summary={response.summary} />
             </> : <p className="dashboard-widget-loading" role="status">Loading…</p>}
         </div>
     </article>;
@@ -43,12 +43,12 @@ function WidgetData({ type, data, summary }) {
 
     return <>
         <p>{summary}</p>
-        <div aria-hidden="true">
-            <ResponsiveContainer width="100%" height={210}>
+        <div className="dashboard-widget-chart" aria-hidden="true">
+            <ResponsiveContainer width="100%" height="100%">
                 {type === 'bar' ? <BarChart data={data.items}>
-                    <XAxis dataKey="label" /><YAxis allowDecimals={false} /><Bar dataKey="value" fill={colors[0]} />
+                    <XAxis dataKey="label" /><YAxis allowDecimals={false} /><Bar dataKey="value" fill={colors[0]} isAnimationActive={false} />
                 </BarChart> : <PieChart>
-                    <Pie data={data.items} dataKey="value" nameKey="label" innerRadius="45%" outerRadius="75%">
+                    <Pie data={data.items} dataKey="value" nameKey="label" innerRadius="45%" outerRadius="75%" isAnimationActive={false}>
                         {data.items.map((item, index) => <Cell key={item.label} fill={colors[index % colors.length]} />)}
                     </Pie>
                 </PieChart>}

@@ -9,22 +9,25 @@ use Illuminate\Validation\Rule;
 
 final class ReportFilters
 {
-    public static function attendance(Request $request, School $school): array
+    public static function forReport(Request $request, School $school, string $report, array $definition): array
     {
         $today = today();
-        $report = $request->query('report', 'daily');
+        $dates = $definition['dates'] ?? true;
+        $classFilters = ($definition['gradeOnly'] ?? false) ? ['grade'] : ['session', 'grade', 'section'];
 
         return Validator::make([
             'report' => $report,
-            'from' => $request->query('from') ?? $today->copy()->startOfMonth()->toDateString(),
-            'to' => $request->query('to') ?? $today->toDateString(),
+            ...($dates ? [
+                'from' => $request->query('from') ?? $today->copy()->startOfMonth()->toDateString(),
+                'to' => $request->query('to') ?? $today->toDateString(),
+            ] : []),
             ...($report === 'low-attendance' ? ['threshold' => $request->query('threshold') ?? 75] : []),
-            ...$request->only(['session', 'grade', 'section']),
+            ...$request->only($classFilters),
         ], [
-            'report' => ['required', 'string', Rule::in(array_keys(AttendanceReports::CATALOGUE))],
+            'report' => ['required', 'string'],
             'threshold' => ['sometimes', 'integer', 'between:0,100'],
-            'from' => ['required', 'date_format:Y-m-d'],
-            'to' => ['required', 'date_format:Y-m-d', 'after_or_equal:from'],
+            'from' => ['sometimes', 'required', 'date_format:Y-m-d'],
+            'to' => ['sometimes', 'required', 'date_format:Y-m-d', 'after_or_equal:from'],
             'session' => ['nullable', 'string', 'max:20', Rule::exists('enrollments', 'academic_year')->where('school_id', $school->id)],
             'grade' => ['nullable', 'integer', Rule::exists('grades', 'id')->where('school_id', $school->id)],
             'section' => ['nullable', 'integer', Rule::exists('sections', 'id')->where('school_id', $school->id)],

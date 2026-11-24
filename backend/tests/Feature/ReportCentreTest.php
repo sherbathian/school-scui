@@ -209,6 +209,64 @@ class ReportCentreTest extends TestCase
         $this->get($url.'/print?report=admissions-funnel')->assertForbidden();
     }
 
+    public function test_staff_reports_filter_leave_by_session_and_exclude_other_branch_records(): void
+    {
+        $this->withoutVite();
+        $school = School::factory()->create();
+        $other = School::factory()->create();
+        foreach ([$school, $other] as $branch) {
+            $department = DB::table('departments')->insertGetId(['school_id' => $branch->id, 'title' => 'Teaching']);
+            $designation = DB::table('designations')->insertGetId(['school_id' => $branch->id, 'title' => 'Teacher']);
+            $staff = DB::table('staff')->insertGetId([
+                'school_id' => $branch->id, 'department_id' => $department, 'designation_id' => $designation,
+                'staff_no' => 'TEST-'.$branch->id, 'first_name' => 'Test', 'last_name' => 'Staff',
+                'gender' => 'female', 'birth_date' => '1990-01-01', 'joining_date' => '2025-08-01',
+            ]);
+            $leaveType = DB::table('leave_types')->insertGetId(['school_id' => $branch->id, 'title' => 'Annual leave']);
+            $session = DB::table('school_sessions')->insertGetId([
+                'school_id' => $branch->id, 'title' => '2026-2027', 'starts_on' => '2026-08-01', 'ends_on' => '2027-07-31',
+            ]);
+            DB::table('staff_leave_balances')->insert([
+                'staff_id' => $staff, 'leave_type_id' => $leaveType, 'school_session_id' => $session,
+                'allocated' => 10.5, 'used' => 2,
+            ]);
+        }
+        $older = DB::table('school_sessions')->insertGetId([
+            'school_id' => $school->id, 'title' => '2025-2026', 'starts_on' => '2025-08-01', 'ends_on' => '2026-07-31',
+        ]);
+        DB::table('staff_leave_balances')->insert([
+            'staff_id' => DB::table('staff')->where('school_id', $school->id)->value('id'),
+            'leave_type_id' => DB::table('leave_types')->where('school_id', $school->id)->value('id'),
+            'school_session_id' => $older, 'allocated' => 5, 'used' => 1,
+        ]);
+        DB::table('staff_leave_balances')->insert([
+            'staff_id' => DB::table('staff')->where('school_id', $school->id)->value('id'),
+            'leave_type_id' => DB::table('leave_types')->where('school_id', $other->id)->value('id'),
+            'school_session_id' => DB::table('school_sessions')->where('school_id', $school->id)->where('title', '2026-2027')->value('id'),
+            'allocated' => 20, 'used' => 1,
+        ]);
+        $this->switchModule($school, 'reports', true);
+        $url = '/admin/reports/'.$school->id;
+        $this->actingAs($this->member($school, 'admin'))->get($url.'?report=staff-directory')
+            ->assertInertia(fn (Assert $page) => $page->where('rows', [
+                ['TEST-'.$school->id, 'Test Staff', 'Teaching', 'Teacher', '2025-08-01', 'active'],
+            ]));
+        $query = '?report=staff-leave&session=2026-2027';
+        $rows = [['TEST-'.$school->id, 'Test Staff', 'Annual leave', '2026-2027', '10.5', '2.0', '8.5']];
+        $this->get($url.$query)->assertInertia(fn (Assert $page) => $page
+            ->where('rows', $rows)->where('sessions', ['2026-2027', '2025-2026']));
+        $this->get($url.'/print'.$query)->assertInertia(fn (Assert $page) => $page->where('rows', $rows));
+        $csv = $this->get($url.'/csv'.$query)->assertDownload('staff-leave.csv')->streamedContent();
+        $this->assertStringContainsString('TEST-'.$school->id.',"Test Staff","Annual leave",2026-2027,10.5,2.0,8.5', $csv);
+        $this->getJson($url.'?report=staff-leave&session=invalid')->assertUnprocessable()->assertJsonValidationErrors('session');
+        $this->actingAs($this->member($school, 'account'))->get($url.'/csv'.$query)->assertForbidden();
+        $this->actingAs($this->member($school, 'admin'));
+        $this->switchModule($school, 'staff', false);
+        foreach (['', '/csv', '/print'] as $suffix) {
+            $this->get($url.$suffix.$query)->assertForbidden();
+        }
+    }
+
     private function member(School $school, string $role): User
     {
         app(SchoolRoles::class)->ensureDefaults($school);

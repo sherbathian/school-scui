@@ -150,6 +150,12 @@ Route::get('/admin/dashboard/{branch?}', AdminDashboardController::class)
 Route::middleware('auth')->group(function (): void {
     Route::get('/admin/reports', \App\Http\Controllers\AdminReportController::class)->name('admin.reports.index');
     Route::middleware(\App\Http\Middleware\RequireBranchModule::class.':reports')->group(function (): void {
+        Route::get('/admin/reports/{school}/all', \App\Http\Controllers\AdminReportController::class)
+            ->whereNumber('school')->name('admin.reports.all');
+        Route::get('/admin/reports/{school}/all/csv', \App\Http\Controllers\AdminReportController::class)
+            ->whereNumber('school')->name('admin.reports.all.csv');
+        Route::get('/admin/reports/{school}/all/print', \App\Http\Controllers\AdminReportController::class)
+            ->whereNumber('school')->name('admin.reports.all.print');
         Route::get('/admin/reports/{school}', \App\Http\Controllers\AdminReportController::class)
             ->whereNumber('school')->name('admin.reports.branch');
         Route::get('/admin/reports/{school}/csv', \App\Http\Controllers\AdminReportController::class)

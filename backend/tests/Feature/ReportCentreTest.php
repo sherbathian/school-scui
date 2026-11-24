@@ -171,6 +171,44 @@ class ReportCentreTest extends TestCase
         }
     }
 
+    public function test_student_and_admissions_reports_use_branch_records_and_source_modules(): void
+    {
+        $this->withoutVite();
+        $school = School::factory()->create();
+        $other = School::factory()->create();
+        $grade = Grade::factory()->for($school)->create(['title' => 'Grade A']);
+        $section = Section::factory()->for($school)->create(['title' => 'Section A']);
+        DB::table('grade_section')->insert(['school_id' => $school->id, 'grade_id' => $grade->id, 'section_id' => $section->id]);
+        $student = Student::factory()->for($school)->create(['admission_number' => 'TEST-1', 'first_name' => 'Test', 'last_name' => 'Student']);
+        $attributes = ['school_id' => $school->id, 'student_id' => $student->id, 'grade_id' => $grade->id, 'section_id' => $section->id];
+        Enrollment::factory()->create($attributes + ['academic_year' => '2025-2026', 'enrolled_on' => '2026-01-01']);
+        Enrollment::factory()->create($attributes + ['academic_year' => '2026-2027', 'enrolled_on' => '2026-11-01']);
+        DB::table('student_lifecycle_events')->insert([
+            'school_id' => $school->id, 'student_id' => $student->id, 'event_type' => 'withdrawal', 'event_date' => '2026-11-12',
+        ]);
+        foreach ([[$school, 'new', '2026-11-05'], [$school, 'registered', '2026-10-05'], [$other, 'new', '2026-11-05']] as [$branch, $status, $date]) {
+            DB::table('student_inquiries')->insert([
+                'school_id' => $branch->id, 'first_name' => 'Test', 'last_name' => 'Inquiry', 'status' => $status, 'inquiry_date' => $date,
+            ]);
+        }
+        $this->switchModule($school, 'reports', true);
+        $url = '/admin/reports/'.$school->id;
+        $dates = '&from=2026-11-01&to=2026-11-30';
+        $this->actingAs($this->member($school, 'admin'))->get($url.'?report=student-strength')
+            ->assertInertia(fn (Assert $page) => $page->where('rows', [['Grade A', 'Section A', 1]]));
+        $this->get($url.'?report=student-movement'.$dates)->assertInertia(fn (Assert $page) => $page
+            ->where('rows', [['2026-11-12', 'Withdrawn', 'TEST-1', 'Test Student', 'Grade A', 'Section A']]));
+        $this->get($url.'/csv?report=student-movement&from=2026-01-01&to=2026-11-30')
+            ->assertDownload('student-movement.csv')
+            ->assertStreamedContent("Date,Movement,\"Admission number\",Student,Grade,Section\n2026-01-01,New,TEST-1,\"Test Student\",\"Grade A\",\"Section A\"\n2026-11-12,Withdrawn,TEST-1,\"Test Student\",\"Grade A\",\"Section A\"\n");
+        $this->get($url.'/print?report=admissions-funnel'.$dates)->assertInertia(fn (Assert $page) => $page
+            ->where('rows.0', ['New', 1])->where('rows.3', ['Registered', 0]));
+        $this->switchModule($school, 'students', false);
+        $this->get($url.'/csv?report=student-strength')->assertForbidden();
+        $this->switchModule($school, 'inquiries', false);
+        $this->get($url.'/print?report=admissions-funnel')->assertForbidden();
+    }
+
     private function member(School $school, string $role): User
     {
         app(SchoolRoles::class)->ensureDefaults($school);

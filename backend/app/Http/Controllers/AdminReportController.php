@@ -6,15 +6,17 @@ use App\Models\School;
 use App\Services\BranchModules;
 use App\Services\Reports\AttendanceReports;
 use App\Services\Reports\ReportFilters;
+use App\Services\Reports\StudentReports;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 final class AdminReportController
 {
-    public function __invoke(Request $request, BranchModules $modules, AttendanceReports $reports, ?int $school = null): Response
+    public function __invoke(Request $request, BranchModules $modules, AttendanceReports $attendance, StudentReports $students, ?int $school = null): Response
     {
         $user = $request->user();
         abort_unless($user->canEnterSchoolhouse(), 403);
@@ -41,14 +43,27 @@ final class AdminReportController
 
         $branch = $school === null ? $available->first() : $available->find($school);
         abort_unless($branch, 403);
-        $canViewAttendance = ($platform || $user->hasSchoolPermission($branch, 'attendance.view'))
-            && ($modules->forBranch($branch->id)->firstWhere('slug', 'attendance')['enabled'] ?? false);
-        abort_if(! $canViewAttendance && ($print || $csv || $request->hasAny(['report', 'threshold', 'from', 'to', 'session', 'grade', 'section'])), 403);
+        $catalogue = AttendanceReports::CATALOGUE + StudentReports::CATALOGUE;
+        $enabled = $modules->forBranch($branch->id)->where('enabled', true)->pluck('slug')->all();
+        $permissions = $platform ? [] : $user->permissionsForSchool($branch);
+        $options = array_filter($catalogue, function (array $definition) use ($enabled, $permissions, $platform): bool {
+            $source = $definition['module'] ?? 'attendance';
+            $permission = $source === 'inquiries' ? 'students.view' : $source.'.view';
 
-        $filters = $canViewAttendance ? ReportFilters::attendance($request, $branch) : [];
-        $report = $filters['report'] ?? 'daily';
-        $definition = AttendanceReports::CATALOGUE[$report];
-        $rows = $canViewAttendance ? $reports->rows($report, $branch, $filters) : [];
+            return in_array($source, $enabled, true) && ($platform || in_array($permission, $permissions, true));
+        });
+        $requested = $request->query('report');
+        if ($requested !== null && (! is_string($requested) || ! isset($catalogue[$requested]))) {
+            throw ValidationException::withMessages(['report' => 'Select a valid report.']);
+        }
+        $report = $requested ?? (($csv || $print) ? 'daily' : (array_key_first($options) ?? 'daily'));
+        $definition = $catalogue[$report];
+        $canViewReport = isset($options[$report]);
+        abort_if(! $canViewReport && ($print || $csv || $request->hasAny(['report', 'threshold', 'from', 'to', 'session', 'grade', 'section'])), 403);
+
+        $filters = $canViewReport ? ReportFilters::forReport($request, $branch, $report, $definition) : [];
+        $provider = isset($definition['module']) ? $students : $attendance;
+        $rows = $canViewReport ? $provider->rows($report, $branch, $filters) : [];
 
         if ($csv) {
             return response()->streamDownload(function () use ($rows, $definition): void {
@@ -69,18 +84,21 @@ final class AdminReportController
             'platform' => $platform,
             'branch' => $branch->only('id', 'name'),
             'branches' => $available->values()->map->only('id', 'name'),
-            'canViewAttendance' => $canViewAttendance,
+            'canViewAttendance' => isset($options['daily']),
+            'canViewReport' => $canViewReport,
             'filters' => $filters,
             'report' => $report,
             'title' => $definition['title'],
-            'reportOptions' => $canViewAttendance ? array_map(fn (array $option) => $option['title'], AttendanceReports::CATALOGUE) : [],
+            'reportOptions' => array_map(fn (array $option) => [
+                'title' => $option['title'], 'dates' => $option['dates'] ?? true, 'gradeOnly' => $option['gradeOnly'] ?? false,
+            ], $options),
             'columns' => $definition['columns'],
             'rows' => $rows,
             'print' => $print,
-            'sessions' => $canViewAttendance && ! $print ? DB::table('enrollments')->where('school_id', $branch->id)
+            'sessions' => $canViewReport && ! $print && ! ($definition['gradeOnly'] ?? false) ? DB::table('enrollments')->where('school_id', $branch->id)
                 ->distinct()->orderByDesc('academic_year')->pluck('academic_year') : [],
-            'grades' => $canViewAttendance && ! $print ? DB::table('grades')->where('school_id', $branch->id)->orderBy('title')->get(['id', 'title']) : [],
-            'sections' => $canViewAttendance && ! $print ? DB::table('sections')->where('school_id', $branch->id)->orderBy('title')->get(['id', 'title']) : [],
+            'grades' => $canViewReport && ! $print ? DB::table('grades')->where('school_id', $branch->id)->orderBy('title')->get(['id', 'title']) : [],
+            'sections' => $canViewReport && ! $print && ! ($definition['gradeOnly'] ?? false) ? DB::table('sections')->where('school_id', $branch->id)->orderBy('title')->get(['id', 'title']) : [],
         ])->toResponse($request)->header('Cache-Control', 'private, no-store');
     }
 }

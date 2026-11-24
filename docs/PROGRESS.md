@@ -79,7 +79,7 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | --- | --- | --- |
 | R0 · Install the manager pack | done | Reporting spec and briefs added. Product decisions recorded. |
 | R1 · Dashboard framework | done | The framework, four platform and branch widgets, and the student's monthly attendance are on main. |
-| R2 · Non-finance widgets | R2-A in review | Branch admin and teacher widgets implemented. Student and platform widgets remain for the next increment. |
+| R2 · Non-finance widgets | R2-A merged, R2-B in review | R2-B adds student attendance and absence widgets plus the platform verification, city, demo, and subscription widgets. Module adoption needs a bulk entitlement calculation within the query budget. |
 | R3 · Report centre v1 | todo | Build the report centre subject to the paid `reports` entitlement. |
 
 ---

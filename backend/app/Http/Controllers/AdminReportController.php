@@ -43,21 +43,23 @@ final class AdminReportController
         abort_unless($branch, 403);
         $canViewAttendance = ($platform || $user->hasSchoolPermission($branch, 'attendance.view'))
             && ($modules->forBranch($branch->id)->firstWhere('slug', 'attendance')['enabled'] ?? false);
-        abort_if(! $canViewAttendance && ($print || $csv || $request->hasAny(['from', 'to', 'session', 'grade', 'section'])), 403);
+        abort_if(! $canViewAttendance && ($print || $csv || $request->hasAny(['report', 'threshold', 'from', 'to', 'session', 'grade', 'section'])), 403);
 
         $filters = $canViewAttendance ? ReportFilters::attendance($request, $branch) : [];
-        $rows = $canViewAttendance ? $reports->daily($branch, $filters) : [];
+        $report = $filters['report'] ?? 'daily';
+        $definition = AttendanceReports::CATALOGUE[$report];
+        $rows = $canViewAttendance ? $reports->rows($report, $branch, $filters) : [];
 
         if ($csv) {
-            return response()->streamDownload(function () use ($rows): void {
+            return response()->streamDownload(function () use ($rows, $definition): void {
                 $stream = fopen('php://output', 'w');
-                fputcsv($stream, AttendanceReports::DAILY_COLUMNS, escape: '');
+                fputcsv($stream, $definition['columns'], escape: '');
                 foreach ($rows as $row) {
                     fputcsv($stream, array_map(fn ($value) => is_string($value) && preg_match('/^\\s*[=+@-]|^[\\t\\r\\n]/', $value)
                         ? "'".$value : $value, $row), escape: '');
                 }
                 fclose($stream);
-            }, 'attendance.csv', ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store']);
+            }, $definition['filename'], ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store']);
         }
 
         Inertia::setRootView('admin.app');
@@ -69,7 +71,10 @@ final class AdminReportController
             'branches' => $available->values()->map->only('id', 'name'),
             'canViewAttendance' => $canViewAttendance,
             'filters' => $filters,
-            'columns' => AttendanceReports::DAILY_COLUMNS,
+            'report' => $report,
+            'title' => $definition['title'],
+            'reportOptions' => $canViewAttendance ? array_map(fn (array $option) => $option['title'], AttendanceReports::CATALOGUE) : [],
+            'columns' => $definition['columns'],
             'rows' => $rows,
             'print' => $print,
             'sessions' => $canViewAttendance && ! $print ? DB::table('enrollments')->where('school_id', $branch->id)

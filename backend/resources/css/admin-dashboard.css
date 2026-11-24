@@ -379,6 +379,15 @@
 .reports-table td, .reports-table th { border-bottom: 1px solid currentColor; }
 .reports-print { padding: 1.5rem; }
 
+.reports-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-block: 1rem;
+}
+
+.reports-options [aria-current="page"] { font-weight: 700; }
+
 @media print {
     .reports-print-button { display: none; }
     .reports-print { padding: 0; }

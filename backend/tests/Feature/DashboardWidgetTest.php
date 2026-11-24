@@ -29,8 +29,12 @@ class DashboardWidgetTest extends TestCase
         $platform = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);
         foreach (['/admin/dashboard', "/admin/dashboard/{$school->id}"] as $url) {
             $this->actingAs($platform)->get($url)->assertInertia(fn (Assert $page) => $page
-                ->has('widgets', 2)->where('widgets.0.key', 'platform.listings_by_status')
-                ->where('widgets.1.key', 'platform.claims_queue'));
+                ->has('widgets', 6)->where('widgets.0.key', 'platform.listings_by_status')
+                ->where('widgets.1.key', 'platform.claims_queue')
+                ->where('widgets.2.key', 'platform.verification_queue')
+                ->where('widgets.3.key', 'platform.listings_by_city')
+                ->where('widgets.4.key', 'platform.new_demo_requests')
+                ->where('widgets.5.key', 'platform.subscription_watch'));
         }
 
         foreach (['admin', 'teacher', 'account', 'student'] as $role) {
@@ -43,10 +47,108 @@ class DashboardWidgetTest extends TestCase
                         ->where('widgets.4.key', 'branch.new_students_month')
                         ->where('widgets.5.key', 'branch.unmarked_classes'),
                     'teacher' => $page->has('widgets', 1)->where('widgets.0.key', 'branch.unmarked_classes'),
-                    'student' => $page->has('widgets', 1)->where('widgets.0.key', 'student.attendance_month'),
+                    'student' => $page->has('widgets', 3)->where('widgets.0.key', 'student.attendance_month')
+                        ->where('widgets.1.key', 'student.attendance_trend')->where('widgets.2.key', 'student.recent_absences'),
                     default => $page->has('widgets', 0),
                 });
         }
+    }
+
+    public function test_student_trend_and_absences_only_include_the_linked_students_distinct_dates(): void
+    {
+        config(['app.timezone' => 'Asia/Karachi']);
+        $this->travelTo(Carbon::parse('2026-12-14 19:00:00 UTC'));
+        $school = School::factory()->create();
+        $foreign = School::factory()->create();
+        $student = $this->member($school, 'student');
+        $first = $this->enrollment($school);
+        $second = $this->enrollment($school, ['student_id' => $first->student_id]);
+        $classmate = $this->enrollment($school);
+        $student->schools()->updateExistingPivot($school, ['student_id' => $first->student_id]);
+        foreach ([
+            [$first, '2026-11-15', 'absent'],
+            [$first, '2026-11-16', 'absent'],
+            [$second, '2026-11-16', 'absent'],
+            [$first, '2026-12-12', 'excused'],
+            [$first, '2026-12-13', 'late'],
+            [$second, '2026-12-13', 'absent'],
+            [$classmate, '2026-12-14', 'absent'],
+            [$first, '2026-12-15', 'absent'],
+            [$first, '2026-12-16', 'present'],
+        ] as [$record, $date, $status]) {
+            DB::table('attendance_records')->insert([
+                'school_id' => $school->id, 'enrollment_id' => $record->id,
+                'attendance_date' => $date, 'status' => $status,
+            ]);
+        }
+
+        $branch = '?branch='.$school->id;
+        $this->actingAs($student)->getJson(self::URL.'student.attendance_trend'.$branch)
+            ->assertOk()->assertJsonCount(30, 'data.points')
+            ->assertJsonPath('data.points.0', ['x' => '2026-11-16', 'y' => 0])
+            ->assertJsonPath('data.points.26.y', null)->assertJsonPath('data.points.27.y', 100)
+            ->assertJsonPath('data.points.28.y', null)->assertJsonPath('data.points.29.y', 0);
+        $this->getJson(self::URL.'student.recent_absences'.$branch.'&student_id='.$classmate->student_id)
+            ->assertOk()->assertJsonPath('data.rows', [
+                ['title' => '2026-12-15', 'meta' => 'Absent'],
+                ['title' => '2026-11-16', 'meta' => 'Absent'],
+            ]);
+        foreach (['student.attendance_trend', 'student.recent_absences'] as $key) {
+            $this->actingAs($student)->getJson(self::URL.$key.'?branch='.$foreign->id)->assertForbidden();
+            $this->actingAs($this->member($school))->getJson(self::URL.$key.$branch)->assertForbidden();
+        }
+    }
+
+    public function test_platform_widgets_show_review_queue_city_counts_and_new_demo_requests(): void
+    {
+        $this->travelTo(Carbon::parse('2026-12-15 12:00:00 UTC'));
+        $city = DB::table('cities')->insertGetId(['name' => 'Test City', 'slug' => 'test-city']);
+        $school = School::factory()->create([
+            'name' => 'Pending School', 'city_id' => $city, 'listing_status' => 'pending_review',
+            'verified_at' => null, 'created_at' => now()->subDays(4),
+        ]);
+        School::factory()->create(['city_id' => $city, 'listing_status' => 'published', 'verified_at' => now()]);
+        School::factory()->create(['city_id' => $city, 'listing_status' => 'draft', 'verified_at' => null])->delete();
+        foreach (['new', 'contacted'] as $status) {
+            DB::table('demo_requests')->insert(['name' => 'Test Request', 'phone' => '0000000000', 'status' => $status]);
+        }
+
+        $this->actingAs(User::factory()->create(['is_super_admin' => true, 'is_active' => true]));
+        $this->getJson(self::URL.'platform.verification_queue')->assertOk()->assertJsonPath('data.rows', [
+            ['title' => 'Pending School', 'meta' => '4 days'],
+        ]);
+        $this->getJson(self::URL.'platform.listings_by_city')->assertOk()
+            ->assertJsonPath('data.items', [['label' => 'Test City', 'value' => 2]]);
+        $this->getJson(self::URL.'platform.new_demo_requests')->assertOk()->assertJsonPath('data.value', 1);
+        $this->actingAs($this->member($school));
+        foreach (['platform.verification_queue', 'platform.listings_by_city', 'platform.new_demo_requests', 'platform.subscription_watch'] as $key) {
+            $this->getJson(self::URL.$key.'?branch='.$school->id)->assertForbidden();
+        }
+    }
+
+    public function test_subscription_watch_uses_the_latest_started_subscription_and_the_grace_and_expiry_windows(): void
+    {
+        $this->travelTo(Carbon::parse('2026-12-15 12:00:00 UTC'));
+        $plan = DB::table('plans')->insertGetId(['name' => 'Test plan', 'slug' => 'test-plan']);
+        foreach (['Ending soon', 'In grace', 'Ended', 'Superseded', 'Cancelled'] as $name) {
+            $group = DB::table('school_groups')->insertGetId(['name' => $name, 'slug' => str($name)->slug()->toString()]);
+            $subscription = ['school_group_id' => $group, 'plan_id' => $plan, 'starts_at' => now()->subMonth()];
+            DB::table('school_subscriptions')->insert($subscription + match ($name) {
+                'Ending soon', 'Superseded' => ['ends_at' => now()->addDays(14)],
+                'In grace' => ['ends_at' => now()->subDay(), 'grace_ends_at' => now()->addDay()],
+                'Ended' => ['ends_at' => now()->subDay(), 'grace_ends_at' => now()],
+                'Cancelled' => ['status' => 'cancelled', 'ends_at' => now()->addDay()],
+            });
+            if ($name === 'Superseded') {
+                DB::table('school_subscriptions')->insert(array_replace($subscription, ['starts_at' => now()->subDay()]));
+            }
+        }
+
+        $this->actingAs(User::factory()->create(['is_super_admin' => true, 'is_active' => true]))
+            ->getJson(self::URL.'platform.subscription_watch')->assertOk()->assertJsonPath('data.rows', [
+                ['title' => 'In grace', 'meta' => 'Grace ends 2026-12-16'],
+                ['title' => 'Ending soon', 'meta' => 'Ends 2026-12-29'],
+            ]);
     }
 
     public function test_branch_widgets_aggregate_only_current_data_from_the_selected_branch(): void
@@ -176,6 +278,10 @@ class DashboardWidgetTest extends TestCase
         $url = self::URL.'student.attendance_month?branch='.$school->id;
         $this->actingAs($student)->getJson($url)->assertOk()
             ->assertJsonPath('data.value', null)->assertJsonPath('summary', 'No attendance recorded this month.');
+        $branch = '?branch='.$school->id;
+        $this->getJson(self::URL.'student.attendance_trend'.$branch)->assertOk()
+            ->assertJsonPath('summary', 'No attendance recorded in the last 30 days.');
+        $this->getJson(self::URL.'student.recent_absences'.$branch)->assertOk()->assertJsonPath('data.rows', []);
 
         DB::table('school_modules')->insert([
             'school_id' => $school->id,
@@ -185,6 +291,8 @@ class DashboardWidgetTest extends TestCase
 
         $this->get('/admin/dashboard')->assertInertia(fn (Assert $page) => $page->has('widgets', 0));
         $this->getJson($url)->assertForbidden();
+        $this->getJson(self::URL.'student.attendance_trend'.$branch)->assertForbidden();
+        $this->getJson(self::URL.'student.recent_absences'.$branch)->assertForbidden();
     }
 
     public function test_unknown_keys_and_wrong_roles_are_denied_before_branch_validation(): void

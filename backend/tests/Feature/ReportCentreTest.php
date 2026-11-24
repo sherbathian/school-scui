@@ -267,6 +267,46 @@ class ReportCentreTest extends TestCase
         }
     }
 
+    public function test_organisation_comparison_and_exports_include_only_entitled_branches_in_the_selected_organisation(): void
+    {
+        $this->withoutVite();
+        $group = DB::table('school_groups')->insertGetId(['name' => 'Test organisation', 'slug' => 'comparison-org']);
+        $otherGroup = DB::table('school_groups')->insertGetId(['name' => 'Other organisation', 'slug' => 'other-org']);
+        $owner = User::factory()->create(['is_active' => true]);
+        foreach ([$group, $otherGroup] as $groupId) {
+            DB::table('school_group_user')->insert(['school_group_id' => $groupId, 'user_id' => $owner->id, 'role' => 'owner']);
+        }
+        foreach (['Alpha', 'Beta', 'Disabled Reports', 'Disabled Source', 'Other Group'] as $name) {
+            $branch = School::factory()->create(['group_id' => $name === 'Other Group' ? $otherGroup : $group, 'name' => $name]);
+            $branches[$name] = $branch;
+            $this->switchModule($branch, 'reports', $name !== 'Disabled Reports');
+            $this->switchModule($branch, 'inquiries', $name !== 'Disabled Source');
+            $grade = Grade::factory()->for($branch)->create(['title' => $name === 'Other Group' ? 'Foreign' : 'Grade A']);
+            DB::table('student_inquiries')->insert([
+                'school_id' => $branch->id, 'first_name' => 'Test', 'last_name' => 'Inquiry',
+                'status' => 'new', 'inquiry_date' => '2026-11-20', 'requested_grade_id' => $grade->id,
+            ]);
+        }
+        $url = '/admin/reports/'.$branches['Alpha']->id.'/all';
+        $query = '?report=admissions-funnel&from=2026-11-01&to=2026-11-30&grade=Grade%20A';
+        $this->actingAs($owner)->get($url.$query)->assertInertia(fn (Assert $page) => $page
+            ->where('allBranches', true)->where('columns.0', 'Branch')
+            ->where('grades', [['id' => 'Grade A', 'title' => 'Grade A']])->has('rows', 10)
+            ->where('rows.0', ['Alpha', 'New', 1])->where('rows.5', ['Beta', 'New', 1]));
+        $this->get($url.'/print'.$query)->assertInertia(fn (Assert $page) => $page->where('print', true)->has('rows', 10));
+        $csv = $this->get($url.'/csv'.$query)->assertDownload('organisation-admissions-funnel.csv')->streamedContent();
+        $this->assertStringContainsString("Branch,Stage,Inquiries\nAlpha,New,1", $csv);
+        $this->assertStringContainsString('Beta,New,1', $csv);
+        foreach (['Disabled Reports', 'Disabled Source', 'Other Group'] as $excluded) {
+            $this->assertStringNotContainsString($excluded, $csv);
+        }
+        $this->getJson($url.'?report=admissions-funnel&grade=Foreign')->assertUnprocessable()->assertJsonValidationErrors('grade');
+        $this->actingAs($this->member($branches['Alpha'], 'admin'));
+        foreach (['', '/csv', '/print'] as $suffix) {
+            $this->get($url.$suffix.$query)->assertForbidden();
+        }
+    }
+
     private function member(School $school, string $role): User
     {
         app(SchoolRoles::class)->ensureDefaults($school);

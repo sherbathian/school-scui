@@ -5,11 +5,13 @@ import { AdminLayout } from '../../components/admin-layout.jsx';
 
 export default function Reports({
     adminName, platform, branch, branches, canViewReport, filters, columns, rows, print,
-    report, title, reportOptions, sessions, grades, sections, errors = {},
+    report, title, reportOptions, sessions, grades, sections, allBranches, canCompare, organisationName, errors = {},
 }) {
     const [busy, setBusy] = useState(false);
     const [signOutError, setSignOutError] = useState('');
-    const path = `/admin/reports/${branch.id}`;
+    const branchPath = `/admin/reports/${branch.id}`;
+    const path = allBranches ? `${branchPath}/all` : branchPath;
+    const scopeName = allBranches ? organisationName : branch.name;
     const filterQuery = new URLSearchParams(Object.entries(filters).filter(([, value]) => value != null)).toString();
     const selected = reportOptions[report];
     const showFilters = selected && (selected.dates || selected.fields.length > 0);
@@ -57,7 +59,7 @@ export default function Reports({
         return <main className="reports-print">
             <Head title={`${title} · Schoolhouse`} />
             <h1>{title}</h1>
-            <p>{branch.name}{filters.from && ` · ${filters.from} to ${filters.to}`}</p>
+            <p>{scopeName}{filters.from && ` · ${filters.from} to ${filters.to}`}</p>
             <button type="button" className="reports-print-button" onClick={() => window.print()}>Print</button>
             {table}
         </main>;
@@ -66,11 +68,13 @@ export default function Reports({
     return <AdminLayout screen="reports" title="Reports" {...{ adminName, platform, signOut, busy }}>
         <Head title="Reports · Schoolhouse" />
         <div className="page-heading">
-            <div><h1>Reports</h1><p>{branch.name}</p></div>
+            <div><h1>Reports</h1><p>{scopeName}</p></div>
             <Link className="admin-link-button" href={`/admin/dashboard/${branch.id}`}>Dashboard</Link>
         </div>
         {signOutError && <p role="alert">{signOutError}</p>}
-        {branches.length > 1 && <label>Branch <select value={branch.id} onChange={event => router.visit(`/admin/reports/${event.target.value}`)}>
+        {(canCompare || branches.length > 1) && <label>Branch <select value={allBranches ? 'all' : branch.id}
+            onChange={event => router.visit(event.target.value === 'all' ? `${branchPath}/all` : `/admin/reports/${event.target.value}`)}>
+            {canCompare && <option value="all">All my branches in this organisation</option>}
             {branches.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select></label>}
         {canViewReport ? <>

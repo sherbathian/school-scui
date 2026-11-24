@@ -2,7 +2,6 @@
 
 namespace App\Services\Reports;
 
-use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -14,11 +13,13 @@ final class ReportFilters
         return $definition['fields'] ?? (($definition['gradeOnly'] ?? false) ? ['grade'] : ['session', 'grade', 'section']);
     }
 
-    public static function forReport(Request $request, School $school, string $report, array $definition): array
+    public static function forReport(Request $request, array $schoolIds, string $report, array $definition, bool $allBranches): array
     {
         $today = today();
         $dates = $definition['dates'] ?? true;
         $staff = ($definition['module'] ?? null) === 'staff';
+        $classKey = $allBranches ? 'title' : 'id';
+        $classType = $allBranches ? 'string' : 'integer';
 
         return Validator::make([
             'report' => $report,
@@ -34,9 +35,9 @@ final class ReportFilters
             'from' => ['sometimes', 'required', 'date_format:Y-m-d'],
             'to' => ['sometimes', 'required', 'date_format:Y-m-d', 'after_or_equal:from'],
             'session' => ['nullable', 'string', $staff ? 'max:100' : 'max:20',
-                Rule::exists($staff ? 'school_sessions' : 'enrollments', $staff ? 'title' : 'academic_year')->where('school_id', $school->id)],
-            'grade' => ['nullable', 'integer', Rule::exists('grades', 'id')->where('school_id', $school->id)],
-            'section' => ['nullable', 'integer', Rule::exists('sections', 'id')->where('school_id', $school->id)],
+                Rule::exists($staff ? 'school_sessions' : 'enrollments', $staff ? 'title' : 'academic_year')->whereIn('school_id', $schoolIds)],
+            'grade' => ['nullable', $classType, Rule::exists('grades', $classKey)->whereIn('school_id', $schoolIds)],
+            'section' => ['nullable', $classType, Rule::exists('sections', $classKey)->whereIn('school_id', $schoolIds)],
         ])->validate();
     }
 }

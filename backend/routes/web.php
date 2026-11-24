@@ -259,6 +259,9 @@ $accessPage = function (Request $request, string $screen, ?int $branch = null) {
         $branchOptions = $eligibleBranches->map->only('id', 'name')->values();
     } else {
         $branchOptions = $platform ? $branches->orderBy('name')->get(['id', 'name']) : $accessibleBranches->map->only('id', 'name');
+        if (! $platform && $screen === 'operations' && $accessibleBranches->count() === 1) {
+            $school ??= $accessibleBranches->first();
+        }
     }
     $allowedModules = ! $platform && $school && $screen === 'operations' ? $user->schoolhouseOperationModules($school) : [];
     abort_if(! $platform && $school && $screen === 'operations' && $allowedModules === [], 403);

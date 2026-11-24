@@ -80,7 +80,7 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R0 · Install the manager pack | done | Reporting spec and briefs added. Product decisions recorded. |
 | R1 · Dashboard framework | done | The framework, four platform and branch widgets, and the student's monthly attendance are on main. |
 | R2 · Non-finance widgets | done | All role widgets are on main, including effective module adoption. |
-| R3 · Report centre v1 | R3-A in review | Paid access, daily attendance, single-branch filters, CSV and print. Additional reports and organisation-wide comparison remain. |
+| R3 · Report centre v1 | R3-A merged, R3-B in review | R3-B adds monthly attendance by class and low-attendance students. Student, staff, admissions and organisation-wide reports remain. |
 
 ---
 

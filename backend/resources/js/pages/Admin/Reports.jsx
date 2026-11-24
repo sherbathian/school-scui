@@ -5,13 +5,19 @@ import { AdminLayout } from '../../components/admin-layout.jsx';
 
 export default function Reports({
     adminName, platform, branch, branches, canViewAttendance, filters, columns, rows, print,
-    sessions, grades, sections, errors = {},
+    report, title, reportOptions, sessions, grades, sections, errors = {},
 }) {
     const [busy, setBusy] = useState(false);
     const [signOutError, setSignOutError] = useState('');
     const path = `/admin/reports/${branch.id}`;
     const filterQuery = new URLSearchParams(Object.entries(filters).filter(([, value]) => value != null)).toString();
-    const title = 'Attendance by day and class';
+
+    function reportLink(key) {
+        const query = new URLSearchParams(filterQuery);
+        query.set('report', key);
+        if (key !== 'low-attendance') query.delete('threshold');
+        return `${path}?${query}`;
+    }
 
     async function signOut() {
         setBusy(true);
@@ -56,8 +62,12 @@ export default function Reports({
             {branches.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select></label>}
         {canViewAttendance ? <>
-            <nav aria-label="Available reports"><Link href={path} aria-current="page">{title}</Link></nav>
+            <nav className="reports-options" aria-label="Available reports">
+                {Object.entries(reportOptions).map(([key, label]) => <Link key={key} href={reportLink(key)}
+                    aria-current={key === report ? 'page' : undefined}>{label}</Link>)}
+            </nav>
             <form className="reports-filters" action={path} key={`${branch.id}:${filterQuery}`}>
+                <input type="hidden" name="report" value={report} />
                 <label>From <input name="from" type="date" required defaultValue={filters.from} /></label>
                 <label>To <input name="to" type="date" required defaultValue={filters.to} /></label>
                 <label>Session <select name="session" defaultValue={filters.session ?? ''}>
@@ -72,8 +82,11 @@ export default function Reports({
                     <option value="">All sections</option>
                     {sections.map(section => <option key={section.id} value={section.id}>{section.title}</option>)}
                 </select></label>
+                {report === 'low-attendance' && <label>Below (%) <input name="threshold" type="number"
+                    min="0" max="100" step="1" required defaultValue={filters.threshold} /></label>}
                 <button type="submit" className="admin-link-button">Apply filters</button>
             </form>
+            {report === 'low-attendance' && <p>Includes students below the threshold with recorded attendance. Present and late count as attended. Excused-only dates are excluded.</p>}
             {Object.values(errors).map(message => <p role="alert" key={message}>{message}</p>)}
             <div className="reports-actions">
                 <a href={`${path}/csv?${filterQuery}`}>Download CSV</a>

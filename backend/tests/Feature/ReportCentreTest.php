@@ -115,6 +115,62 @@ class ReportCentreTest extends TestCase
         }
     }
 
+    public function test_monthly_and_low_attendance_reports_reconcile_with_filtered_records_and_exports(): void
+    {
+        $this->withoutVite();
+        $school = School::factory()->create();
+        $grade = Grade::factory()->for($school)->create(['title' => 'Grade A']);
+        $section = Section::factory()->for($school)->create(['title' => 'Section A']);
+        DB::table('grade_section')->insert(['school_id' => $school->id, 'grade_id' => $grade->id, 'section_id' => $section->id]);
+        $student = Student::factory()->for($school)->create([
+            'admission_number' => 'TEST-100', 'first_name' => 'Test', 'last_name' => 'Student',
+        ]);
+        $enrollment = Enrollment::factory()->create([
+            'school_id' => $school->id, 'student_id' => $student->id, 'grade_id' => $grade->id,
+            'section_id' => $section->id, 'academic_year' => '2026-2027',
+        ]);
+        foreach (['2026-10-31' => 'present', '2026-11-01' => 'absent', '2026-11-02' => 'late', '2026-11-03' => 'excused'] as $date => $status) {
+            DB::table('attendance_records')->insert([
+                'school_id' => $school->id, 'enrollment_id' => $enrollment->id,
+                'attendance_date' => $date, 'status' => $status,
+            ]);
+        }
+        $previousEnrollment = Enrollment::factory()->create([
+            'school_id' => $school->id, 'student_id' => $student->id, 'grade_id' => $grade->id,
+            'section_id' => $section->id, 'academic_year' => '2025-2026',
+        ]);
+        DB::table('attendance_records')->insert([
+            'school_id' => $school->id, 'enrollment_id' => $previousEnrollment->id,
+            'attendance_date' => '2026-11-02', 'status' => 'absent',
+        ]);
+        $this->switchModule($school, 'reports', true);
+        $url = '/admin/reports/'.$school->id;
+        $filters = '&from=2026-10-31&to=2026-11-30&session=2026-2027&grade='.$grade->id.'&section='.$section->id;
+        $this->actingAs($this->member($school, 'admin'))->get($url.'?report=monthly'.$filters)->assertInertia(
+            fn (Assert $page) => $page->where('report', 'monthly')->where('rows', [
+                ['2026-10', 'Grade A', 'Section A', 1, 0, 0, 0, 100],
+                ['2026-11', 'Grade A', 'Section A', 0, 1, 1, 1, 50],
+            ])
+        );
+        $monthlyCsv = $this->get($url.'/csv?report=monthly'.$filters)->assertDownload('attendance-monthly.csv')->streamedContent();
+        $this->assertStringContainsString('2026-11,"Grade A","Section A",0,1,1,1,50', $monthlyCsv);
+        $lowFilters = '&from=2026-11-01&to=2026-11-30';
+        $rows = [['TEST-100', 'Test Student', 2, 1, 50]];
+        $this->get($url.'?report=low-attendance'.$lowFilters)->assertInertia(fn (Assert $page) => $page
+            ->where('report', 'low-attendance')->where('filters.threshold', 75)->where('rows', $rows));
+        $this->get($url.'?report=low-attendance&threshold=50'.$lowFilters)->assertInertia(fn (Assert $page) => $page->where('rows', []));
+        $this->get($url.'/print?report=low-attendance'.$lowFilters)->assertInertia(fn (Assert $page) => $page
+            ->where('print', true)->where('rows', $rows));
+        $csv = $this->get($url.'/csv?report=low-attendance'.$lowFilters)->assertDownload('low-attendance.csv')->streamedContent();
+        $this->assertStringContainsString('TEST-100,"Test Student",2,1,50', $csv);
+        $this->getJson($url.'?report=low-attendance&threshold=101')->assertUnprocessable()->assertJsonValidationErrors('threshold');
+        $this->getJson($url.'?report=invalid')->assertUnprocessable()->assertJsonValidationErrors('report');
+        $this->switchModule($school, 'attendance', false);
+        foreach (['', '/csv', '/print'] as $suffix) {
+            $this->get($url.$suffix.'?report=low-attendance')->assertForbidden();
+        }
+    }
+
     private function member(School $school, string $role): User
     {
         app(SchoolRoles::class)->ensureDefaults($school);

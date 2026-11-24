@@ -102,7 +102,7 @@ class User extends Authenticatable
         return match ($role) {
             'owner', 'group_admin' => $this->ownerPermissions(),
             'group_accountant' => ['schools.view', 'fees.view', 'fees.manage', 'expenses.view', 'expenses.manage'],
-            'group_viewer' => ['schools.view'],
+            'group_viewer' => ['schools.view', 'reports.view'],
             default => [],
         };
     }

@@ -359,3 +359,29 @@
     min-width: 0;
     height: 210px;
 }
+
+.reports-filters, .reports-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 1rem;
+    margin-block: 1rem;
+}
+
+.reports-filters label {
+    display: grid;
+    gap: .25rem;
+}
+
+.reports-table { overflow-x: auto; }
+.reports-table table { width: 100%; border-collapse: collapse; }
+.reports-table caption, .reports-table th, .reports-table td { padding: .5rem; text-align: start; }
+.reports-table td, .reports-table th { border-bottom: 1px solid currentColor; }
+.reports-print { padding: 1.5rem; }
+
+@media print {
+    .reports-print-button { display: none; }
+    .reports-print { padding: 0; }
+    .reports-table { overflow: visible; }
+    .reports-table tr { break-inside: avoid; }
+}

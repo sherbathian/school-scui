@@ -147,6 +147,18 @@ Route::get('/admin/dashboard/widgets/{key}', \App\Http\Controllers\AdminDashboar
 Route::get('/admin/dashboard/{branch?}', AdminDashboardController::class)
     ->middleware('auth')->whereNumber('branch')->name('admin.dashboard');
 
+Route::middleware('auth')->group(function (): void {
+    Route::get('/admin/reports', \App\Http\Controllers\AdminReportController::class)->name('admin.reports.index');
+    Route::middleware(\App\Http\Middleware\RequireBranchModule::class.':reports')->group(function (): void {
+        Route::get('/admin/reports/{school}', \App\Http\Controllers\AdminReportController::class)
+            ->whereNumber('school')->name('admin.reports.branch');
+        Route::get('/admin/reports/{school}/csv', \App\Http\Controllers\AdminReportController::class)
+            ->whereNumber('school')->name('admin.reports.csv');
+        Route::get('/admin/reports/{school}/print', \App\Http\Controllers\AdminReportController::class)
+            ->whereNumber('school')->name('admin.reports.print');
+    });
+});
+
 Route::get('/admin/login', $adminPage)->name('admin.login');
 Route::get('/admin/listings', $adminPage)->name('admin.listings');
 Route::get('/admin/listings/create', $adminPage)->name('admin.listings.create');

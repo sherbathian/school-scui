@@ -36,12 +36,95 @@ class DashboardWidgetTest extends TestCase
         foreach (['admin', 'teacher', 'account', 'student'] as $role) {
             $this->actingAs($this->member($school, $role))->get('/admin/dashboard')
                 ->assertInertia(fn (Assert $page) => match ($role) {
-                    'admin' => $page->has('widgets', 2)->where('widgets.0.key', 'branch.attendance_today')
-                        ->where('widgets.1.key', 'branch.class_strength'),
+                    'admin' => $page->has('widgets', 6)->where('widgets.0.key', 'branch.attendance_today')
+                        ->where('widgets.1.key', 'branch.class_strength')
+                        ->where('widgets.2.key', 'branch.attendance_trend')
+                        ->where('widgets.3.key', 'branch.admissions_funnel')
+                        ->where('widgets.4.key', 'branch.new_students_month')
+                        ->where('widgets.5.key', 'branch.unmarked_classes'),
+                    'teacher' => $page->has('widgets', 1)->where('widgets.0.key', 'branch.unmarked_classes'),
                     'student' => $page->has('widgets', 1)->where('widgets.0.key', 'student.attendance_month'),
                     default => $page->has('widgets', 0),
                 });
         }
+    }
+
+    public function test_branch_widgets_aggregate_only_current_data_from_the_selected_branch(): void
+    {
+        $this->travelTo(Carbon::parse('2026-12-14 12:00:00 UTC'));
+        $school = School::factory()->create();
+        $other = School::factory()->create();
+        $marked = $this->enrollment($school);
+        $unmarked = $this->enrollment($school);
+        $partial = $this->enrollment($school, [
+            'grade_id' => $marked->grade_id, 'section_id' => $marked->section_id,
+        ]);
+        $foreign = $this->enrollment($other);
+        foreach ([
+            [$marked, '2026-11-30', 'present'],
+            [$marked, '2026-12-01', 'present'],
+            [$marked, '2026-12-14', 'late'],
+            [$partial, '2026-12-01', 'absent'],
+            [$foreign, '2026-12-14', 'absent'],
+        ] as [$record, $date, $status]) {
+            DB::table('attendance_records')->insert([
+                'school_id' => $record->school_id, 'enrollment_id' => $record->id,
+                'attendance_date' => $date, 'status' => $status,
+            ]);
+        }
+        foreach ([[$school, 'new'], [$school, 'registered'], [$other, 'new']] as [$branch, $status]) {
+            DB::table('student_inquiries')->insert([
+                'school_id' => $branch->id, 'first_name' => 'Test', 'last_name' => 'Applicant',
+                'inquiry_date' => '2026-12-01', 'status' => $status,
+            ]);
+        }
+        Student::factory()->for($school)->create(['created_at' => '2026-11-30 00:00:00']);
+        $admin = $this->member($school);
+        $teacher = $this->member($school, 'teacher');
+        $branch = '?branch='.$school->id;
+
+        $this->actingAs($admin)->getJson(self::URL.'branch.attendance_trend'.$branch)
+            ->assertOk()->assertJsonCount(14, 'data.points')
+            ->assertJsonPath('data.points.0', ['x' => '2026-12-01', 'y' => 50])
+            ->assertJsonPath('data.points.1.y', null)->assertJsonPath('data.points.13.y', 100);
+        $this->getJson(self::URL.'branch.admissions_funnel'.$branch)->assertOk()
+            ->assertJsonPath('data.items.0', ['label' => 'New', 'value' => 1])
+            ->assertJsonPath('data.items.3', ['label' => 'Registered', 'value' => 1]);
+        $this->getJson(self::URL.'branch.new_students_month'.$branch)->assertOk()->assertJsonPath('data.value', 3);
+        $url = self::URL.'branch.unmarked_classes'.$branch;
+        $this->getJson($url)->assertOk()->assertJsonPath('data.rows', [
+            ['title' => $unmarked->grade->title.' / '.$unmarked->section->title, 'meta' => '1 of 1 unmarked'],
+        ]);
+        $this->actingAs($teacher)->getJson($url)->assertOk()->assertJsonCount(2, 'data.rows')
+            ->assertJsonFragment(['title' => $marked->grade->title.' / '.$marked->section->title, 'meta' => '1 of 2 unmarked']);
+    }
+
+    public function test_branch_widgets_enforce_role_branch_and_module_on_layout_and_direct_requests(): void
+    {
+        $this->withoutVite();
+        $school = School::factory()->create();
+        $other = School::factory()->create();
+        $admin = $this->member($school);
+        $student = $this->member($school, 'student');
+        $teacher = $this->member($school, 'teacher');
+        $widgets = ['branch.attendance_trend', 'branch.admissions_funnel', 'branch.new_students_month', 'branch.unmarked_classes'];
+        foreach ($widgets as $key) {
+            $this->actingAs($admin)->getJson(self::URL.$key.'?branch='.$other->id)->assertForbidden();
+            $this->actingAs($student)->getJson(self::URL.$key.'?branch='.$school->id)->assertForbidden();
+        }
+
+        foreach (['attendance', 'inquiries', 'students'] as $module) {
+            DB::table('school_modules')->insert([
+                'school_id' => $school->id, 'module_id' => DB::table('modules')->where('slug', $module)->value('id'),
+                'is_enabled' => false,
+            ]);
+        }
+        $this->actingAs($admin)->get('/admin/dashboard')->assertInertia(fn (Assert $page) => $page->has('widgets', 0));
+        foreach ($widgets as $key) {
+            $this->getJson(self::URL.$key.'?branch='.$school->id)->assertForbidden();
+        }
+        $this->actingAs($teacher)->get('/admin/dashboard')->assertInertia(fn (Assert $page) => $page->has('widgets', 0));
+        $this->getJson(self::URL.'branch.unmarked_classes?branch='.$school->id)->assertForbidden();
     }
 
     public function test_student_monthly_attendance_counts_distinct_local_dates_only_for_the_linked_student(): void
@@ -163,8 +246,9 @@ class DashboardWidgetTest extends TestCase
             'is_enabled' => false,
         ]);
 
-        $this->get('/admin/dashboard')->assertInertia(fn (Assert $page) => $page->has('widgets', 0));
-        foreach (['branch.attendance_today', 'branch.class_strength'] as $key) {
+        $this->get('/admin/dashboard')->assertInertia(fn (Assert $page) => $page
+            ->has('widgets', 1)->where('widgets.0.key', 'branch.admissions_funnel'));
+        foreach (['branch.attendance_today', 'branch.class_strength', 'branch.attendance_trend', 'branch.new_students_month', 'branch.unmarked_classes'] as $key) {
             $this->getJson(self::URL.$key.'?branch='.$school->id)->assertForbidden();
         }
     }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import TrendWidget from './TrendWidget.jsx';
 
 const colors = ['#235789', '#9b4529', '#38745a', '#71558e', '#946500'];
 
@@ -33,6 +34,7 @@ function WidgetCard({ widget }) {
 }
 
 function WidgetData({ type, data, summary }) {
+    if (type === 'trend') return <TrendWidget points={data.points} summary={summary} />;
     if (type === 'list') {
         return data.rows.length ? <ul>{data.rows.map((row, index) => <li key={index}>
             {row.href ? <a href={row.href}>{row.title}</a> : row.title} · {row.meta}

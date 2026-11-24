@@ -141,6 +141,9 @@ $adminPage = function (Request $request, ?int $listing = null) {
     ])->toResponse($request)->header('Cache-Control', 'no-store');
 };
 
+Route::get('/admin/dashboard/widgets/{key}', \App\Http\Controllers\AdminDashboardWidgetController::class)
+    ->middleware('auth')->name('admin.dashboard.widget');
+
 Route::get('/admin/dashboard/{branch?}', AdminDashboardController::class)
     ->middleware('auth')->whereNumber('branch')->name('admin.dashboard');
 

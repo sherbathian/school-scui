@@ -327,3 +327,35 @@
 @media (max-width: 760px) {
     .admin-main .dashboard-metrics { grid-template-columns: 1fr; }
 }
+
+.dashboard-widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: 1rem;
+    margin-block: 1rem;
+}
+
+.dashboard-widget {
+    min-width: 0;
+    border: 1px solid var(--line, #d8e0ea);
+    border-radius: .75rem;
+    padding: 1rem;
+}
+
+.dashboard-widget h2 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.dashboard-widget time {
+    font-size: .875rem;
+}
+
+.dashboard-widget-loading {
+    min-height: 4rem;
+}
+
+.dashboard-widget-chart {
+    min-width: 0;
+    height: 210px;
+}

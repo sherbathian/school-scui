@@ -38,7 +38,10 @@ function WidgetData({ type, data, summary }) {
             {row.href ? <a href={row.href}>{row.title}</a> : row.title} · {row.meta}
         </li>)}</ul> : <p>{data.empty}</p>;
     }
-    if (type === 'kpi') return <p>{data.value ?? 'No data'}{data.unit} {summary}</p>;
+    if (type === 'kpi') return <>
+        {data.value != null && <p><strong>{data.value}{data.unit}</strong></p>}
+        <p>{summary}</p>
+    </>;
     if (!data.items.some(item => item.value > 0)) return <p>No data to display.</p>;
 
     return <>

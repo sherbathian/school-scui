@@ -78,7 +78,7 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | Task | Status | Evidence and remaining work |
 | --- | --- | --- |
 | R0 · Install the manager pack | done | Reporting spec and briefs added. Product decisions recorded. |
-| R1 · Dashboard framework | R1-A in review | Registry, endpoint, lazy grid and four platform and branch widgets. R1-B adds student attendance after the R1-A PR merges. |
+| R1 · Dashboard framework | R1-A merged, R1-B in review | Registry, endpoint, lazy grid and four platform and branch widgets are on main. R1-B adds the student's own monthly attendance. |
 | R2 · Non-finance widgets | todo | Add role-appropriate widgets after R1. |
 | R3 · Report centre v1 | todo | Build the report centre subject to the paid `reports` entitlement. |
 

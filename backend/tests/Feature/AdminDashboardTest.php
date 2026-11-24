@@ -15,6 +15,23 @@ class AdminDashboardTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_single_branch_operations_opens_with_the_same_permissions_as_the_explicit_branch(): void
+    {
+        $this->withoutVite();
+        $school = School::factory()->create();
+        $other = School::factory()->create();
+        $user = $this->member($school, 'teacher');
+        $this->actingAs($user)->get('/admin/operations')->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/BranchWorkspace')->where('branch.id', $school->id)->has('branches', 1)
+            ->has('allowedModules', 1)->where('allowedModules.0', 'attendance'));
+        $this->get("/admin/branches/{$other->id}/operations")->assertNotFound();
+        $this->get('/admin/members')->assertForbidden();
+
+        $user->schools()->attach($other, ['role' => 'teacher', 'is_active' => true]);
+        $this->get('/admin/operations')->assertInertia(fn (Assert $page) => $page
+            ->where('branch', null)->has('branches', 2));
+    }
+
     public function test_branch_roles_can_sign_in_and_receive_only_their_dashboard_and_branch(): void
     {
         $this->withoutVite();

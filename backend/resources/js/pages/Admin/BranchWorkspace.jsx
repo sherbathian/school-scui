@@ -37,7 +37,7 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
     const [recordBusy, setRecordBusy] = useState(false);
     const [recordFeedback, setRecordFeedback] = useState(null);
     const [school, setSchool] = useState(null);
-    const [modules, setModules] = useState([]);
+    const [modules, setModules] = useState(platform ? [] : allowedModules);
     const [view, setView] = useState('');
     const [error, setError] = useState('');
     const [signingOut, setSigningOut] = useState(false);
@@ -181,8 +181,8 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
             <div><h1>{sectionTitle ?? 'Branch Operations'}</h1>{branch && <p>{branch.name}</p>}</div>
             {platform && branch && activeView !== 'expense-add' && <Link className="admin-link-button" href={`/admin/branches/${branch.id}/modules`}>Branch modules</Link>}
         </div>
-        <BranchPicker branch={branch} branches={branches} onSelect={id =>
-            router.visit(id ? `/admin/branches/${id}/operations` : '/admin/operations')} />
+        {(platform || branches.length > 1) && <BranchPicker branch={branch} branches={branches} onSelect={id =>
+            router.visit(id ? `/admin/branches/${id}/operations` : '/admin/operations')} />}
         {error && <p id="feedback" role="alert" data-error>{error}</p>}
         {branch && !school && !error && <p role="status">Loading branch…</p>}
         {school && !visible.length && <p>No school management modules are enabled for this branch.</p>}

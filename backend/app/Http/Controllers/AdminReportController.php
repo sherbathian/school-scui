@@ -6,6 +6,7 @@ use App\Models\School;
 use App\Services\BranchModules;
 use App\Services\Reports\AttendanceReports;
 use App\Services\Reports\ReportFilters;
+use App\Services\Reports\StaffReports;
 use App\Services\Reports\StudentReports;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class AdminReportController
 {
-    public function __invoke(Request $request, BranchModules $modules, AttendanceReports $attendance, StudentReports $students, ?int $school = null): Response
+    public function __invoke(Request $request, BranchModules $modules, AttendanceReports $attendance, StudentReports $students, StaffReports $staff, ?int $school = null): Response
     {
         $user = $request->user();
         abort_unless($user->canEnterSchoolhouse(), 403);
@@ -43,7 +44,7 @@ final class AdminReportController
 
         $branch = $school === null ? $available->first() : $available->find($school);
         abort_unless($branch, 403);
-        $catalogue = AttendanceReports::CATALOGUE + StudentReports::CATALOGUE;
+        $catalogue = AttendanceReports::CATALOGUE + StudentReports::CATALOGUE + StaffReports::CATALOGUE;
         $enabled = $modules->forBranch($branch->id)->where('enabled', true)->pluck('slug')->all();
         $permissions = $platform ? [] : $user->permissionsForSchool($branch);
         $options = array_filter($catalogue, function (array $definition) use ($enabled, $permissions, $platform): bool {
@@ -62,7 +63,11 @@ final class AdminReportController
         abort_if(! $canViewReport && ($print || $csv || $request->hasAny(['report', 'threshold', 'from', 'to', 'session', 'grade', 'section'])), 403);
 
         $filters = $canViewReport ? ReportFilters::forReport($request, $branch, $report, $definition) : [];
-        $provider = isset($definition['module']) ? $students : $attendance;
+        $provider = match ($definition['module'] ?? 'attendance') {
+            'staff' => $staff,
+            'students', 'inquiries' => $students,
+            'attendance' => $attendance,
+        };
         $rows = $canViewReport ? $provider->rows($report, $branch, $filters) : [];
 
         if ($csv) {
@@ -78,6 +83,13 @@ final class AdminReportController
         }
 
         Inertia::setRootView('admin.app');
+        $fields = $canViewReport && ! $print ? ReportFilters::fields($definition) : [];
+        $sessions = [];
+        if (in_array('session', $fields, true)) {
+            $sessions = $provider === $staff
+                ? DB::table('school_sessions')->where('school_id', $branch->id)->orderByDesc('starts_on')->pluck('title')
+                : DB::table('enrollments')->where('school_id', $branch->id)->distinct()->orderByDesc('academic_year')->pluck('academic_year');
+        }
 
         return Inertia::render('Admin/Reports', [
             'adminName' => $user->name,
@@ -90,15 +102,14 @@ final class AdminReportController
             'report' => $report,
             'title' => $definition['title'],
             'reportOptions' => array_map(fn (array $option) => [
-                'title' => $option['title'], 'dates' => $option['dates'] ?? true, 'gradeOnly' => $option['gradeOnly'] ?? false,
+                'title' => $option['title'], 'dates' => $option['dates'] ?? true, 'fields' => ReportFilters::fields($option),
             ], $options),
             'columns' => $definition['columns'],
             'rows' => $rows,
             'print' => $print,
-            'sessions' => $canViewReport && ! $print && ! ($definition['gradeOnly'] ?? false) ? DB::table('enrollments')->where('school_id', $branch->id)
-                ->distinct()->orderByDesc('academic_year')->pluck('academic_year') : [],
-            'grades' => $canViewReport && ! $print ? DB::table('grades')->where('school_id', $branch->id)->orderBy('title')->get(['id', 'title']) : [],
-            'sections' => $canViewReport && ! $print && ! ($definition['gradeOnly'] ?? false) ? DB::table('sections')->where('school_id', $branch->id)->orderBy('title')->get(['id', 'title']) : [],
+            'sessions' => $sessions,
+            'grades' => in_array('grade', $fields, true) ? DB::table('grades')->where('school_id', $branch->id)->orderBy('title')->get(['id', 'title']) : [],
+            'sections' => in_array('section', $fields, true) ? DB::table('sections')->where('school_id', $branch->id)->orderBy('title')->get(['id', 'title']) : [],
         ])->toResponse($request)->header('Cache-Control', 'private, no-store');
     }
 }

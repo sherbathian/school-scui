@@ -12,11 +12,22 @@ export default function Reports({
     const path = `/admin/reports/${branch.id}`;
     const filterQuery = new URLSearchParams(Object.entries(filters).filter(([, value]) => value != null)).toString();
     const selected = reportOptions[report];
+    const showFilters = selected && (selected.dates || selected.fields.length > 0);
 
     function reportLink(key) {
         const query = new URLSearchParams(filterQuery);
+        const option = reportOptions[key];
         query.set('report', key);
         if (key !== 'low-attendance') query.delete('threshold');
+        if (!option.dates) {
+            query.delete('from');
+            query.delete('to');
+        }
+        for (const field of ['session', 'grade', 'section']) {
+            if (!option.fields.includes(field) || (field === 'session' && (key.startsWith('staff-') !== report.startsWith('staff-')))) {
+                query.delete(field);
+            }
+        }
         return `${path}?${query}`;
     }
 
@@ -67,28 +78,28 @@ export default function Reports({
                 {Object.entries(reportOptions).map(([key, option]) => <Link key={key} href={reportLink(key)}
                     aria-current={key === report ? 'page' : undefined}>{option.title}</Link>)}
             </nav>
-            <form className="reports-filters" action={path} key={`${branch.id}:${filterQuery}`}>
+            {showFilters && <form className="reports-filters" action={path} key={`${branch.id}:${filterQuery}`}>
                 <input type="hidden" name="report" value={report} />
                 {selected.dates && <>
                     <label>From <input name="from" type="date" required defaultValue={filters.from} /></label>
                     <label>To <input name="to" type="date" required defaultValue={filters.to} /></label>
                 </>}
-                {!selected.gradeOnly && <label>Session <select name="session" defaultValue={filters.session ?? ''}>
+                {selected.fields.includes('session') && <label>Session <select name="session" defaultValue={filters.session ?? ''}>
                     <option value="">All sessions</option>
                     {sessions.map(session => <option key={session}>{session}</option>)}
                 </select></label>}
-                <label>Grade <select name="grade" defaultValue={filters.grade ?? ''}>
+                {selected.fields.includes('grade') && <label>Grade <select name="grade" defaultValue={filters.grade ?? ''}>
                     <option value="">All grades</option>
                     {grades.map(grade => <option key={grade.id} value={grade.id}>{grade.title}</option>)}
-                </select></label>
-                {!selected.gradeOnly && <label>Section <select name="section" defaultValue={filters.section ?? ''}>
+                </select></label>}
+                {selected.fields.includes('section') && <label>Section <select name="section" defaultValue={filters.section ?? ''}>
                     <option value="">All sections</option>
                     {sections.map(section => <option key={section.id} value={section.id}>{section.title}</option>)}
                 </select></label>}
                 {report === 'low-attendance' && <label>Below (%) <input name="threshold" type="number"
                     min="0" max="100" step="1" required defaultValue={filters.threshold} /></label>}
                 <button type="submit" className="admin-link-button">Apply filters</button>
-            </form>
+            </form>}
             {report === 'low-attendance' && <p>Includes students below the threshold with recorded attendance. Present and late count as attended. Excused-only dates are excluded.</p>}
             {Object.values(errors).map(message => <p role="alert" key={message}>{message}</p>)}
             <div className="reports-actions">

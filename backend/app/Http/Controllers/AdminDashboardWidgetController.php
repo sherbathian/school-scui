@@ -38,7 +38,7 @@ final class AdminDashboardWidgetController extends Controller
         }
         abort_unless($registry->allows($definition, $user, $platform, $branch), 403);
 
-        $context = new DashboardContext($branch);
+        $context = new DashboardContext($branch, $user);
 
         return response()->json([
             ...array_intersect_key($definition, array_flip(['key', 'title', 'type'])),

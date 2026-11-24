@@ -35,11 +35,73 @@ class DashboardWidgetTest extends TestCase
 
         foreach (['admin', 'teacher', 'account', 'student'] as $role) {
             $this->actingAs($this->member($school, $role))->get('/admin/dashboard')
-                ->assertInertia(fn (Assert $page) => $role === 'admin'
-                    ? $page->has('widgets', 2)->where('widgets.0.key', 'branch.attendance_today')
-                        ->where('widgets.1.key', 'branch.class_strength')
-                    : $page->has('widgets', 0));
+                ->assertInertia(fn (Assert $page) => match ($role) {
+                    'admin' => $page->has('widgets', 2)->where('widgets.0.key', 'branch.attendance_today')
+                        ->where('widgets.1.key', 'branch.class_strength'),
+                    'student' => $page->has('widgets', 1)->where('widgets.0.key', 'student.attendance_month'),
+                    default => $page->has('widgets', 0),
+                });
         }
+    }
+
+    public function test_student_monthly_attendance_counts_distinct_local_dates_only_for_the_linked_student(): void
+    {
+        config(['app.timezone' => 'Asia/Karachi']);
+        $this->travelTo(Carbon::parse('2026-11-30 19:00:00 UTC'));
+        $school = School::factory()->create();
+        $other = School::factory()->create();
+        $student = $this->member($school, 'student');
+        $first = $this->enrollment($school);
+        $second = $this->enrollment($school, ['student_id' => $first->student_id]);
+        $classmate = $this->enrollment($school);
+        $foreign = $this->enrollment($other);
+        $student->schools()->updateExistingPivot($school, ['student_id' => $first->student_id]);
+
+        foreach ([
+            [$first, '2026-11-30', 'present'],
+            [$first, '2026-12-01', 'present'],
+            [$second, '2026-12-01', 'absent'],
+            [$first, '2026-12-02', 'late'],
+            [$first, '2026-12-03', 'absent'],
+            [$first, '2026-12-04', 'excused'],
+            [$first, '2027-01-01', 'present'],
+            [$classmate, '2026-12-01', 'absent'],
+            [$foreign, '2026-12-01', 'absent'],
+        ] as [$record, $date, $status]) {
+            DB::table('attendance_records')->insert([
+                'school_id' => $record->school_id, 'enrollment_id' => $record->id,
+                'attendance_date' => $date, 'status' => $status,
+            ]);
+        }
+
+        $url = self::URL.'student.attendance_month?branch=';
+        $this->actingAs($student)->getJson($url.$school->id.'&student_id='.$classmate->student_id)
+            ->assertOk()->assertHeader('Cache-Control', 'no-store, private')
+            ->assertJsonPath('key', 'student.attendance_month')->assertJsonPath('type', 'kpi')
+            ->assertJsonPath('asOf', '2026-12-01T00:00:00+05:00')
+            ->assertJsonPath('data.value', 67)->assertJsonPath('data.unit', '%')
+            ->assertJsonPath('summary', '2 of 3 recorded days attended.');
+        $this->getJson($url.$other->id)->assertForbidden();
+        $this->actingAs($this->member($school))->getJson($url.$school->id)->assertForbidden();
+    }
+
+    public function test_student_attendance_has_an_empty_state_and_obeys_the_module_switch(): void
+    {
+        $this->withoutVite();
+        $school = School::factory()->create();
+        $student = $this->member($school, 'student');
+        $url = self::URL.'student.attendance_month?branch='.$school->id;
+        $this->actingAs($student)->getJson($url)->assertOk()
+            ->assertJsonPath('data.value', null)->assertJsonPath('summary', 'No attendance recorded this month.');
+
+        DB::table('school_modules')->insert([
+            'school_id' => $school->id,
+            'module_id' => DB::table('modules')->where('slug', 'attendance')->value('id'),
+            'is_enabled' => false,
+        ]);
+
+        $this->get('/admin/dashboard')->assertInertia(fn (Assert $page) => $page->has('widgets', 0));
+        $this->getJson($url)->assertForbidden();
     }
 
     public function test_unknown_keys_and_wrong_roles_are_denied_before_branch_validation(): void

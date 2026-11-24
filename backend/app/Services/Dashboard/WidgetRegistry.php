@@ -48,7 +48,9 @@ final readonly class WidgetRegistry
         }
 
         return $branch !== null
-            && $user->hasSchoolPermission($branch, $permission)
+            && ($permission === 'student.self'
+                ? $user->schoolAccessRole($branch) === 'student'
+                : $user->hasSchoolPermission($branch, $permission))
             && $this->modules->forBranch($branch->id)->contains(
                 fn (array $module) => $module['slug'] === $definition['requiredModule'] && $module['enabled'],
             );

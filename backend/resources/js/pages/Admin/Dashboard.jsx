@@ -7,6 +7,23 @@ import { BranchPicker } from '../../components/branch-picker.jsx';
 
 const WidgetGrid = lazy(() => import('../../components/dashboard/WidgetGrid.jsx'));
 
+const metricIcons = {
+    'Institution records': 'school',
+    'Verified listings': 'shield',
+    'Pending claims': 'claims',
+    Grades: 'academics',
+    'Active students': 'users',
+    'Staff records': 'staff',
+    'Attendance entries today': 'attendance',
+    'Attendance entries you marked today': 'attendance',
+    'Days present this month': 'attendance',
+    'Unpaid fee invoices': 'pending',
+    'My unpaid fee invoices': 'pending',
+    'Fees received this month': 'fees',
+    'Expenses recorded this month': 'expenses',
+    Campus: 'school',
+};
+
 export default function Dashboard({ adminName, platform, role, branch, branches, cards, widgets = [], operations, schoolAccess, reportDate, studentLinked }) {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
@@ -27,7 +44,7 @@ export default function Dashboard({ adminName, platform, role, branch, branches,
 
     return <AdminLayout screen="dashboard" {...{ title, adminName, platform, role, operations, schoolAccess, signOut, busy }}>
         <Head title={`${title} · Schoolhouse`} />
-        <div className="page-heading">
+        <div className="page-heading dashboard-heading">
             <div><h1>{title}</h1><p>{branch?.name ?? 'All institutions'} · {date}</p></div>
             {operations && <Link className="admin-link-button" href={`/admin/branches/${branch.id}/operations`}>Open branch operations</Link>}
         </div>
@@ -35,8 +52,8 @@ export default function Dashboard({ adminName, platform, role, branch, branches,
         {(platform || branches.length > 1) && <BranchPicker branch={branch} branches={branches}
             onSelect={id => router.visit(id ? `/admin/dashboard/${id}` : '/admin/dashboard')} />}
         <div className="metrics dashboard-metrics" aria-label="Summary">
-            {Object.entries(cards).map(([label, value]) => <div className="metric-button" key={label}>
-                <span className="metric-icon" aria-hidden="true"><NavigationIcon name={role === 'Student' ? 'school' : 'modules'} /></span>
+            {Object.entries(cards).map(([label, value]) => <div className="metric-button" key={label} data-icon={metricIcons[label]}>
+                <span className="metric-icon" aria-hidden="true"><NavigationIcon name={metricIcons[label] ?? 'modules'} /></span>
                 <div className="metric-copy"><span>{label}</span><strong>{typeof value === 'number' ? value.toLocaleString() : value}</strong></div>
             </div>)}
         </div>

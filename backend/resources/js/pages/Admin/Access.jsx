@@ -268,7 +268,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId, platform = t
         {!editor && !details && <><div className="page-heading"><div><h1>{title}</h1>{branch && <p>{branch.name}</p>}</div>
             {noun && (!branchScreen || branch) && <Button disabled={busy} onClick={() => { setFeedback(null); setEditor({}); }}>+ New {noun}</Button>}
         </div>
-        {branchScreen && (screen !== 'members' || platform || branches.length > 1) && <label className="mb-4 max-w-sm">Select branch
+        {branchScreen && (platform || branches.length > 1) && <label className="mb-4 max-w-sm">Select branch
             <select value={branch?.id ?? ''} disabled={busy} onChange={event =>
                 router.visit(event.target.value ? `/admin/branches/${event.target.value}/${screen}` : `/admin/${screen}`)}>
                 <option value="">Choose a branch</option>

@@ -394,3 +394,72 @@
     .reports-table { overflow: visible; }
     .reports-table tr { break-inside: avoid; }
 }
+
+.dashboard-heading {
+    border: 1px solid #ccded6;
+    border-radius: .85rem;
+    padding: clamp(1rem, 2.5vw, 1.6rem);
+    background: linear-gradient(120deg, #e5f3ed, #f6faf8 78%);
+}
+
+.dashboard-metrics .metric-button, .dashboard-widget {
+    --dashboard-accent: #326955;
+    --dashboard-tint: #e8f3ed;
+}
+
+.dashboard-metrics [data-icon="academics"], .dashboard-widget[data-icon="academics"],
+.dashboard-metrics [data-icon="staff"] {
+    --dashboard-accent: #695091;
+    --dashboard-tint: #f0ebf9;
+}
+
+.dashboard-metrics [data-icon="users"], .dashboard-widget[data-icon="users"],
+.dashboard-metrics [data-icon="attendance"], .dashboard-widget[data-icon="attendance"] {
+    --dashboard-accent: #275e87;
+    --dashboard-tint: #e8f2fa;
+}
+
+.dashboard-metrics [data-icon="pending"], .dashboard-widget[data-icon="pending"],
+.dashboard-metrics [data-icon="claims"], .dashboard-widget[data-icon="claims"] {
+    --dashboard-accent: #8a5119;
+    --dashboard-tint: #fbefdc;
+}
+
+.dashboard-metrics [data-icon="expenses"] {
+    --dashboard-accent: #943e50;
+    --dashboard-tint: #f9e9ee;
+}
+
+.dashboard-metrics .metric-button {
+    border-top-color: var(--dashboard-accent);
+    background: linear-gradient(135deg, var(--dashboard-tint), #fff 62%);
+}
+
+.dashboard-metrics .metric-icon, .dashboard-widget .metric-icon {
+    background: var(--dashboard-tint);
+    color: var(--dashboard-accent);
+}
+
+.dashboard-metrics .metric-copy { min-width: 0; overflow-wrap: anywhere; }
+
+.dashboard-widget {
+    background: #fff;
+    box-shadow: 0 2px 6px #18382d0d;
+}
+
+.dashboard-widget h2 {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin-bottom: .45rem;
+    font-weight: 650;
+}
+
+.dashboard-widget time {
+    display: block;
+    margin-bottom: .6rem;
+    color: #526458;
+    font-size: .78rem;
+}
+
+.dashboard-widget p { margin-block: .4rem; }

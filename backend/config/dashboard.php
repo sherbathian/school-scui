@@ -7,6 +7,7 @@ use App\Services\Dashboard\Widgets\ClassStrength;
 use App\Services\Dashboard\Widgets\ClaimsQueue;
 use App\Services\Dashboard\Widgets\ListingsByCity;
 use App\Services\Dashboard\Widgets\ListingsByStatus;
+use App\Services\Dashboard\Widgets\ModuleAdoption;
 use App\Services\Dashboard\Widgets\NewDemoRequests;
 use App\Services\Dashboard\Widgets\NewStudentsMonth;
 use App\Services\Dashboard\Widgets\StudentAttendanceMonth;
@@ -24,6 +25,7 @@ return [
         'platform.listings_by_city' => ListingsByCity::class,
         'platform.new_demo_requests' => NewDemoRequests::class,
         'platform.subscription_watch' => SubscriptionWatch::class,
+        'platform.module_adoption' => ModuleAdoption::class,
         'branch.attendance_today' => AttendanceToday::class,
         'branch.class_strength' => ClassStrength::class,
         'branch.attendance_trend' => AttendanceTrend::class,
@@ -38,6 +40,7 @@ return [
         'platform' => [
             'platform.listings_by_status', 'platform.claims_queue', 'platform.verification_queue',
             'platform.listings_by_city', 'platform.new_demo_requests', 'platform.subscription_watch',
+            'platform.module_adoption',
         ],
         'admin' => [
             'branch.attendance_today', 'branch.class_strength', 'branch.attendance_trend',

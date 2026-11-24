@@ -8,6 +8,9 @@ use App\Models\School;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\BranchModules;
+use App\Services\Dashboard\DashboardContext;
+use App\Services\Dashboard\WidgetRegistry;
 use App\Services\SchoolRoles;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -29,12 +32,13 @@ class DashboardWidgetTest extends TestCase
         $platform = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);
         foreach (['/admin/dashboard', "/admin/dashboard/{$school->id}"] as $url) {
             $this->actingAs($platform)->get($url)->assertInertia(fn (Assert $page) => $page
-                ->has('widgets', 6)->where('widgets.0.key', 'platform.listings_by_status')
+                ->has('widgets', 7)->where('widgets.0.key', 'platform.listings_by_status')
                 ->where('widgets.1.key', 'platform.claims_queue')
                 ->where('widgets.2.key', 'platform.verification_queue')
                 ->where('widgets.3.key', 'platform.listings_by_city')
                 ->where('widgets.4.key', 'platform.new_demo_requests')
-                ->where('widgets.5.key', 'platform.subscription_watch'));
+                ->where('widgets.5.key', 'platform.subscription_watch')
+                ->where('widgets.6.key', 'platform.module_adoption'));
         }
 
         foreach (['admin', 'teacher', 'account', 'student'] as $role) {
@@ -52,6 +56,69 @@ class DashboardWidgetTest extends TestCase
                     default => $page->has('widgets', 0),
                 });
         }
+    }
+
+    public function test_module_adoption_matches_effective_entitlements_using_at_most_three_data_queries(): void
+    {
+        $this->travelTo(Carbon::parse('2026-12-15 12:00:00 UTC'));
+        $platform = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);
+        $plan = DB::table('plans')->insertGetId(['name' => 'Adoption plan', 'slug' => 'test-adoption']);
+        $ids = DB::table('modules')->pluck('id', 'slug');
+        foreach (['students', 'attendance'] as $key) {
+            DB::table('plan_modules')->insert(['plan_id' => $plan, 'module_id' => $ids[$key]]);
+        }
+
+        $branches = collect([School::factory()->create(), School::factory()->create()]);
+        DB::table('school_modules')->insert([
+            'school_id' => $branches->first()->id, 'module_id' => $ids['students'], 'is_enabled' => false,
+        ]);
+        foreach (['grace', 'expired', 'future', 'unverified', 'no-subscription'] as $case) {
+            $group = DB::table('school_groups')->insertGetId(['name' => $case, 'slug' => 'adoption-'.$case]);
+            $branches->push(School::factory()->create([
+                'group_id' => $group, 'verified_at' => $case === 'unverified' ? null : now()->subMonth(),
+            ]));
+            if ($case === 'no-subscription') {
+                continue;
+            }
+            $subscription = DB::table('school_subscriptions')->insertGetId([
+                'school_group_id' => $group, 'plan_id' => $plan,
+                'starts_at' => $case === 'future' ? now()->addDay() : now()->subMonth(),
+                'ends_at' => now()->subDay(),
+                'grace_ends_at' => $case === 'expired' ? now() : now()->addDay(),
+            ]);
+            if ($case === 'grace') {
+                DB::table('school_subscriptions')->insert([
+                    'school_group_id' => $group, 'plan_id' => $plan, 'starts_at' => now()->addDay(),
+                ]);
+            }
+            foreach (['academics' => now()->addDay(), 'staff' => now()] as $key => $end) {
+                DB::table('subscription_modules')->insert([
+                    'school_subscription_id' => $subscription, 'module_id' => $ids[$key],
+                    'starts_at' => now()->subDay(), 'ends_at' => $end,
+                ]);
+            }
+        }
+        School::factory()->create()->delete();
+
+        $expected = $branches->flatMap(fn (School $branch) => app(BranchModules::class)->forBranch($branch->id))
+            ->where('enabled', true)->countBy('name');
+        $widget = app(WidgetRegistry::class)->find('platform.module_adoption');
+        $this->assertNotNull($widget);
+        DB::enableQueryLog();
+        try {
+            $payload = $widget->data(new DashboardContext(null, $platform));
+            $this->assertLessThanOrEqual(3, count(DB::getQueryLog()));
+        } finally {
+            DB::disableQueryLog();
+        }
+
+        foreach ($payload['data']['items'] as $item) {
+            $this->assertSame($expected->get($item['label'], 0), $item['value'], $item['label']);
+        }
+        $this->assertCount($ids->count(), $payload['data']['items']);
+        $this->actingAs($platform)->getJson(self::URL.'platform.module_adoption')->assertOk()
+            ->assertJsonPath('data.items', $payload['data']['items']);
+        $this->actingAs($this->member($branches->first()))->getJson(self::URL.'platform.module_adoption')->assertForbidden();
     }
 
     public function test_student_trend_and_absences_only_include_the_linked_students_distinct_dates(): void

@@ -15,3 +15,5 @@
 | 23 Nov 2026 | Deliver the dashboard framework and platform and branch widgets in R1-A. Deliver student attendance in R1-B after R1-A merges. Monthly student attendance shows the percentage and attended days out of distinct recorded days. Present and late count as attended. | One PR or separate framework and student PRs | Tahir |
 
 Open decisions include how to count excused days in student attendance, parent phone sign-up, media storage, the public fee source, free-plan modules and quotas, grace period, pricing, the marketing hostname, and the production database engine. R1-B omits excused-only dates pending a decision. Confirm only the decisions needed for the next increment.
+
+Tahir approved counting active students across non-archived branches under the organisation-wide `max_students` cap. A subscription override takes precedence over the plan cap. An explicit null is unlimited. Commercial values are decided separately.

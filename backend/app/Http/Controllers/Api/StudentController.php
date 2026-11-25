@@ -8,6 +8,7 @@ use App\Models\FeeInvoice;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\StudentFeeCharge;
+use App\Services\OrganisationStudentLimit;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
@@ -87,7 +88,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function store(Request $request, int $school): JsonResponse
+    public function store(Request $request, OrganisationStudentLimit $limits, int $school): JsonResponse
     {
         $schoolRecord = $this->accessibleSchool($request, $school, 'manage');
         $validated = $request->validate([
@@ -119,12 +120,6 @@ class StudentController extends Controller
         $photo = $validated['photo'] ?? null;
         $bFormDocument = $validated['b_form_document'] ?? null;
         unset($validated['photo'], $validated['b_form_document']);
-        if ($photo) {
-            $validated['photo_path'] = $photo->store("students/{$schoolRecord->id}/photos", 'local');
-        }
-        if ($bFormDocument) {
-            $validated['b_form_document_path'] = $bFormDocument->store("students/{$schoolRecord->id}/documents", 'local');
-        }
         $validated['full_name'] = $validated['full_name'] ?? trim($validated['first_name'].' '.$validated['last_name']);
         if ($guardian && collect($guardian)->filter()->isNotEmpty()) {
             if (! ($guardian['is_guardian_other'] ?? false) && empty($guardian['father_phone']) && empty($guardian['mother_phone'])) {
@@ -134,7 +129,16 @@ class StudentController extends Controller
                 throw ValidationException::withMessages(['guardian.guardian_name' => ['Name, relation, and phone are required for an alternate guardian.']]);
             }
         }
-        $student = DB::transaction(function () use ($schoolRecord, $validated, $guardian) {
+        $student = DB::transaction(function () use ($schoolRecord, $validated, $guardian, $photo, $bFormDocument, $limits) {
+            if (($validated['status'] ?? 'active') === 'active') {
+                $limits->assertSeatAvailable($limits->lock($schoolRecord));
+            }
+            if ($photo) {
+                $validated['photo_path'] = $photo->store("students/{$schoolRecord->id}/photos", 'local');
+            }
+            if ($bFormDocument) {
+                $validated['b_form_document_path'] = $bFormDocument->store("students/{$schoolRecord->id}/documents", 'local');
+            }
             if ($guardian && collect($guardian)->filter()->isNotEmpty()) {
                 $validated['guardian_id'] = $schoolRecord->guardians()->create($guardian)->id;
             }
@@ -191,7 +195,7 @@ class StudentController extends Controller
         ], 'inline');
     }
 
-    public function update(Request $request, int $school, int $student): JsonResponse
+    public function update(Request $request, OrganisationStudentLimit $limits, int $school, int $student): JsonResponse
     {
         $schoolRecord = $this->accessibleSchool($request, $school, 'manage');
         $studentRecord = $schoolRecord->students()->findOrFail($student);
@@ -227,31 +231,42 @@ class StudentController extends Controller
         $removeBFormDocument = (bool) ($validated['remove_b_form_document'] ?? false);
         unset($validated['photo'], $validated['b_form_document']);
         unset($validated['remove_photo'], $validated['remove_b_form_document']);
-        if (! array_key_exists('full_name', $validated) && (array_key_exists('first_name', $validated) || array_key_exists('last_name', $validated))) {
-            $validated['full_name'] = trim(($validated['first_name'] ?? $studentRecord->first_name).' '.($validated['last_name'] ?? $studentRecord->last_name));
-        }
-        if ($photo || $removePhoto) {
-            if ($studentRecord->photo_path) {
-                Storage::disk('local')->delete($studentRecord->photo_path);
+        $studentRecord = DB::transaction(function () use ($schoolRecord, $student, $validated, $photo, $bFormDocument, $removePhoto, $removeBFormDocument, $limits): Student {
+            $activating = ($validated['status'] ?? null) === 'active';
+            $group = $activating ? $limits->lock($schoolRecord) : null;
+            $studentRecord = $schoolRecord->students()->whereKey($student)->lockForUpdate()->firstOrFail();
+            if ($activating && $studentRecord->status !== 'active') {
+                $limits->assertSeatAvailable($group);
             }
-            $validated['photo_path'] = $photo ? $photo->store("students/{$schoolRecord->id}/photos", 'local') : null;
-        }
-        if ($bFormDocument || $removeBFormDocument) {
-            if ($studentRecord->b_form_document_path) {
-                Storage::disk('local')->delete($studentRecord->b_form_document_path);
+
+            if (! array_key_exists('full_name', $validated) && (array_key_exists('first_name', $validated) || array_key_exists('last_name', $validated))) {
+                $validated['full_name'] = trim(($validated['first_name'] ?? $studentRecord->first_name).' '.($validated['last_name'] ?? $studentRecord->last_name));
             }
-            $validated['b_form_document_path'] = $bFormDocument ? $bFormDocument->store("students/{$schoolRecord->id}/documents", 'local') : null;
-        }
-        if (isset($validated['guardian'])) {
-            $guardian = $validated['guardian'];
-            unset($validated['guardian']);
-            if ($studentRecord->guardian) {
-                $studentRecord->guardian->update($guardian);
-            } elseif (collect($guardian)->filter()->isNotEmpty()) {
-                $validated['guardian_id'] = $schoolRecord->guardians()->create($guardian)->id;
+            if ($photo || $removePhoto) {
+                if ($studentRecord->photo_path) {
+                    Storage::disk('local')->delete($studentRecord->photo_path);
+                }
+                $validated['photo_path'] = $photo ? $photo->store("students/{$schoolRecord->id}/photos", 'local') : null;
             }
-        }
-        $studentRecord->update($validated);
+            if ($bFormDocument || $removeBFormDocument) {
+                if ($studentRecord->b_form_document_path) {
+                    Storage::disk('local')->delete($studentRecord->b_form_document_path);
+                }
+                $validated['b_form_document_path'] = $bFormDocument ? $bFormDocument->store("students/{$schoolRecord->id}/documents", 'local') : null;
+            }
+            if (isset($validated['guardian'])) {
+                $guardian = $validated['guardian'];
+                unset($validated['guardian']);
+                if ($studentRecord->guardian) {
+                    $studentRecord->guardian->update($guardian);
+                } elseif (collect($guardian)->filter()->isNotEmpty()) {
+                    $validated['guardian_id'] = $schoolRecord->guardians()->create($guardian)->id;
+                }
+            }
+            $studentRecord->update($validated);
+
+            return $studentRecord;
+        });
 
         return response()->json(['data' => $this->studentData($studentRecord->load('guardian', 'enrollments.grade:id,title', 'enrollments.section:id,title', 'lifecycleEvents'))]);
     }
@@ -349,7 +364,7 @@ class StudentController extends Controller
         return response()->json(['data' => $this->studentData($studentRecord->refresh()->load('guardian', 'enrollments.grade:id,title', 'enrollments.section:id,title', 'lifecycleEvents'))]);
     }
 
-    public function rejoin(Request $request, int $school, int $student): JsonResponse
+    public function rejoin(Request $request, OrganisationStudentLimit $limits, int $school, int $student): JsonResponse
     {
         $schoolRecord = $this->accessibleSchool($request, $school, 'manage');
         $studentRecord = $schoolRecord->students()->whereIn('status', ['leave', 'inactive'])->findOrFail($student);
@@ -370,8 +385,11 @@ class StudentController extends Controller
             throw ValidationException::withMessages(['section_id' => ['Choose an active section assigned to the selected grade.']]);
         }
 
-        $enrollment = DB::transaction(function () use ($studentRecord, $schoolRecord, $validated, $academicYear): Enrollment {
-            $studentRecord = Student::query()->whereKey($studentRecord->id)->lockForUpdate()->firstOrFail();
+        $enrollment = DB::transaction(function () use ($studentRecord, $schoolRecord, $validated, $academicYear, $limits): Enrollment {
+            $group = $limits->lock($schoolRecord);
+            $studentRecord = $schoolRecord->students()->whereKey($studentRecord->id)->whereIn('status', ['leave', 'inactive'])
+                ->lockForUpdate()->firstOrFail();
+            $limits->assertSeatAvailable($group);
             $studentRecord->enrollments()->where('status', 'active')->update(['status' => 'completed', 'ended_on' => CarbonImmutable::parse($validated['event_date'])->subDay()->toDateString()]);
             $studentRecord->update(['status' => 'active', 'leave_date' => null]);
             $studentRecord->lifecycleEvents()->create(['school_id' => $schoolRecord->id, 'event_type' => 'rejoining', 'event_date' => $validated['event_date'], 'reason' => $validated['reason'] ?? null]);

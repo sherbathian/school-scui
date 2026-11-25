@@ -101,7 +101,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R6-M · Accounting-period administration APIs | merged | Adds explicitly granted calendar reads and audited writes for the configured synthetic branch. |
 | R6-N · Branch finance audit API | merged | Exposes scoped, read-only receipt and period events for the configured synthetic branch. |
 | R6-O · Branch finance pilot workspace | merged | Adds synthetic receipt, reversal, accounting-period and finance audit screens under Branch Operations. |
-| R6-P · Finance pilot acceptance | in review | Verifies synthetic role access, posting, retry, reversal, month-end and independent control totals. |
+| R6-P · Finance pilot acceptance | merged | Verifies synthetic role access, posting, retry, reversal, month-end and independent control totals. |
+| R6-Q · Reconciled reporting and cutover review | in review | Compares legacy and v4 results with independent synthetic controls and documents rollout and recovery gates. |
 
 ---
 

@@ -204,6 +204,8 @@ Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSc
         Route::post('/{period}/close', [BranchAccountingPeriodController::class, 'close'])->whereNumber('period');
     });
 
+    Route::get('/schools/{school}/posted-family-receipts', [PostedFamilyReceiptController::class, 'index'])->whereNumber('school');
+    Route::get('/schools/{school}/posted-family-receipts/charges', [PostedFamilyReceiptController::class, 'charges'])->whereNumber('school');
     Route::post('/schools/{school}/posted-family-receipts', [PostedFamilyReceiptController::class, 'store'])
         ->whereNumber('school');
     Route::post('/schools/{school}/posted-family-receipts/{receipt}/reversal', [PostedFamilyReceiptController::class, 'reverse'])

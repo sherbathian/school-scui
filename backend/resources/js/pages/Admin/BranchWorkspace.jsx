@@ -10,6 +10,7 @@ import AcademicStructure from './branch/AcademicStructure.jsx';
 import ExpenseManagement from './branch/ExpenseManagement.jsx';
 import FeeManagement from './branch/FeeManagement.jsx';
 import FeeSetup from './branch/FeeSetup.jsx';
+import FinancePilot from './branch/FinancePilot.jsx';
 import GuardianManagement from './branch/GuardianManagement.jsx';
 import SchoolSessions from './branch/SchoolSessions.jsx';
 import StaffManagement from './branch/StaffManagement.jsx';
@@ -33,7 +34,7 @@ export default function BranchWorkspace(props) {
     return <Workspace key={props.branch?.id ?? 'choose'} {...props} />;
 }
 
-function Workspace({ branch, branches, adminName, platform = true, schoolAccess, allowedModules, academicsEnabled: branchAcademicsEnabled }) {
+function Workspace({ branch, branches, adminName, platform = true, schoolAccess, allowedModules, financePilotGrants = [], academicsEnabled: branchAcademicsEnabled }) {
     const [recordBusy, setRecordBusy] = useState(false);
     const [recordFeedback, setRecordFeedback] = useState(null);
     const [school, setSchool] = useState(null);
@@ -63,6 +64,9 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
         .map(([key, label, ...views]) => [key, label, ...views.filter(([view]) =>
             platform || (!['student-transfers', 'student-fee-discounts'].includes(view)
                 && (branchAcademicsEnabled || !['groups', 'masters'].includes(view))))]);
+    if (financePilotGrants.length) {
+        visible.push(['finance-pilot', 'Finance pilot', ['finance-pilot', 'Receipt workspace']]);
+    }
     const selected = visible.find(([, , ...views]) => views.some(([key]) => key === view)) ?? visible[0];
     const [module, , firstView] = selected ?? [];
     const activeView = selected?.slice(2).some(([key]) => key === view) ? view : firstView?.[0];
@@ -156,6 +160,9 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
                     ? <FeeManagement {...props} expanded standalone activeView={activeView} />
                     : <FeeSetup {...props} academicsEnabled={academicsEnabled} activeSection={activeView} />;
                 break;
+            case 'finance-pilot':
+                content = <FinancePilot branchId={branch.id} grants={financePilotGrants} />;
+                break;
             case 'expenses':
                 content = <ExpenseManagement key={activeView} {...props} activeView={activeView} onNavigate={navigate} />;
                 break;
@@ -164,7 +171,7 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
 
     const sectionTitle = selected?.slice(2).find(([key]) => key === activeView)?.[1];
     const moduleIcons = { academics: 'academics', students: 'users', attendance: 'attendance', guardians: 'guardians',
-        inquiries: 'claims', staff: 'staff', fees: 'fees', expenses: 'expenses' };
+        inquiries: 'claims', staff: 'staff', fees: 'fees', expenses: 'expenses', 'finance-pilot': 'fees' };
     const branchNavigation = visible.length > 0 && <div className="nav-branch">
         {visible.map(([key, label, ...views]) => <NavigationGroup key={key}
             icon={moduleIcons[key]} label={label} active={key === module}>

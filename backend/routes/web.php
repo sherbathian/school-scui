@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AdminCommunityController;
 use App\Http\Controllers\Api\AdminDirectoryController;
 use App\Http\Controllers\Api\AdminPlatformController;
 use App\Http\Controllers\Api\AdminServicesController;
+use App\Http\Controllers\Api\PostedFamilyReceiptController;
 use App\Http\Controllers\InstituteClaimController;
 use App\Http\Controllers\PublicDirectoryController;
 use App\Http\Controllers\PublicResourcesController;
@@ -266,7 +267,9 @@ $accessPage = function (Request $request, string $screen, ?int $branch = null) {
         }
     }
     $allowedModules = ! $platform && $school && $screen === 'operations' ? $user->schoolhouseOperationModules($school) : [];
-    abort_if(! $platform && $school && $screen === 'operations' && $allowedModules === [], 403);
+    $financePilotGrants = $school && $screen === 'operations'
+        ? app(PostedFamilyReceiptController::class)->workspaceGrants($user, $school, app(BranchModules::class)) : [];
+    abort_if(! $platform && $school && $screen === 'operations' && $allowedModules === [] && $financePilotGrants === [], 403);
     $enabledModules = ! $platform && $school && $screen === 'operations' ? app(BranchModules::class)->forBranch($school->id)
         ->where('enabled', true)->pluck('slug')->all() : [];
     $schoolAccess = [];
@@ -284,7 +287,8 @@ $accessPage = function (Request $request, string $screen, ?int $branch = null) {
             ? $branchOptions : [],
         'platform' => $platform,
         'schoolAccess' => $schoolAccess,
-        'operations' => $platform || $accessibleBranches->contains(fn (School $item) => $user->schoolhouseOperationModules($item) !== []),
+        'financePilotGrants' => $financePilotGrants,
+        'operations' => $platform || $financePilotGrants !== [] || $accessibleBranches->contains(fn (School $item) => $user->schoolhouseOperationModules($item) !== []),
         'allowedModules' => array_values(array_intersect($enabledModules, $allowedModules)),
         'academicsEnabled' => in_array('academics', $enabledModules, true) && $user->hasSchoolPermission($school, 'academics.view'),
         'adminName' => $request->user()->name,

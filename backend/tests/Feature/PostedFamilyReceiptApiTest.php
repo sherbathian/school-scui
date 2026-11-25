@@ -31,6 +31,7 @@ class PostedFamilyReceiptApiTest extends TestCase
         $url = "/api/schools/{$branch->id}/posted-family-receipts";
         $this->postJson($url)->assertUnauthorized();
         $this->actingAs($user, 'web')->postJson($url)->assertForbidden();
+        $this->getJson("$url/charges")->assertForbidden();
 
         setPermissionsTeamId($branch->id);
         $user->givePermissionTo('fees.receipt.post');
@@ -44,6 +45,13 @@ class PostedFamilyReceiptApiTest extends TestCase
         $calendar->configureTimezone($branch->id, 'Asia/Karachi');
         $period = $calendar->open($user->id, $branch->id, '2026-11');
         $charge = $this->charge($branch->id);
+        $this->charge($other->id);
+        $this->withoutVite();
+        $this->get("/admin/branches/{$branch->id}/operations")->assertOk()
+            ->assertInertia(fn ($page) => $page->where('financePilotGrants', ['post']));
+        $this->getJson("$url/charges")->assertOk()->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $charge)->assertJsonMissingPath('data.0.student_name');
+        $this->getJson($url)->assertForbidden();
         $data = [
             'received_on' => '2026-11-30', 'amount_minor' => 10000,
             'allocations' => [['charge_id' => $charge, 'amount_minor' => 10000]],
@@ -58,8 +66,11 @@ class PostedFamilyReceiptApiTest extends TestCase
         setPermissionsTeamId($branch->id);
         $user->givePermissionTo('fees.receipt.reverse');
         setPermissionsTeamId(0);
+        $this->getJson($url)->assertOk()->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $id)->assertJsonPath('data.0.reversed', false);
         $this->postJson($reversal, ['reason' => 'duplicate', 'timezone' => 'UTC'], $reversalHeaders)->assertUnprocessable();
         $result = $this->postJson($reversal, ['reason' => 'duplicate'], $reversalHeaders)->assertOk()->json('data.reversal_id');
+        $this->getJson($url)->assertOk()->assertJsonPath('data.0.reversed', true);
         $calendar->close($user->id, $branch->id, $period);
         $this->postJson($url, $data, $headers)->assertOk()->assertJsonPath('data.receipt_id', $id);
         $this->postJson($reversal, ['reason' => 'duplicate'], $reversalHeaders)->assertOk()->assertJsonPath('data.reversal_id', $result);

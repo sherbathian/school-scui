@@ -33,7 +33,14 @@ class BranchFinanceReconciliationReportController extends Controller
             throw ValidationException::withMessages(['cutoff' => 'Choose a cutoff date within the selected month.']);
         }
 
-        return response()->json(['data' => $report->forBranch($school, $data['month'], $data['cutoff'])])
+        if ($request->routeIs('finance.pilot.reader')) {
+            $source = config('finance_reporting.pilot_reader') === 'v4' ? 'v4' : 'legacy';
+            $result = $report->forSource($school, $data['month'], $data['cutoff'], $source);
+        } else {
+            $result = $report->forBranch($school, $data['month'], $data['cutoff']);
+        }
+
+        return response()->json(['data' => $result])
             ->header('Cache-Control', 'no-store, private');
     }
 

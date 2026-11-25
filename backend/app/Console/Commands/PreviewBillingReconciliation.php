@@ -2,18 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Services\BillingObligationMappingPreview;
 use App\Services\BillingReconciliationPreview;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use OverflowException;
 
 class PreviewBillingReconciliation extends Command
 {
-    protected $signature = 'billing:reconcile-preview {branch : School branch ID} {--as-of= : Inclusive YYYY-MM-DD cutoff}';
+    protected $signature = 'billing:reconcile-preview {branch : School branch ID} {--as-of= : Inclusive YYYY-MM-DD cutoff}
+        {--mapping-evidence= : Local JSON evidence for the optional mapping section}';
 
     protected $description = 'Preview separate billing source totals on an isolated database copy';
 
-    public function handle(BillingReconciliationPreview $preview): int
+    public function handle(BillingReconciliationPreview $preview, BillingObligationMappingPreview $mapping): int
     {
         $branch = filter_var($this->argument('branch'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         if ($branch === false) {
@@ -38,7 +41,10 @@ class PreviewBillingReconciliation extends Command
 
         try {
             $result = $preview->forBranch($branch, $date);
-        } catch (OverflowException $exception) {
+            if (($evidence = $this->option('mapping-evidence')) !== null) {
+                $result['mapping'] = $mapping->fromFile($evidence, $branch, $date);
+            }
+        } catch (InvalidArgumentException|OverflowException $exception) {
             $this->error($exception->getMessage());
 
             return self::FAILURE;

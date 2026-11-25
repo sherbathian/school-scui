@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\BranchFinanceAvailability;
 use App\Services\BranchModules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,8 +22,7 @@ class BranchFinanceAuditController extends Controller
         abort_unless($user->schoolAccessRole($branch) !== 'student' && $user->checkPermissionTo('fees.audit.view', 'web'), 403);
         $modules->assertEnabled($school, 'fees');
 
-        $pilot = config('billing.receipt_pilot');
-        abort_unless(app()->environment('testing') && ($pilot['branch_id'] ?? null) === $school && ($pilot['currency'] ?? null) === 'PKR', 403);
+        abort_unless(app(BranchFinanceAvailability::class)->allows($school), 403);
 
         $filters = $request->validate([
             'action' => ['sometimes', Rule::in(self::ACTIONS)],

@@ -90,7 +90,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R6-B · MySQL reconciliation verification | merged | Independent SQL matched all preview totals and exceptions on synthetic data across two branches and cutoff dates. |
 | R6-C · Historical billing reconciliation | verified locally | Independent SQL matched all six preview sources on the approved sanitised IFS copy. |
 | R6-D · Billing obligation mapping preview | merged | Optional operator-supplied evidence assesses invoice-to-charge matches and possible receipt allocations without posting. |
-| R6-E · Cumulative receipt allocations | in review | Flags all receipts contributing to a charge over-allocation in the read-only preview. |
+| R6-E · Cumulative receipt allocations | merged | Flags all receipts contributing to a charge over-allocation in the read-only preview. |
+| R6-F · Receipt posting and reversal rules | in review | Defines posting, remaining balances, idempotency, reversals, finance audit and manual acceptance. |
 
 ---
 

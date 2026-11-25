@@ -132,6 +132,8 @@ class BillingObligationMappingPreview
         $totals = $this->sections('allocatable', 'unresolved');
         $receipts = DB::table('family_fee_receipts')->where('school_id', $branch)->where('receipt_date', '<=', $date)
             ->orderBy('id')->cursor(['id', 'received']);
+        $records = [];
+        $proposed = [];
 
         foreach ($receipts as $receipt) {
             $links = $evidence->get($receipt->id, collect());
@@ -145,14 +147,43 @@ class BillingObligationMappingPreview
             };
             $record = ['receipt_id' => (int) $receipt->id, 'reason' => $reason];
             if ($reason === 'verified_allocations') {
+                usort($allocations, fn (array $a, array $b): int => $a['charge_id'] <=> $b['charge_id']);
                 $record['allocations'] = array_map(fn (array $item): array => [
                     'charge_id' => $item['charge_id'], 'amount_minor' => $item['amount_minor'],
                 ], $allocations);
+                foreach ($allocations as $allocation) {
+                    $id = $allocation['charge_id'];
+                    $proposed[$id] = $this->integer(($proposed[$id] ?? 0) + $allocation['amount_minor']);
+                }
             }
-            $this->record($totals[$reason === 'verified_allocations' ? 'allocatable' : 'unresolved'], $record, $amount);
+            $records[] = [$record, $amount];
         }
 
-        return $totals;
+        $overAllocated = [];
+        ksort($proposed, SORT_NUMERIC);
+        foreach ($proposed as $id => $amount) {
+            $chargeAmount = $this->minor($charges->get($id)->amount);
+            if ($amount > $chargeAmount) {
+                $overAllocated[$id] = [
+                    'charge_id' => $id,
+                    'proposed_minor' => $amount,
+                    'charge_minor' => $chargeAmount,
+                    'excess_minor' => $amount - $chargeAmount,
+                ];
+            }
+        }
+
+        foreach ($records as [$record, $amount]) {
+            $chargeIds = array_column($record['allocations'] ?? [], 'charge_id');
+            if (array_any($chargeIds, fn (int $id): bool => isset($overAllocated[$id]))) {
+                $record['reason'] = 'cumulative_over_allocation';
+                unset($record['allocations']);
+            }
+            $section = $record['reason'] === 'verified_allocations' ? 'allocatable' : 'unresolved';
+            $this->record($totals[$section], $record, $amount);
+        }
+
+        return $totals + ['over_allocated_charges' => array_values($overAllocated)];
     }
 
     private function allocationReason(array $allocations, Collection $charges, int $amount): string

@@ -8,31 +8,18 @@ use App\Services\BranchAuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminAuditLogController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, BranchAuditLog $audit): Response
     {
         $user = $request->user();
         abort_unless($user->canEnterSchoolhouse(), 403);
         $platform = $user->isSuperAdmin();
         $branches = $platform
             ? School::query()->orderBy('name')->get(['id', 'name'])
-            : $user->activeSchools()->orderBy('name')->get(['id', 'name'])->filter(function (School $branch) use ($user): bool {
-                $registrar = app(PermissionRegistrar::class);
-                $previousTeam = $registrar->getPermissionsTeamId();
-                $registrar->setPermissionsTeamId($branch->id);
-                $user->unsetRelation('roles')->unsetRelation('permissions');
-
-                try {
-                    return $user->hasPermissionTo('audit.view');
-                } finally {
-                    $registrar->setPermissionsTeamId($previousTeam);
-                    $user->unsetRelation('roles')->unsetRelation('permissions');
-                }
-            })->values();
+            : $audit->viewableBranches($user);
 
         abort_unless($platform || $branches->isNotEmpty(), 403);
         $filters = $request->validate([
@@ -61,6 +48,7 @@ class AdminAuditLogController extends Controller
             'actions' => BranchAuditLog::ACTIONS,
             'adminName' => $user->name,
             'platform' => $platform,
+            'canViewAuditLog' => true,
         ])->toResponse($request)->header('Cache-Control', 'no-store');
     }
 }

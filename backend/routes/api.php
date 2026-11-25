@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AdminLocationController;
 use App\Http\Controllers\Api\AdminPlatformController;
 use App\Http\Controllers\Api\AdminServicesController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\BranchAccountingPeriodController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\FamilyFeeReceiptController;
 use App\Http\Controllers\Api\FeeDiscountController;
@@ -194,6 +195,13 @@ Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSc
 });
 
 Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSchoolPermissionTeam::class])->group(function (): void {
+    Route::prefix('/schools/{school}/accounting-periods')->where(['school' => '[0-9]+'])->group(function (): void {
+        Route::get('/', [BranchAccountingPeriodController::class, 'index']);
+        Route::patch('/timezone', [BranchAccountingPeriodController::class, 'configureTimezone']);
+        Route::post('/', [BranchAccountingPeriodController::class, 'store']);
+        Route::post('/{period}/close', [BranchAccountingPeriodController::class, 'close'])->whereNumber('period');
+    });
+
     Route::post('/schools/{school}/posted-family-receipts', [PostedFamilyReceiptController::class, 'store'])
         ->whereNumber('school');
     Route::post('/schools/{school}/posted-family-receipts/{receipt}/reversal', [PostedFamilyReceiptController::class, 'reverse'])

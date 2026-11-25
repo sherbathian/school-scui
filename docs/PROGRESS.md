@@ -107,7 +107,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R7-B · Pilot finance reader and rollback rehearsal | merged | Adds a configurable synthetic reader and verifies rollback preserves postings, reversals and audit history. |
 | R7-C · IFS fresh-start finance readiness | merged | Adds explicit branch enablement and a separate write pause. Deployment is pending. |
 | R8-A · Listing claim email verification | merged | Adds claim-bound email codes and requires mailbox verification before approval. |
-| R8-B · Listing and claim audit | in review | Records listing transitions and claim reviews, including competing declines. |
+| R8-B · Listing and claim audit | merged | Records listing transitions and claim reviews, including competing declines. |
+| R9-A · School website admin acceptance | in review | Verifies website CRUD and local previews. Public school-site rendering and rollout remain pending. |
 
 ---
 

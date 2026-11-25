@@ -47,6 +47,90 @@ class AdminPlatformTest extends TestCase
         $this->deleteJson("/api/admin/platform/demo-requests/{$demo}")->assertNoContent();
     }
 
+    public function test_website_admin_manages_themes_settings_and_branch_pages(): void
+    {
+        $base = '/api/admin/services';
+        $themes = "$base/site-themes";
+        $settings = "$base/school-site-settings";
+        $pages = "$base/school-pages";
+        foreach ([$themes, $settings, $pages] as $path) {
+            $this->getJson($path)->assertUnauthorized();
+        }
+        $school = School::factory()->create(['listing_status' => 'published', 'verified_at' => now()]);
+        $other = School::factory()->create();
+        $member = User::factory()->create(['is_active' => true]);
+        $member->schools()->attach($school, ['role' => 'admin', 'is_active' => true]);
+        $this->actingAs($member, 'sanctum');
+        foreach ([$themes, $settings, $pages] as $path) {
+            $this->getJson($path)->assertForbidden();
+            $this->postJson($path, [])->assertForbidden();
+        }
+        $this->signInAsPlatformAdmin();
+        $this->withoutVite()->get('/admin/services/school-pages')->assertOk();
+        $theme = $this->postJson($themes, ['name' => 'Synthetic theme', 'slug' => 'synthetic-theme', 'version' => '1.0.0'])
+            ->assertCreated()->json('data.id');
+        $this->patchJson("$themes/$theme", ['name' => 'Updated theme'])->assertOk()
+            ->assertJsonPath('data.name', 'Updated theme');
+        $this->getJson($themes)->assertJsonFragment(['name' => 'Updated theme']);
+        $this->postJson($settings, ['school_id' => $school->id, 'site_theme_id' => $theme + 1000])
+            ->assertUnprocessable()->assertJsonValidationErrors('site_theme_id');
+        $site = $this->postJson($settings, ['school_id' => $school->id, 'site_theme_id' => $theme])
+            ->assertCreated()->json('data.id');
+        $this->getJson("$settings?school_id={$school->id}")->assertJsonCount(1, 'data');
+        $this->getJson("$settings?school_id={$other->id}")->assertJsonCount(0, 'data');
+        $this->patchJson("$settings/$site", ['primary_color' => '#124F42'])->assertOk()
+            ->assertJsonPath('data.primary_color', '#124F42');
+        $this->patchJson("$settings/$site", ['site_enabled' => true, 'subdomain' => 'synthetic-school'])
+            ->assertUnprocessable();
+        $this->deleteJson("$themes/$theme")->assertConflict();
+
+        $details = ['school_id' => $school->id, 'title' => 'Synthetic page', 'slug' => 'welcome'];
+        $this->postJson($pages, [...$details, 'school_id' => $other->id + 1000])
+            ->assertUnprocessable()->assertJsonValidationErrors('school_id');
+        $page = $this->postJson($pages, $details)->assertCreated()->json('data.id');
+        $this->assertDatabaseHas('school_pages', ['id' => $page, 'is_published' => false]);
+        $this->postJson($pages, $details)->assertConflict();
+        $this->postJson($pages, [...$details, 'school_id' => $other->id])->assertCreated();
+        $this->getJson("$pages?school_id={$school->id}")->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $page);
+        $this->patchJson("$pages/$page", ['is_published' => true, 'title' => 'Updated page'])
+            ->assertOk()->assertJsonPath('data.title', 'Updated page');
+        $this->assertDatabaseHas('school_pages', ['id' => $page, 'is_published' => true]);
+        $this->deleteJson("$pages/$page")->assertNoContent();
+        $this->deleteJson("$settings/$site")->assertNoContent();
+        $this->deleteJson("$themes/$theme")->assertNoContent();
+        $this->assertDatabaseMissing('school_pages', ['id' => $page]);
+        $this->assertDatabaseMissing('school_site_settings', ['id' => $site]);
+        $this->assertDatabaseMissing('site_themes', ['id' => $theme]);
+        $this->assertDatabaseHas('schools', ['id' => $school->id, 'listing_status' => 'published']);
+    }
+
+    public function test_school_page_preview_is_available_locally_and_unavailable_in_production(): void
+    {
+        $school = School::factory()->create(['listing_status' => 'published', 'verified_at' => now()]);
+        DB::table('school_pages')->insert([
+            'school_id' => $school->id, 'title' => 'Synthetic preview page', 'slug' => 'welcome',
+            'is_published' => true,
+        ]);
+        DB::table('school_pages')->insert([
+            'school_id' => $school->id, 'title' => 'Synthetic draft page', 'slug' => 'draft',
+            'is_published' => false,
+        ]);
+        $preview = "/local/school-preview/{$school->slug}/welcome";
+        $draft = "/local/school-preview/{$school->slug}/draft";
+        $this->app->instance('env', 'local');
+        try {
+            $this->withoutVite()->get($preview)->assertRedirect();
+            $this->actingAs(User::factory()->create(['is_super_admin' => true, 'is_active' => true]), 'web');
+            $this->get($preview)->assertOk()->assertSee('Synthetic preview page');
+            $this->get($draft)->assertOk()->assertSee('Synthetic draft page')->assertSee('Local preview · Draft');
+            $this->app->instance('env', 'production');
+            $this->get($preview)->assertNotFound();
+        } finally {
+            $this->app->instance('env', 'testing');
+        }
+    }
+
     public function test_subscription_entitlements_grants_and_grace_preserve_branch_switches(): void
     {
         $this->signInAsPlatformAdmin();

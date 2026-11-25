@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\FeeTypeController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\LegacyFeeTypeController;
+use App\Http\Controllers\Api\PostedFamilyReceiptController;
 use App\Http\Controllers\Api\SchoolRoleController;
 use App\Http\Controllers\Api\SchoolSessionController;
 use App\Http\Controllers\Api\SectionController;
@@ -190,6 +191,13 @@ Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSc
     Route::post('/schools/{school}/fee-invoices/{feeInvoice}/payments', [FeeInvoiceController::class, 'recordPayment']);
     Route::get('/schools/{school}/family-fee-receipts', [FamilyFeeReceiptController::class, 'index']);
     Route::post('/schools/{school}/family-fee-receipts', [FamilyFeeReceiptController::class, 'store']);
+});
+
+Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSchoolPermissionTeam::class])->group(function (): void {
+    Route::post('/schools/{school}/posted-family-receipts', [PostedFamilyReceiptController::class, 'store'])
+        ->whereNumber('school');
+    Route::post('/schools/{school}/posted-family-receipts/{receipt}/reversal', [PostedFamilyReceiptController::class, 'reverse'])
+        ->whereNumber(['school', 'receipt']);
 });
 
 Route::get('/schools/{school}/students/{student}/media/{kind}', [StudentController::class, 'media'])

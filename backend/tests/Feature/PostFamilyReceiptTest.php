@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\BranchAccountingPeriods;
 use App\Services\PostFamilyReceipt;
 use App\Services\ReverseFamilyReceipt;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -16,10 +18,17 @@ class PostFamilyReceiptTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->travelTo(Carbon::parse('2026-11-25 12:00:00', 'UTC'));
+    }
+
     public function test_receipt_posting_replays_and_enforces_remaining_balance(): void
     {
         $school = School::factory()->create()->id;
         $actor = User::factory()->create()->id;
+        $this->openPeriod($actor, $school);
         $charge = $this->charge($school);
         $post = app(PostFamilyReceipt::class);
         $first = $post->post($actor, $school, 'PKR', 'payment-1', '2026-11-25', 60000, [$charge => 60000]);
@@ -51,6 +60,7 @@ class PostFamilyReceiptTest extends TestCase
         $school = School::factory()->create()->id;
         $other = School::factory()->create()->id;
         $actor = User::factory()->create()->id;
+        $this->openPeriod($actor, $school);
         $charge = $this->charge($school);
         $foreignCharge = $this->charge($other);
         $source = fn (int $branch): int => DB::table('family_fee_receipts')->insertGetId([
@@ -90,6 +100,7 @@ class PostFamilyReceiptTest extends TestCase
     {
         $school = School::factory()->create()->id;
         $actor = User::factory()->create()->id;
+        $this->openPeriod($actor, $school);
         $charge = $this->charge($school);
         $secondCharge = $this->charge($school, ' 2');
         $rejectAudit = true;
@@ -121,20 +132,20 @@ class PostFamilyReceiptTest extends TestCase
         $school = School::factory()->create()->id;
         $foreign = School::factory()->create()->id;
         $actor = User::factory()->create()->id;
+        $this->openPeriod($actor, $school);
         $first = $this->charge($school);
         $second = $this->charge($school, ' 2');
         $post = app(PostFamilyReceipt::class);
         $reverse = app(ReverseFamilyReceipt::class);
         $original = $post->post($actor, $school, 'PKR', 'original', '2026-11-25', 60000, [$second => 20000, $first => 40000]);
         $id = $original['receipt_id'];
-        $period = ['2026-11-01', '2026-11-30'];
+        $this->openPeriod($actor, $foreign);
 
         foreach ([
-            [$school, 'reverse', 'duplicate', null, 'period', 422],
-            [$foreign, 'reverse', 'duplicate', $period, 'receipt', 422],
-        ] as [$branch, $key, $reason, $open, $field, $status]) {
+            [$foreign, 'reverse', 'duplicate', 'receipt', 422],
+        ] as [$branch, $key, $reason, $field, $status]) {
             try {
-                $reverse->reverse($actor, $branch, $id, $key, $reason, '2026-11-25', $open);
+                $reverse->reverse($actor, $branch, $id, $key, $reason);
                 $this->fail('Invalid reversal succeeded.');
             } catch (ValidationException $exception) {
                 $this->assertSame($status, $exception->status);
@@ -148,7 +159,7 @@ class PostFamilyReceiptTest extends TestCase
             }
         });
         try {
-            $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate', '2026-11-25', $period);
+            $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate');
             $this->fail('Reversal survived audit failure.');
         } catch (\RuntimeException $exception) {
             $this->assertSame('Synthetic reversal audit failure', $exception->getMessage());
@@ -158,11 +169,11 @@ class PostFamilyReceiptTest extends TestCase
         $this->assertDatabaseCount('family_receipt_finance_events', 1);
         $rejectAudit = false;
 
-        $result = $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate', '2026-11-25', $period);
-        $this->assertSame($result, $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate', '2026-11-25', null));
+        $result = $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate');
+        $this->assertSame($result, $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate'));
         foreach ([['reverse', 'entry_error', 'key'], ['other', 'duplicate', 'receipt']] as [$key, $reason, $field]) {
             try {
-                $reverse->reverse($actor, $school, $id, $key, $reason, '2026-11-25', $period);
+                $reverse->reverse($actor, $school, $id, $key, $reason);
                 $this->fail('Repeated reversal succeeded.');
             } catch (ValidationException $exception) {
                 $this->assertSame(409, $exception->status);
@@ -181,6 +192,107 @@ class PostFamilyReceiptTest extends TestCase
         $this->assertSame([100000, 100000], array_column($lines, 'after_minor'));
         $post->post($actor, $school, 'PKR', 'after', '2026-11-25', 200000, [$first => 100000, $second => 100000]);
         $this->assertDatabaseCount('family_receipt_finance_events', 3);
+    }
+
+    public function test_new_posting_requires_configured_accounting_period(): void
+    {
+        $school = School::factory()->create()->id;
+        $actor = User::factory()->create()->id;
+        $charge = $this->charge($school);
+        $this->expectException(ValidationException::class);
+        app(PostFamilyReceipt::class)->post($actor, $school, 'PKR', 'blocked', '2026-11-25', 10000, [$charge => 10000]);
+    }
+
+    public function test_closure_allows_replays_and_later_period_reverses_the_original_receipt(): void
+    {
+        $school = School::factory()->create()->id;
+        $actor = User::factory()->create()->id;
+        $november = $this->openPeriod($actor, $school);
+        $charge = $this->charge($school);
+        $post = app(PostFamilyReceipt::class);
+        $reverse = app(ReverseFamilyReceipt::class);
+        $calendar = app(BranchAccountingPeriods::class);
+        $this->travelTo(Carbon::parse('2026-11-30 18:59:59', 'UTC'));
+        $receipt = $post->post($actor, $school, 'PKR', 'original', '2026-11-30', 10000, [$charge => 10000]);
+        $calendar->close($actor, $school, $november);
+        $this->assertSame($receipt, $post->post($actor, $school, 'PKR', 'original', '2026-11-30', 10000, [$charge => 10000]));
+
+        foreach ([
+            fn () => $post->post($actor, $school, 'PKR', 'new', '2026-11-30', 10000, [$charge => 10000]),
+            fn () => $reverse->reverse($actor, $school, $receipt['receipt_id'], 'reverse', 'duplicate'),
+        ] as $operation) {
+            $this->rejected('period', $operation);
+        }
+        $this->assertDatabaseCount('family_receipt_posting_keys', 1);
+        $this->assertDatabaseCount('family_receipt_reversal_keys', 0);
+        $this->assertDatabaseCount('family_receipt_finance_events', 1);
+
+        $december = $calendar->open($actor, $school, '2026-12');
+        $this->travel(1)->second();
+        $this->rejected('received_on', fn () => $post->post($actor, $school, 'PKR', 'new', '2026-12-02', 10000, [$charge => 10000]));
+        $this->rejected('received_on', fn () => $post->post($actor, $school, 'PKR', 'new', '2026-11-30', 10000, [$charge => 10000]));
+        $source = DB::table('family_fee_receipts')->insertGetId([
+            'school_id' => $school, 'receipt_number' => 'Synthetic earlier receipt', 'receipt_date' => '2026-11-30', 'received' => '100.00',
+        ]);
+        $late = $post->post($actor, $school, 'PKR', 'new', '2026-11-30', 10000, [$charge => 10000], $source);
+        $reversal = $reverse->reverse($actor, $school, $receipt['receipt_id'], 'reverse', 'duplicate');
+
+        $this->assertDatabaseHas('posted_family_receipts', ['id' => $receipt['receipt_id'], 'period_id' => $november, 'accounting_date' => '2026-11-30']);
+        $this->assertDatabaseHas('posted_family_receipts', [
+            'id' => $late['receipt_id'], 'received_on' => '2026-11-30', 'period_id' => $december,
+            'accounting_date' => '2026-12-01', 'accounting_timezone' => 'Asia/Karachi', 'accounting_recorded_at_utc' => '2026-11-30 19:00:00',
+        ]);
+        $this->assertDatabaseHas('family_receipt_reversals', ['id' => $reversal['reversal_id'], 'period_id' => $december, 'accounting_date' => '2026-12-01']);
+        $this->assertDatabaseHas('family_receipt_finance_events', ['reversal_id' => $reversal['reversal_id'], 'period_id' => $december, 'accounting_date' => '2026-12-01']);
+        $this->travelTo(Carbon::parse('2026-12-31 12:00:00', 'UTC'));
+        $calendar->close($actor, $school, $december);
+        $this->assertSame($reversal, $reverse->reverse($actor, $school, $receipt['receipt_id'], 'reverse', 'duplicate'));
+        $this->assertDatabaseCount('family_receipt_finance_events', 3);
+    }
+
+    public function test_pre_integration_records_are_not_assigned_a_period_during_replay(): void
+    {
+        $school = School::factory()->create()->id;
+        $actor = User::factory()->create()->id;
+        $this->openPeriod($actor, $school);
+        $charge = $this->charge($school);
+        $post = app(PostFamilyReceipt::class);
+        $reverse = app(ReverseFamilyReceipt::class);
+        $receipt = $post->post($actor, $school, 'PKR', 'original', '2026-11-25', 10000, [$charge => 10000]);
+        $id = $receipt['receipt_id'];
+        DB::table('posted_family_receipts')->where('id', $id)->update(['period_id' => null, 'accounting_date' => null]);
+        $this->assertSame($receipt, $post->post($actor, $school, 'PKR', 'original', '2026-11-25', 10000, [$charge => 10000]));
+        $this->rejected('period', fn () => $reverse->reverse($actor, $school, $id, 'blocked', 'duplicate'));
+
+        $legacy = DB::table('family_receipt_reversals')->insertGetId([
+            'school_id' => $school, 'receipt_id' => $id, 'actor_id' => $actor, 'currency' => 'PKR',
+            'amount_minor' => 10000, 'reason_code' => 'duplicate', 'reversed_on' => '2026-11-25', 'recorded_at' => '2026-11-25 12:00:00',
+        ]);
+        DB::table('family_receipt_reversal_keys')->insert([
+            'school_id' => $school, 'reversal_id' => $legacy, 'operation_key' => hash('sha256', 'legacy'),
+            'payload_hash' => hash('sha256', json_encode([$id, 'duplicate', '2026-11-25'], JSON_THROW_ON_ERROR)),
+        ]);
+        $this->assertSame(['reversal_id' => $legacy], $reverse->reverse($actor, $school, $id, 'legacy', 'duplicate'));
+        $this->rejected('key', fn () => $reverse->reverse($actor, $school, $id, 'legacy', 'entry_error'));
+        $this->assertDatabaseHas('family_receipt_reversals', ['id' => $legacy, 'period_id' => null]);
+    }
+
+    private function rejected(string $field, callable $operation): void
+    {
+        try {
+            $operation();
+            $this->fail("Expected a validation error for {$field}.");
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey($field, $exception->errors());
+        }
+    }
+
+    private function openPeriod(int $actor, int $branch): int
+    {
+        $calendar = app(BranchAccountingPeriods::class);
+        $calendar->configureTimezone($branch, 'Asia/Karachi');
+
+        return $calendar->open($actor, $branch, '2026-11');
     }
 
     private function charge(int $branch, string $suffix = ''): int

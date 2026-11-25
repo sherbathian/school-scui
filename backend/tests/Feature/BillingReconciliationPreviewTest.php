@@ -197,6 +197,54 @@ class BillingReconciliationPreviewTest extends TestCase
             $this->assertSame(75000, $mapping['receipts']['allocatable']['amount_minor']);
             $this->assertSame([$unresolvedReceipt], array_column($mapping['receipts']['unresolved']['records'], 'receipt_id'));
 
+            $additionalReceipt = DB::table('family_fee_receipts')->insertGetId($school + [
+                'receipt_number' => 'Cumulative', 'receipt_date' => '2026-11-20', 'received' => '500.00',
+            ]);
+            $independentReceipt = DB::table('family_fee_receipts')->insertGetId($school + [
+                'receipt_number' => 'Independent', 'receipt_date' => '2026-11-20', 'received' => '100.00',
+            ]);
+            $proposals = [
+                ['receipt_id' => $receipt, 'allocations' => [
+                    ['charge_id' => $charges[0], 'amount_minor' => 60000],
+                    ['charge_id' => $charges[1], 'amount_minor' => 15000],
+                ]],
+                ['receipt_id' => $additionalReceipt, 'allocations' => [
+                    ['charge_id' => $charges[0], 'amount_minor' => 50000],
+                ]],
+                ['receipt_id' => $unresolvedReceipt, 'allocations' => [
+                    ['charge_id' => $charges[0], 'amount_minor' => 20000],
+                ]],
+                ['receipt_id' => $independentReceipt, 'allocations' => [
+                    ['charge_id' => $charges[1], 'amount_minor' => 10000],
+                ]],
+            ];
+            file_put_contents($path, json_encode(['receipt_allocations' => $proposals], JSON_THROW_ON_ERROR));
+            $this->assertSame(0, Artisan::call('billing:reconcile-preview', $args));
+            $cumulative = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['mapping']['receipts'];
+            $this->assertSame([[
+                'charge_id' => $charges[0], 'proposed_minor' => 110000, 'charge_minor' => 100000, 'excess_minor' => 10000,
+            ]], $cumulative['over_allocated_charges']);
+            $this->assertSame([$independentReceipt], array_column($cumulative['allocatable']['records'], 'receipt_id'));
+            $this->assertSame([
+                $receipt => 'cumulative_over_allocation',
+                $unresolvedReceipt => 'allocation_total_mismatch',
+                $additionalReceipt => 'cumulative_over_allocation',
+            ], array_column($cumulative['unresolved']['records'], 'reason', 'receipt_id'));
+
+            $reordered = array_reverse($proposals);
+            $reordered[3]['allocations'] = array_reverse($reordered[3]['allocations']);
+            file_put_contents($path, json_encode(['receipt_allocations' => $reordered], JSON_THROW_ON_ERROR));
+            $this->assertSame(0, Artisan::call('billing:reconcile-preview', $args));
+            $this->assertSame($cumulative, json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['mapping']['receipts']);
+
+            DB::table('family_fee_receipts')->where('id', $additionalReceipt)->update(['received' => '400.00']);
+            $proposals[1]['allocations'][0]['amount_minor'] = 40000;
+            file_put_contents($path, json_encode(['receipt_allocations' => $proposals], JSON_THROW_ON_ERROR));
+            $this->assertSame(0, Artisan::call('billing:reconcile-preview', $args));
+            $exact = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['mapping']['receipts'];
+            $this->assertSame([], $exact['over_allocated_charges']);
+            $this->assertSame([$receipt, $additionalReceipt, $independentReceipt], array_column($exact['allocatable']['records'], 'receipt_id'));
+
             foreach ([
                 ['ambiguous_evidence', [$link, $link]],
                 ['different_student', [array_replace($link, ['charge_id' => $charges[1]])]],

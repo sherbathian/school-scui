@@ -39,7 +39,10 @@ class PostFamilyReceiptTest extends TestCase
         $this->assertDatabaseCount('family_receipt_finance_events', 2);
         $this->assertSame(100000, (int) DB::table('posted_family_receipt_allocations')->sum('amount_minor'));
         $final = DB::table('family_receipt_finance_events')->latest('id')->value('balances');
-        $this->assertSame([['charge_id' => $charge, 'before_minor' => 40000, 'after_minor' => 0]], json_decode($final, true, flags: JSON_THROW_ON_ERROR));
+        $balances = json_decode($final, true, flags: JSON_THROW_ON_ERROR);
+        $this->assertCount(1, $balances);
+        ksort($balances[0]);
+        $this->assertSame(['after_minor' => 0, 'before_minor' => 40000, 'charge_id' => $charge], $balances[0]);
     }
 
     public function test_source_receipt_can_only_be_posted_once_and_must_belong_to_the_branch(): void

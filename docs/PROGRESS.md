@@ -94,7 +94,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R6-F · Receipt posting and reversal rules | merged | Defines posting, remaining balances, idempotency, reversals, finance audit and manual acceptance. |
 | R6-G · Internal family receipt posting | merged | Adds atomic v4 posting, exact remaining-balance checks, replay and finance events. Synthetic MySQL concurrency verified. |
 | R6-H · Internal full receipt reversal | merged | Restores v4 charge balances once, preserves original receipt records, and audits the reversal atomically. |
-| R6-I · Accounting-period authority | in review | Proposes monthly branch periods, business dates, shared locks, period audit and manual finance acceptance. |
+| R6-I · Accounting-period authority | merged | Proposes monthly branch periods, business dates, shared locks, period audit and manual finance acceptance. |
+| R6-J · Internal branch accounting periods | in review | Adds timezone settings, audited monthly open and close operations, and an internal business date resolver. |
 
 ---
 

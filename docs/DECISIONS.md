@@ -21,3 +21,5 @@ Tahir approved counting active students across non-archived branches under the o
 Tahir approved including the read-only Audit Log page in R5. Platform administrators may view all branches. Other users need an explicit branch grant of audit.view. Financial events are reserved for the billing consolidation brief.
 
 The Audit Log sidebar and page use the same explicit branch permission check. Sidebar visibility is supplied by the server for admin pages.
+
+Tahir approved branch-local monthly accounting periods with at most one open period per branch. Closure is final and allowed on the last local day or later. A future open period becomes eligible on its first day. The IANA timezone is fixed once the first period opens. Asia/Karachi is used in synthetic IFS scenarios.

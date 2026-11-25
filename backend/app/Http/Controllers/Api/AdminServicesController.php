@@ -137,8 +137,8 @@ class AdminServicesController extends AdminPlatformController
             $theme = DB::table('site_themes')->where('id', $values['site_theme_id'])->firstOrFail();
             $module = app(BranchModules::class)->forBranch($school->id)->firstWhere('slug', 'website');
             abort_unless($school->verified_at && $school->status === 'active' && ($module['enabled'] ?? false) && ! ($module['read_only'] ?? false)
-                && $theme->is_active && ! empty($values['subdomain']), 422,
-                'A verified branch, active Website module, active theme and subdomain are required.');
+                && $theme->is_active, 422,
+                'A verified branch, active Website module and active theme are required.');
             $data['published_at'] = $values['published_at'] ?? now();
         }
         if ($resource === 'personal-access-tokens' && array_key_exists('expires_at', $data)

@@ -86,7 +86,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R5 follow-up · Audit Log navigation | merged | Shows the Audit Log sidebar link for users who can open the page. |
 | R6 · Billing consolidation assessment | merged | Maps finance write paths and defines reconciliation, audit events and manual acceptance scenarios. |
 | R6 follow-up · Billing source inventory | merged | Verifies finance writers, report sources and schema constraints, and proposes a read-only reconciliation preview. |
-| R6-A · Billing reconciliation preview | in review | Read-only branch and cutoff preview with separate source totals and discrepancy counts. |
+| R6-A · Billing reconciliation preview | merged | Read-only branch and cutoff preview with separate source totals and discrepancy counts. |
+| R6-B · MySQL reconciliation verification | in review | Independent SQL matched all preview totals and exceptions on synthetic data across two branches and cutoff dates. |
 
 ---
 

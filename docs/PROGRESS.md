@@ -98,7 +98,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R6-J · Internal branch accounting periods | merged | Adds timezone settings, audited monthly open and close operations, and an internal business date resolver. |
 | R6-K · Receipt accounting-period integration | merged | Derives accounting context under the branch lock and preserves replay after closure. |
 | R6-L · Authenticated receipt endpoints | merged | Adds explicitly granted posting and reversal APIs restricted to a configured synthetic PKR branch in the testing environment. |
-| R6-M · Accounting-period administration APIs | in review | Adds explicitly granted calendar reads and audited writes for the configured synthetic branch. |
+| R6-M · Accounting-period administration APIs | merged | Adds explicitly granted calendar reads and audited writes for the configured synthetic branch. |
+| R6-N · Branch finance audit API | in review | Exposes scoped, read-only receipt and period events for the configured synthetic branch. |
 
 ---
 

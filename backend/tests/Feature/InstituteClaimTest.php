@@ -4,13 +4,31 @@ namespace Tests\Feature;
 
 use App\Models\School;
 use App\Models\User;
+use App\Notifications\ListingClaimVerificationCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class InstituteClaimTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_pending_claim_cannot_be_approved_before_email_verification(): void
+    {
+        $school = School::factory()->create(['listing_status' => 'published', 'verified_at' => now()]);
+        $claimant = User::factory()->create(['is_active' => true]);
+        $admin = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);
+        $this->actingAs($claimant)->post("/institutions/{$school->slug}/claim", [
+            'claimant_name' => 'Synthetic owner', 'phone' => '+92 300 0000000',
+        ])->assertRedirect();
+        $claim = DB::table('listing_claims')->where('user_id', $claimant->id)->value('id');
+
+        $this->actingAs($admin, 'sanctum')->patchJson("/api/admin/claims/$claim", [
+            'decision' => 'verified', 'review_note' => 'Synthetic review',
+        ])->assertConflict();
+        $this->assertDatabaseCount('school_group_user', 0);
+    }
 
     public function test_registration_and_claim_intake_do_not_grant_school_access(): void
     {
@@ -36,7 +54,7 @@ class InstituteClaimTest extends TestCase
             'school_id' => $school->id, 'user_id' => $user->id, 'status' => 'pending', 'method' => 'manual',
         ]);
         $this->assertDatabaseMissing('school_user', ['school_id' => $school->id, 'user_id' => $user->id]);
-        $this->post($path, $details)->assertSessionHasErrors('claim');
+        $this->post($path, $details)->assertRedirect($path);
         $this->assertDatabaseCount('listing_claims', 1);
         $this->get('/admin/claims')->assertForbidden();
     }
@@ -56,13 +74,16 @@ class InstituteClaimTest extends TestCase
         $this->actingAs($claimant)->post('/institute/new', [
             'name' => 'Synthetic New College', 'institute_type' => 'college', 'phone' => '+92 300 1111111',
             'listing_status' => 'published',
-        ])->assertRedirect('/institute/new');
+        ])->assertRedirect('/institutions/synthetic-new-college/claim');
 
         $school = School::where('slug', 'synthetic-new-college')->firstOrFail();
         $this->assertSame('pending_review', $school->listing_status);
         $this->assertSame('self_submitted', $school->source);
         $this->assertDatabaseHas('listing_claims', ['school_id' => $school->id, 'user_id' => $claimant->id, 'status' => 'pending']);
-        $this->get('/institute/new')->assertSee('Synthetic New College');
+        $this->get('/institutions/'.$school->slug.'/claim')->assertSee('Send verification code');
+        $this->actingAs(User::factory()->create(['is_active' => true]))
+            ->get('/institutions/'.$school->slug.'/claim')->assertNotFound();
+        $this->actingAs($claimant)->get('/institute/new')->assertSee('Synthetic New College');
         $this->get('/institutions/'.$school->slug)->assertNotFound();
         $this->get('/sitemap.xml')->assertDontSee($school->slug);
     }
@@ -81,6 +102,11 @@ class InstituteClaimTest extends TestCase
         $details = ['claimant_name' => 'Owner Candidate', 'phone' => '+92 300 0000000'];
         $this->actingAs($claimant)->post("/institutions/{$school->slug}/claim", $details)->assertRedirect();
         $claim = DB::table('listing_claims')->where('user_id', $claimant->id)->value('id');
+        Notification::fake();
+        $path = "/institutions/{$school->slug}/claim";
+        $code = $this->sendClaimCode($path, $claimant);
+        $this->post("$path/verify", ['code' => $code])->assertRedirect($path);
+        $this->assertDatabaseMissing('school_group_user', ['school_group_id' => $group, 'user_id' => $claimant->id]);
         $decision = ['decision' => 'verified', 'review_note' => 'Verified through the institution.'];
         $this->actingAs($claimant, 'sanctum')->patchJson("/api/admin/claims/{$claim}", $decision)->assertForbidden();
         $this->actingAs($admin, 'sanctum')->patchJson("/api/admin/claims/{$claim}", $decision)->assertOk();
@@ -95,4 +121,57 @@ class InstituteClaimTest extends TestCase
         DB::table('school_group_user')->where('user_id', $claimant->id)->update(['is_active' => false]);
         $this->getJson("/api/schools/{$branch->id}")->assertNotFound();
     }
+    public function test_claim_codes_expire_are_rate_limited_and_can_only_be_used_once(): void
+    {
+        Notification::fake();
+        $school = School::factory()->create(['listing_status' => 'published', 'verified_at' => now()]);
+        $claimant = User::factory()->create(['is_active' => true]);
+        $stranger = User::factory()->create(['is_active' => true]);
+        $path = "/institutions/{$school->slug}/claim";
+        $this->actingAs($claimant)->post($path, ['claimant_name' => 'Synthetic claimant', 'phone' => '000']);
+        $first = $this->sendClaimCode($path, $claimant);
+        $this->post("$path/code")->assertSessionHasErrors('code');
+        $this->actingAs($stranger)->post("$path/verify", ['code' => $first])->assertNotFound();
+        $this->actingAs($claimant);
+        $this->travel(11)->minutes();
+        $this->post("$path/verify", ['code' => $first])->assertSessionHasErrors('code');
+
+        $second = $this->sendClaimCode($path, $claimant);
+        $this->travel(1)->minute();
+        $third = $this->sendClaimCode($path, $claimant);
+        $this->assertNotSame($second, $third);
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->post("$path/verify", ['code' => $second])->assertSessionHasErrors('code');
+        }
+        $this->assertDatabaseHas('listing_claim_verification_codes', ['attempts' => 5]);
+        $this->post("$path/verify", ['code' => $third])->assertSessionHasErrors('code')
+            ->assertSessionMissing('_old_input.code');
+        $this->travel(1)->minute();
+        $valid = $this->sendClaimCode($path, $claimant);
+        $this->post("$path/verify", ['code' => $valid])->assertRedirect($path);
+        $this->assertDatabaseCount('listing_claim_verification_codes', 0);
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $this->post("$path/verify", ['code' => $valid])->assertSessionHasErrors('code');
+        }
+        $this->post("$path/verify", ['code' => $valid])->assertTooManyRequests();
+    }
+
+    private function sendClaimCode(string $path, User $claimant): string
+    {
+        $this->post("$path/code")->assertRedirect($path)->assertSessionHasNoErrors();
+        $code = null;
+        Notification::assertSentOnDemand(ListingClaimVerificationCode::class,
+            function ($notification, $channels, $notifiable) use ($claimant, &$code): bool {
+                if ($channels === ['mail'] && $notifiable->routes['mail'] === $claimant->email) {
+                    $code = $notification->code;
+
+                    return true;
+                }
+
+                return false;
+            });
+
+        return $code;
+    }
+
 }

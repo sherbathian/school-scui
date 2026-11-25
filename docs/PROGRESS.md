@@ -105,7 +105,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R6-Q · Reconciled reporting and cutover review | merged | Compares legacy and v4 results with independent synthetic controls and documents rollout and recovery gates. |
 | R7-A · Parallel finance reconciliation report | merged | Adds a synthetic branch report with independent legacy and v4 measures by month and cutoff. |
 | R7-B · Pilot finance reader and rollback rehearsal | merged | Adds a configurable synthetic reader and verifies rollback preserves postings, reversals and audit history. |
-| R7-C · IFS fresh-start finance readiness | in review | Adds explicit branch enablement and a separate write pause. Deployment is pending. |
+| R7-C · IFS fresh-start finance readiness | merged | Adds explicit branch enablement and a separate write pause. Deployment is pending. |
+| R8-A · Listing claim email verification | in review | Adds claim-bound email codes and requires mailbox verification before approval. |
 
 ---
 

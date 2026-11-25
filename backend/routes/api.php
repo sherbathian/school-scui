@@ -198,6 +198,7 @@ Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSc
 
 Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSchoolPermissionTeam::class])->group(function (): void {
     Route::get('/schools/{school}/finance-reconciliation', [BranchFinanceReconciliationReportController::class, 'index'])->whereNumber('school');
+    Route::get('/schools/{school}/finance-reader', [BranchFinanceReconciliationReportController::class, 'index'])->whereNumber('school')->name('finance.pilot.reader');
     Route::get('/schools/{school}/finance-audit', [BranchFinanceAuditController::class, 'index'])->whereNumber('school');
     Route::prefix('/schools/{school}/accounting-periods')->where(['school' => '[0-9]+'])->group(function (): void {
         Route::get('/', [BranchAccountingPeriodController::class, 'index']);

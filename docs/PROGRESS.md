@@ -103,7 +103,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R6-O · Branch finance pilot workspace | merged | Adds synthetic receipt, reversal, accounting-period and finance audit screens under Branch Operations. |
 | R6-P · Finance pilot acceptance | merged | Verifies synthetic role access, posting, retry, reversal, month-end and independent control totals. |
 | R6-Q · Reconciled reporting and cutover review | merged | Compares legacy and v4 results with independent synthetic controls and documents rollout and recovery gates. |
-| R7-A · Parallel finance reconciliation report | in review | Adds a synthetic branch report with independent legacy and v4 measures by month and cutoff. |
+| R7-A · Parallel finance reconciliation report | merged | Adds a synthetic branch report with independent legacy and v4 measures by month and cutoff. |
+| R7-B · Pilot finance reader and rollback rehearsal | in review | Adds a configurable synthetic reader and verifies rollback preserves postings, reversals and audit history. |
 
 ---
 

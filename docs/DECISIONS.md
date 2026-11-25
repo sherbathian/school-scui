@@ -31,3 +31,5 @@ Tahir approved an explicit branch-scoped fees.period.manage grant for calendar r
 Tahir approved an explicit branch-scoped fees.audit.view grant for the synthetic finance audit pilot. The Fees read gate applies and no role receives a default grant.
 
 Tahir approved a dedicated fees.reconciliation.view permission for the parallel synthetic finance report. Fees and paid Reports read eligibility apply. The report keeps legacy and v4 sources separate.
+
+The synthetic finance reader defaults to legacy and uses v4 only when explicitly selected in trusted configuration. The parallel comparison stays available during reader rollback, and finance write services remain independent of the switch.

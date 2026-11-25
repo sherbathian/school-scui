@@ -240,27 +240,28 @@ function Audit({ list }) {
     </section>;
 }
 
-function Reconciliation({ base, list }) {
+function Reconciliation({ base, list, selected = false }) {
     const [month, setMonth] = useState('');
     const [cutoff, setCutoff] = useState('');
     const report = list.page?.data;
 
     return <section className="space-y-3">
-        <h2>Finance reconciliation</h2>
+        <h2>{selected ? 'Selected finance reader' : 'Finance reconciliation'}</h2>
         <form className="flex flex-wrap items-end gap-2" onSubmit={event => {
             event.preventDefault();
             const filters = new URLSearchParams({ month, cutoff });
-            list.setUrl(`${base}/finance-reconciliation?${filters}`);
+            const endpoint = selected ? 'finance-reader' : 'finance-reconciliation';
+            list.setUrl(`${base}/${endpoint}?${filters}`);
         }}>
             <label>Report month <input type="month" value={month} required onChange={event => setMonth(event.target.value)} /></label>
             <label>Inclusive cutoff <input type="date" value={cutoff} required onChange={event => setCutoff(event.target.value)} /></label>
-            <button className="primary-button" type="submit">Run reconciliation</button>
+            <button className="primary-button" type="submit">{selected ? 'Run selected reader' : 'Run reconciliation'}</button>
         </form>
         <Feedback state={list.error && { error: true, text: list.error }} />
         {report && !list.error && <>
             <p>{report.month} through {report.cutoff} · {report.currency}</p>
-            <div className="grid gap-4 md:grid-cols-2">
-                <div>
+            <div className={selected ? 'grid gap-4' : 'grid gap-4 md:grid-cols-2'}>
+                {report.legacy && <div>
                     <h3>Legacy invoices and payments</h3>
                     <p>{report.legacy.collection_basis} {report.legacy.balance_basis}</p>
                     <dl>
@@ -268,8 +269,8 @@ function Reconciliation({ base, list }) {
                         <dt>Current unpaid invoices</dt><dd>{report.legacy.open_invoice_count_current}</dd>
                         <dt>Collectible at cutoff</dt><dd>{money(report.legacy.collectible_minor_at_cutoff)}</dd>
                     </dl>
-                </div>
-                <div>
+                </div>}
+                {report.v4 && <div>
                     <h3>v4 receipts and monthly charges</h3>
                     <p>{report.v4.activity_basis} {report.v4.balance_basis}</p>
                     {!report.v4.accounting_context_complete && <p role="status">
@@ -282,7 +283,7 @@ function Reconciliation({ base, list }) {
                         <dt>Net movement</dt><dd>{money(report.v4.net_minor)}</dd>
                         <dt>Charge balance at cutoff</dt><dd>{money(report.v4.remaining_minor_at_cutoff)}</dd>
                     </dl>
-                </div>
+                </div>}
             </div>
         </>}
     </section>;
@@ -301,6 +302,7 @@ function FinanceSection({ branchId, grant, revision, refresh }) {
         case 'periods':
         case 'periods-read-only': return <Periods path={periods} list={list} readOnly={grant === 'periods-read-only'} />;
         case 'audit': return <Audit list={list} />;
+        case 'reader': return <Reconciliation base={base} list={list} selected />;
         case 'reconciliation': return <Reconciliation base={base} list={list} />;
         default: return null;
     }
@@ -311,6 +313,6 @@ export default function FinancePilot({ branchId, grants }) {
     const refresh = () => setRevision(value => value + 1);
 
     return <div className="space-y-6">
-        {grants.map(grant => <FinanceSection key={grant} {...{ branchId, grant, revision, refresh }} />)}
+        {grants.flatMap(grant => grant === 'reconciliation' ? ['reader', grant] : [grant]).map(grant => <FinanceSection key={grant} {...{ branchId, grant, revision, refresh }} />)}
     </div>;
 }

@@ -16,6 +16,16 @@ class BranchFinanceReconciliationReport
         ]);
     }
 
+    public function forSource(int $school, string $month, string $cutoff, string $source): array
+    {
+        return DB::transaction(fn (): array => [
+            'school_id' => $school, 'month' => $month, 'cutoff' => $cutoff, 'currency' => 'PKR', 'source' => $source,
+            $source => $source === 'v4'
+                ? $this->ledger($school, $month, $cutoff)
+                : $this->legacy($school, $month.'-01', $cutoff),
+        ]);
+    }
+
     private function legacy(int $school, string $start, string $cutoff): array
     {
         $payments = DB::table('fee_payments')->where('school_id', $school);

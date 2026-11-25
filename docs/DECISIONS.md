@@ -23,3 +23,5 @@ Tahir approved including the read-only Audit Log page in R5. Platform administra
 The Audit Log sidebar and page use the same explicit branch permission check. Sidebar visibility is supplied by the server for admin pages.
 
 Tahir approved branch-local monthly accounting periods with at most one open period per branch. Closure is final and allowed on the last local day or later. A future open period becomes eligible on its first day. The IANA timezone is fixed once the first period opens. Asia/Karachi is used in synthetic IFS scenarios.
+
+Tahir approved separate branch-scoped receipt posting and reversal permissions for a synthetic pilot. Both require an explicit grant and the Fees write gate. Production activation and branch currency authority remain separate.

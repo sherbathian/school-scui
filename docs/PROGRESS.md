@@ -84,7 +84,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R4 · Organisation student limits | merged | Enforces configured active-student caps on creation, activation and rejoin across an organisation. Commercial plan values remain unset. |
 | R5 · Administrative audit log | merged | Records membership, role and branch module changes. Adds a read-only page and explicit branch permission. |
 | R5 follow-up · Audit Log navigation | merged | Shows the Audit Log sidebar link for users who can open the page. |
-| R6 · Billing consolidation assessment | in review | Maps finance write paths and defines reconciliation, audit events and manual acceptance scenarios. |
+| R6 · Billing consolidation assessment | merged | Maps finance write paths and defines reconciliation, audit events and manual acceptance scenarios. |
+| R6 follow-up · Billing source inventory | in review | Verifies finance writers, report sources and schema constraints, and proposes a read-only reconciliation preview. |
 
 ---
 

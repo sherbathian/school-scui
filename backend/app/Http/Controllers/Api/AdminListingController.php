@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AdminListingResource;
 use App\Models\School;
+use App\Models\User;
+use App\Services\BranchAuditLog;
 use App\Services\SchoolOrganisations;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
@@ -98,7 +100,7 @@ class AdminListingController extends Controller
         }
 
         try {
-            return $this->updateLocked($listing, function (School $school) use ($details, $code): void {
+            return $this->updateLocked($request->user(), $listing, null, function (School $school) use ($details, $code): void {
                 if (isset($code['branch_code'])) {
                     if ($school->group_id === null) {
                         throw ValidationException::withMessages(['branch_code' => ['Verify the listing to create its organisation before assigning a branch code.']]);
@@ -120,17 +122,17 @@ class AdminListingController extends Controller
         }
     }
 
-    public function verify(School $listing, SchoolOrganisations $organisations): AdminListingResource
+    public function verify(Request $request, School $listing, SchoolOrganisations $organisations): AdminListingResource
     {
-        return $this->updateLocked($listing, function (School $school) use ($organisations): void {
+        return $this->updateLocked($request->user(), $listing, 'listing.verified', function (School $school) use ($organisations): void {
             $school->verified_at ??= now();
             $organisations->ensureFor($school);
         });
     }
 
-    public function publish(School $listing): AdminListingResource
+    public function publish(Request $request, School $listing): AdminListingResource
     {
-        return $this->updateLocked($listing, function (School $school): void {
+        return $this->updateLocked($request->user(), $listing, 'listing.published', function (School $school): void {
             abort_unless($school->verified_at && $school->status === 'active', 409, 'Only active, verified listings can be published.');
 
             $school->listing_status = 'published';
@@ -138,19 +140,25 @@ class AdminListingController extends Controller
         });
     }
 
-    public function suspend(School $listing): AdminListingResource
+    public function suspend(Request $request, School $listing): AdminListingResource
     {
-        return $this->updateLocked($listing, function (School $school): void {
+        return $this->updateLocked($request->user(), $listing, 'listing.suspended', function (School $school): void {
             $school->listing_status = 'suspended';
         });
     }
 
-    private function updateLocked(School $listing, callable $apply): AdminListingResource
+    private function updateLocked(User $actor, School $listing, ?string $action, callable $apply): AdminListingResource
     {
-        return DB::transaction(function () use ($listing, $apply): AdminListingResource {
+        return DB::transaction(function () use ($actor, $listing, $action, $apply): AdminListingResource {
             $school = School::query()->lockForUpdate()->findOrFail($listing->id);
+            $before = ['status' => $school->listing_status, 'verified' => $school->verified_at !== null];
             $apply($school);
             $school->save();
+            if ($action !== null) {
+                app(BranchAuditLog::class)->record($actor, $school->id, $action, $school->id, $before, [
+                    'status' => $school->listing_status, 'verified' => $school->verified_at !== null,
+                ]);
+            }
 
             return new AdminListingResource($school);
         }, 3);

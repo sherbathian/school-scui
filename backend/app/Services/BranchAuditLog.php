@@ -16,6 +16,8 @@ class BranchAuditLog
         'membership.added', 'membership.updated', 'membership.removed',
         'role.created', 'role.updated', 'role.deleted',
         'module.enabled', 'module.disabled', 'module.reset',
+        'listing.verified', 'listing.published', 'listing.suspended',
+        'claim.approved', 'claim.declined',
     ];
 
     public function canView(?User $user): bool

@@ -10,6 +10,7 @@ use App\Http\Controllers\InstituteClaimController;
 use App\Http\Controllers\PublicDirectoryController;
 use App\Http\Controllers\PublicResourcesController;
 use App\Http\Controllers\SchoolPagePreviewController;
+use App\Http\Controllers\PublicSchoolSiteController;
 use App\Http\Resources\AdminListingResource;
 use App\Models\School;
 use App\Services\BranchModules;
@@ -53,6 +54,8 @@ Route::view('/for-schools', 'directory.for-schools')->name('directory.for-school
 Route::get('/{topic}', [PublicResourcesController::class, 'policy'])
     ->whereIn('topic', ['community-privacy', 'terms-of-use', 'copyright-takedown'])->name('directory.policy');
 Route::get('/sitemap.xml', [PublicDirectoryController::class, 'sitemap'])->name('directory.sitemap');
+Route::get('/school-sites/{school}/{page?}', PublicSchoolSiteController::class)
+    ->where(['school' => '[a-z0-9-]+', 'page' => '[a-z0-9_-]+'])->name('school-site.page');
 Route::get('/local/school-preview/{school}/{page?}', SchoolPagePreviewController::class)
     ->where(['school' => '[a-z0-9-]+', 'page' => '[a-z0-9_-]+'])->name('local.school-page-preview');
 Route::view('/about', 'directory.about')->name('directory.about');

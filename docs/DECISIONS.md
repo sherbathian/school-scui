@@ -39,3 +39,5 @@ Tahir confirmed a fresh start for IFS with zero opening balances. Operational v4
 Listing claim approval now requires verification of the claimant’s current account email. Pending claims created before rollout also require verification. A Super Admin still reviews institutional affiliation and authority.
 
 Listing verification, publication and suspension, and claim approvals and declines use the existing branch-scoped Audit Log. Audit payloads contain status flags and identifiers. Competing declines reference the originating approved claim.
+
+Public school websites use the application-domain path /school-sites/{school}/{page?}. The root uses the published home slug. Public rendering requires an eligible directory listing, the Website module, enabled site settings and an active theme. A subdomain is optional for same-domain publishing. Website availability has no effect on the free directory listing.

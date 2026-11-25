@@ -85,7 +85,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R5 · Administrative audit log | merged | Records membership, role and branch module changes. Adds a read-only page and explicit branch permission. |
 | R5 follow-up · Audit Log navigation | merged | Shows the Audit Log sidebar link for users who can open the page. |
 | R6 · Billing consolidation assessment | merged | Maps finance write paths and defines reconciliation, audit events and manual acceptance scenarios. |
-| R6 follow-up · Billing source inventory | in review | Verifies finance writers, report sources and schema constraints, and proposes a read-only reconciliation preview. |
+| R6 follow-up · Billing source inventory | merged | Verifies finance writers, report sources and schema constraints, and proposes a read-only reconciliation preview. |
+| R6-A · Billing reconciliation preview | in review | Read-only branch and cutoff preview with separate source totals and discrepancy counts. |
 
 ---
 

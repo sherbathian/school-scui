@@ -114,7 +114,8 @@ class BranchAccountingPeriods
         ];
     }
 
-    private function lockBranch(int $branch): void
+    /** Acquire inside the caller's transaction, before operation keys or charge locks. */
+    public function lockBranch(int $branch): void
     {
         if (! DB::table('schools')->where('id', $branch)->whereNull('deleted_at')->lockForUpdate()->first(['id'])) {
             throw ValidationException::withMessages(['branch' => 'The branch is unavailable.']);

@@ -7,47 +7,48 @@ use Illuminate\Validation\ValidationException;
 
 class ReverseFamilyReceipt
 {
-    public function __construct(private readonly PostFamilyReceipt $posting) {}
+    public function __construct(
+        private readonly PostFamilyReceipt $posting,
+        private readonly BranchAccountingPeriods $calendar,
+    ) {}
 
     /**
-     * Internal only. The caller supplies a verified open period for the authorised branch.
+     * Internal only. The caller supplies an authorised actor and branch.
      *
-     * @param array{0: string, 1: string}|null $openPeriod Inclusive YYYY-MM-DD boundaries
      * @return array{reversal_id: int}
      */
-    public function reverse(int $actor, int $branch, int $receiptId, string $key, string $reason, string $date, ?array $openPeriod): array
+    public function reverse(int $actor, int $branch, int $receiptId, string $key, string $reason): array
     {
         if ($receiptId < 1 || trim($key) === '' || strlen($key) > 128
-            || ! in_array($reason, ['duplicate', 'entry_error'], true) || ! $this->validDate($date)) {
+            || ! in_array($reason, ['duplicate', 'entry_error'], true)) {
             throw ValidationException::withMessages(['reversal' => 'The reversal request is invalid.']);
         }
         $keyHash = hash('sha256', $key);
-        $payloadHash = hash('sha256', json_encode([$receiptId, $reason, $date], JSON_THROW_ON_ERROR));
+        $payloadHash = hash('sha256', json_encode([$receiptId, $reason], JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($actor, $branch, $receiptId, $keyHash, $payloadHash, $reason, $date, $openPeriod): array {
+        return DB::transaction(function () use ($actor, $branch, $receiptId, $keyHash, $payloadHash, $reason): array {
+            $this->calendar->lockBranch($branch);
             DB::table('family_receipt_reversal_keys')->upsert(
                 [['school_id' => $branch, 'operation_key' => $keyHash, 'payload_hash' => $payloadHash]],
                 ['school_id', 'operation_key'], ['operation_key'],
             );
             $operation = DB::table('family_receipt_reversal_keys')->where('school_id', $branch)
                 ->where('operation_key', $keyHash)->lockForUpdate()->first();
-            if ($operation->payload_hash !== $payloadHash) {
+            if ($operation->payload_hash !== $payloadHash && ! $this->matchesLegacyReplay($branch, $operation, $receiptId, $reason)) {
                 throw ValidationException::withMessages(['key' => 'This key already belongs to another reversal request.'])->status(409);
             }
             if ($operation->reversal_id !== null) {
                 return ['reversal_id' => (int) $operation->reversal_id];
             }
-            if (! isset($openPeriod[0], $openPeriod[1]) || ! $this->validDate($openPeriod[0]) || ! $this->validDate($openPeriod[1])
-                || $date < $openPeriod[0] || $date > $openPeriod[1]) {
-                throw ValidationException::withMessages(['period' => 'The reversal date must be within a verified open period.']);
-            }
+            $period = $this->calendar->current($branch);
+            $date = $period['accounting_date'];
 
             $receipt = DB::table('posted_family_receipts')->where('school_id', $branch)->where('id', $receiptId)->lockForUpdate()->first();
             if ($receipt === null) {
                 throw ValidationException::withMessages(['receipt' => 'The original receipt is unavailable.']);
             }
-            if ($date < $receipt->received_on) {
-                throw ValidationException::withMessages(['period' => 'The reversal cannot predate receipt of funds.']);
+            if ($receipt->period_id === null || $receipt->accounting_date === null || $date < $receipt->accounting_date) {
+                throw ValidationException::withMessages(['period' => 'The original receipt has no eligible accounting context.']);
             }
             if (DB::table('family_receipt_reversals')->where('school_id', $branch)->where('receipt_id', $receiptId)->lockForUpdate()->first(['id'])) {
                 throw ValidationException::withMessages(['receipt' => 'The receipt has already been reversed.'])->status(409);
@@ -67,11 +68,13 @@ class ReverseFamilyReceipt
                 $allocationIds[] = (int) $allocation->id;
             }
 
-            $time = now();
+            $time = $period['recorded_at_utc'];
             $context = [
                 'school_id' => $branch, 'receipt_id' => $receiptId, 'actor_id' => $actor,
                 'currency' => $receipt->currency, 'amount_minor' => $receipt->amount_minor,
                 'reason_code' => $reason, 'recorded_at' => $time,
+                'period_id' => $period['period_id'], 'accounting_date' => $date,
+                'accounting_timezone' => $period['timezone'], 'accounting_recorded_at_utc' => $time,
             ];
             $reversal = DB::table('family_receipt_reversals')->insertGetId($context + ['reversed_on' => $date]);
             DB::table('family_receipt_finance_events')->insert($context + [
@@ -85,9 +88,20 @@ class ReverseFamilyReceipt
         }, 3);
     }
 
-    private function validDate(mixed $date): bool
+    private function matchesLegacyReplay(int $branch, object $operation, int $receiptId, string $reason): bool
     {
-        return is_string($date) && preg_match('/^(\d{4})-(\d{2})-(\d{2})$/D', $date, $parts)
-            && (int) $parts[1] >= 1000 && checkdate((int) $parts[2], (int) $parts[3], (int) $parts[1]);
+        if ($operation->reversal_id === null) {
+            return false;
+        }
+
+        $original = DB::table('family_receipt_reversals')->where('school_id', $branch)
+            ->where('id', $operation->reversal_id)->whereNull('period_id')->lockForUpdate()->first();
+        if ($original === null || (int) $original->receipt_id !== $receiptId || $original->reason_code !== $reason) {
+            return false;
+        }
+
+        $legacyHash = hash('sha256', json_encode([$receiptId, $reason, $original->reversed_on], JSON_THROW_ON_ERROR));
+
+        return $operation->payload_hash === $legacyHash;
     }
 }

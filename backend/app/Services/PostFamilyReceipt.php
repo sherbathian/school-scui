@@ -7,6 +7,8 @@ use Illuminate\Validation\ValidationException;
 
 class PostFamilyReceipt
 {
+    public function __construct(private readonly BranchAccountingPeriods $calendar) {}
+
     /**
      * Internal only. The caller supplies an authorised actor, branch and verified currency.
      *
@@ -23,6 +25,7 @@ class PostFamilyReceipt
         $payloadHash = hash('sha256', json_encode([$currency, $receivedOn, $amount, $allocations, $source], JSON_THROW_ON_ERROR));
 
         return DB::transaction(function () use ($actor, $branch, $currency, $keyHash, $payloadHash, $receivedOn, $amount, $allocations, $source): array {
+            $this->calendar->lockBranch($branch);
             DB::table('family_receipt_posting_keys')->upsert(
                 [['school_id' => $branch, 'operation_key' => $keyHash, 'payload_hash' => $payloadHash]],
                 ['school_id', 'operation_key'], ['operation_key'],
@@ -36,15 +39,25 @@ class PostFamilyReceipt
                 return ['receipt_id' => (int) $operation->receipt_id];
             }
 
+            $period = $this->calendar->current($branch);
+            $day = $period['accounting_date'];
+            if ($receivedOn > $day || ($receivedOn < $day && $source === null)) {
+                throw ValidationException::withMessages(['received_on' => 'Use the current business date or supply matching evidence for an earlier receipt.']);
+            }
+            $accounting = [
+                'period_id' => $period['period_id'], 'accounting_date' => $day,
+                'accounting_timezone' => $period['timezone'], 'accounting_recorded_at_utc' => $period['recorded_at_utc'],
+            ];
+
             if ($source !== null) {
                 $this->lockSource($branch, $source, $amount, $receivedOn);
             }
             $balances = $this->balances($branch, $allocations);
-            $time = now();
+            $time = $period['recorded_at_utc'];
             $receipt = DB::table('posted_family_receipts')->insertGetId([
                 'school_id' => $branch, 'actor_id' => $actor, 'source_receipt_id' => $source,
                 'currency' => $currency, 'amount_minor' => $amount, 'received_on' => $receivedOn, 'posted_at' => $time,
-            ]);
+            ] + $accounting);
             $allocationIds = [];
             foreach ($allocations as $id => $allocated) {
                 $allocationIds[] = DB::table('posted_family_receipt_allocations')->insertGetId([
@@ -56,7 +69,7 @@ class PostFamilyReceipt
                 'action' => 'receipt.posted', 'currency' => $currency, 'amount_minor' => $amount, 'recorded_at' => $time,
                 'balances' => json_encode($balances, JSON_THROW_ON_ERROR),
                 'allocation_ids' => json_encode($allocationIds, JSON_THROW_ON_ERROR),
-            ]);
+            ] + $accounting);
             DB::table('family_receipt_posting_keys')->where('id', $operation->id)->update(['receipt_id' => $receipt]);
 
             return ['receipt_id' => $receipt];

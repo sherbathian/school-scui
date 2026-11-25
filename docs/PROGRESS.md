@@ -87,7 +87,9 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R6 · Billing consolidation assessment | merged | Maps finance write paths and defines reconciliation, audit events and manual acceptance scenarios. |
 | R6 follow-up · Billing source inventory | merged | Verifies finance writers, report sources and schema constraints, and proposes a read-only reconciliation preview. |
 | R6-A · Billing reconciliation preview | merged | Read-only branch and cutoff preview with separate source totals and discrepancy counts. |
-| R6-B · MySQL reconciliation verification | in review | Independent SQL matched all preview totals and exceptions on synthetic data across two branches and cutoff dates. |
+| R6-B · MySQL reconciliation verification | merged | Independent SQL matched all preview totals and exceptions on synthetic data across two branches and cutoff dates. |
+| R6-C · Historical billing reconciliation | verified locally | Independent SQL matched all six preview sources on the approved sanitised IFS copy. |
+| R6-D · Billing obligation mapping preview | in review | Optional operator-supplied evidence assesses invoice-to-charge matches and possible receipt allocations without posting. |
 
 ---
 

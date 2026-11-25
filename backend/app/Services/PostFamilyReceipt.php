@@ -97,18 +97,7 @@ class PostFamilyReceipt
     {
         $balances = [];
         foreach ($allocations as $id => $amount) {
-            $charge = DB::table('student_fee_charges')->where('school_id', $branch)->where('id', $id)
-                ->lockForUpdate()->first(['status', 'amount']);
-            if ($charge === null || $charge->status !== 'open') {
-                throw ValidationException::withMessages(['allocations' => 'A charge is unavailable for posting.']);
-            }
-
-            $balance = $this->minor($charge->amount);
-            $posted = DB::table('posted_family_receipt_allocations')->where('school_id', $branch)->where('charge_id', $id)
-                ->lockForUpdate()->pluck('amount_minor');
-            foreach ($posted as $allocated) {
-                $balance -= (int) $allocated;
-            }
+            $balance = $this->lockChargeBalance($branch, $id, posting: true);
             if ($amount > $balance) {
                 throw ValidationException::withMessages(['allocations' => 'An allocation exceeds the remaining charge balance.']);
             }
@@ -116,6 +105,30 @@ class PostFamilyReceipt
         }
 
         return $balances;
+    }
+
+    /** Caller holds the transaction and visits charges in ascending ID order. */
+    public function lockChargeBalance(int $branch, int $id, bool $posting): int
+    {
+        $charge = DB::table('student_fee_charges')->where('school_id', $branch)->where('id', $id)
+            ->lockForUpdate()->first(['status', 'amount']);
+        if ($charge === null || ($posting && $charge->status !== 'open')) {
+            throw ValidationException::withMessages(['allocations' => 'A charge is unavailable.']);
+        }
+
+        $balance = $this->minor($charge->amount);
+        $posted = DB::table('posted_family_receipt_allocations as allocation')
+            ->leftJoin('family_receipt_reversals as reversal', function ($join): void {
+                $join->on('reversal.school_id', '=', 'allocation.school_id')
+                    ->on('reversal.receipt_id', '=', 'allocation.receipt_id');
+            })
+            ->where('allocation.school_id', $branch)->where('allocation.charge_id', $id)
+            ->whereNull('reversal.id')->lockForUpdate()->pluck('allocation.amount_minor');
+        foreach ($posted as $amount) {
+            $balance -= (int) $amount;
+        }
+
+        return $balance;
     }
 
     private function minor(string|int|float $amount): int

@@ -6,6 +6,7 @@ use App\Models\School;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\PostFamilyReceipt;
+use App\Services\ReverseFamilyReceipt;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -113,6 +114,73 @@ class PostFamilyReceiptTest extends TestCase
         $this->assertSame($result, $post->post($actor, $school, 'PKR', 'key', '2026-11-25', 10000, [$secondCharge => 4000, $charge => 6000]));
         $this->assertDatabaseCount('posted_family_receipt_allocations', 2);
         $this->assertDatabaseCount('family_receipt_finance_events', 1);
+    }
+
+    public function test_full_reversal_restores_split_balances_once_and_preserves_originals(): void
+    {
+        $school = School::factory()->create()->id;
+        $foreign = School::factory()->create()->id;
+        $actor = User::factory()->create()->id;
+        $first = $this->charge($school);
+        $second = $this->charge($school, ' 2');
+        $post = app(PostFamilyReceipt::class);
+        $reverse = app(ReverseFamilyReceipt::class);
+        $original = $post->post($actor, $school, 'PKR', 'original', '2026-11-25', 60000, [$second => 20000, $first => 40000]);
+        $id = $original['receipt_id'];
+        $period = ['2026-11-01', '2026-11-30'];
+
+        foreach ([
+            [$school, 'reverse', 'duplicate', null, 'period', 422],
+            [$foreign, 'reverse', 'duplicate', $period, 'receipt', 422],
+        ] as [$branch, $key, $reason, $open, $field, $status]) {
+            try {
+                $reverse->reverse($actor, $branch, $id, $key, $reason, '2026-11-25', $open);
+                $this->fail('Invalid reversal succeeded.');
+            } catch (ValidationException $exception) {
+                $this->assertSame($status, $exception->status);
+                $this->assertArrayHasKey($field, $exception->errors());
+            }
+        }
+        $rejectAudit = true;
+        DB::connection()->beforeExecuting(function (string $query) use (&$rejectAudit): void {
+            if ($rejectAudit && str_contains($query, 'insert into') && str_contains($query, 'family_receipt_finance_events')) {
+                throw new \RuntimeException('Synthetic reversal audit failure');
+            }
+        });
+        try {
+            $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate', '2026-11-25', $period);
+            $this->fail('Reversal survived audit failure.');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('Synthetic reversal audit failure', $exception->getMessage());
+        }
+        $this->assertDatabaseCount('family_receipt_reversals', 0);
+        $this->assertDatabaseCount('family_receipt_reversal_keys', 0);
+        $this->assertDatabaseCount('family_receipt_finance_events', 1);
+        $rejectAudit = false;
+
+        $result = $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate', '2026-11-25', $period);
+        $this->assertSame($result, $reverse->reverse($actor, $school, $id, 'reverse', 'duplicate', '2026-11-25', null));
+        foreach ([['reverse', 'entry_error', 'key'], ['other', 'duplicate', 'receipt']] as [$key, $reason, $field]) {
+            try {
+                $reverse->reverse($actor, $school, $id, $key, $reason, '2026-11-25', $period);
+                $this->fail('Repeated reversal succeeded.');
+            } catch (ValidationException $exception) {
+                $this->assertSame(409, $exception->status);
+                $this->assertArrayHasKey($field, $exception->errors());
+            }
+        }
+
+        $this->assertDatabaseHas('posted_family_receipts', ['id' => $id, 'amount_minor' => 60000, 'received_on' => '2026-11-25']);
+        $this->assertDatabaseCount('posted_family_receipt_allocations', 2);
+        $this->assertDatabaseCount('family_receipt_reversals', 1);
+        $this->assertDatabaseCount('family_receipt_reversal_keys', 1);
+        $event = DB::table('family_receipt_finance_events')->where('action', 'receipt.reversed')->first();
+        $this->assertSame($result['reversal_id'], (int) $event->reversal_id);
+        $lines = json_decode($event->balances, true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame([60000, 80000], array_column($lines, 'before_minor'));
+        $this->assertSame([100000, 100000], array_column($lines, 'after_minor'));
+        $post->post($actor, $school, 'PKR', 'after', '2026-11-25', 200000, [$first => 100000, $second => 100000]);
+        $this->assertDatabaseCount('family_receipt_finance_events', 3);
     }
 
     private function charge(int $branch, string $suffix = ''): int

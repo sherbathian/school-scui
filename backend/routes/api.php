@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AdminServicesController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\BranchAccountingPeriodController;
 use App\Http\Controllers\Api\BranchFinanceAuditController;
+use App\Http\Controllers\Api\BranchFinanceReconciliationReportController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\FamilyFeeReceiptController;
 use App\Http\Controllers\Api\FeeDiscountController;
@@ -196,6 +197,7 @@ Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSc
 });
 
 Route::middleware(['auth:sanctum', RestrictPersonalAccessToken::class, ResolveSchoolPermissionTeam::class])->group(function (): void {
+    Route::get('/schools/{school}/finance-reconciliation', [BranchFinanceReconciliationReportController::class, 'index'])->whereNumber('school');
     Route::get('/schools/{school}/finance-audit', [BranchFinanceAuditController::class, 'index'])->whereNumber('school');
     Route::prefix('/schools/{school}/accounting-periods')->where(['school' => '[0-9]+'])->group(function (): void {
         Route::get('/', [BranchAccountingPeriodController::class, 'index']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Models\User;
+use App\Services\BranchFinanceAvailability;
 use App\Services\BranchModules;
 use App\Services\PostFamilyReceipt;
 use App\Services\ReverseFamilyReceipt;
@@ -19,7 +20,8 @@ class PostedFamilyReceiptController extends Controller
 {
     public function workspaceGrants(User $user, School $branch, BranchModules $modules): array
     {
-        if (! $this->enabled($branch->id) || ! $user->is_active
+        $availability = app(BranchFinanceAvailability::class);
+        if (! $availability->allows($branch->id) || ! $user->is_active
             || ! $user->activeSchools()->whereKey($branch->id)->exists()
             || $user->schoolAccessRole($branch) === 'student') {
             return [];
@@ -31,6 +33,7 @@ class PostedFamilyReceiptController extends Controller
             return [];
         }
 
+        $readOnly = $fees['read_only'] || ! $availability->allows($branch->id, writing: true);
         $registrar = app(PermissionRegistrar::class);
         $previous = $registrar->getPermissionsTeamId();
         $registrar->setPermissionsTeamId($branch->id);
@@ -45,10 +48,10 @@ class PostedFamilyReceiptController extends Controller
                 $grants['reconciliation'] = 'fees.reconciliation.view';
             }
             $allowed = array_keys(array_filter($grants, fn ($permission, $action) =>
-                (! $fees['read_only'] || in_array($action, ['periods', 'audit', 'reconciliation'], true))
+                (! $readOnly || in_array($action, ['periods', 'audit', 'reconciliation'], true))
                 && $user->checkPermissionTo($permission, 'web'), ARRAY_FILTER_USE_BOTH));
 
-            return array_map(fn (string $action): string => $action === 'periods' && $fees['read_only']
+            return array_map(fn (string $action): string => $action === 'periods' && $readOnly
                 ? 'periods-read-only' : $action, $allowed);
         } finally {
             $registrar->setPermissionsTeamId($previous);
@@ -145,16 +148,9 @@ class PostedFamilyReceiptController extends Controller
         abort_unless($user->schoolAccessRole($branch) !== 'student' && $user->checkPermissionTo($permission, 'web'), 403);
         $modules->assertEnabled($school, 'fees', writing: true);
 
-        abort_unless($this->enabled($school), 403);
+        abort_unless(app(BranchFinanceAvailability::class)->allows($school, writing: true), 403);
 
         return 'PKR';
-    }
-
-    private function enabled(int $school): bool
-    {
-        $pilot = config('billing.receipt_pilot');
-
-        return app()->environment('testing') && ($pilot['branch_id'] ?? null) === $school && ($pilot['currency'] ?? null) === 'PKR';
     }
 
     private function key(Request $request): string

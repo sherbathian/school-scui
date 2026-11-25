@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\BranchAccountingPeriods;
+use App\Services\BranchFinanceAvailability;
 use App\Services\BranchModules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -66,7 +67,6 @@ class BranchAccountingPeriodController extends Controller
         abort_unless($user->schoolAccessRole($branch) !== 'student' && $user->checkPermissionTo('fees.period.manage', 'web'), 403);
         $modules->assertEnabled($school, 'fees', writing: $writing);
 
-        $pilot = config('billing.receipt_pilot');
-        abort_unless(app()->environment('testing') && ($pilot['branch_id'] ?? null) === $school && ($pilot['currency'] ?? null) === 'PKR', 403);
+        abort_unless(app(BranchFinanceAvailability::class)->allows($school, writing: $writing), 403);
     }
 }

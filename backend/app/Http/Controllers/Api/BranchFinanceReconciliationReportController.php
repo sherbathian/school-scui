@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Services\BranchFinanceReconciliationReport;
+use App\Services\BranchFinanceAvailability;
 use App\Services\BranchModules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,8 +20,7 @@ class BranchFinanceReconciliationReportController extends Controller
         $branch = $user->activeSchools()->whereKey($school)->first();
         abort_unless($branch, 404);
         abort_unless($user->schoolAccessRole($branch) !== 'student' && $user->checkPermissionTo('fees.reconciliation.view', 'web'), 403);
-        $pilot = config('billing.receipt_pilot');
-        abort_unless(app()->environment('testing') && ($pilot['branch_id'] ?? null) === $school && ($pilot['currency'] ?? null) === 'PKR', 403);
+        abort_unless(app(BranchFinanceAvailability::class)->allows($school), 403);
         $catalogue = $modules->forBranch($school);
         abort_unless($catalogue->firstWhere('slug', 'fees')['enabled'] ?? false, 403);
         abort_unless(self::reportsEnabled($branch, $catalogue->firstWhere('slug', 'reports')), 403);

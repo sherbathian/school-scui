@@ -80,6 +80,10 @@ Route::post('/institute/new', [InstituteClaimController::class, 'submit'])->midd
 Route::post('/institute/sign-out', [InstituteClaimController::class, 'logout'])->middleware('auth')->name('institute.logout');
 Route::get('/institutions/{slug}/claim', [InstituteClaimController::class, 'show'])->name('institute.claim');
 Route::post('/institutions/{slug}/claim', [InstituteClaimController::class, 'store'])->middleware(['auth', 'throttle:10,1']);
+Route::post('/institutions/{slug}/claim/code', [InstituteClaimController::class, 'sendCode'])
+    ->middleware(['auth', 'throttle:5,10,claim-send'])->name('institute.claim.send-code');
+Route::post('/institutions/{slug}/claim/verify', [InstituteClaimController::class, 'verifyCode'])
+    ->middleware(['auth', 'throttle:10,10,claim-verify'])->name('institute.claim.verify-code');
 
 Route::get('/admin/claims', function (Request $request) {
     if (! Auth::check()) {

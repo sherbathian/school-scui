@@ -5,11 +5,27 @@
 <div class="wrap block">
     <section class="panel institute-form">
         <h1>Claim {{ $school->name }}</h1>
+        @if(session('claim_message'))<p role="status">{{ session('claim_message') }}</p>@endif
         @if($errors->any())<p role="alert">{{ $errors->first() }}</p>@endif
         @if($claim?->status === 'verified')
             <p>Your claim has been approved.</p>
         @elseif($claim?->status === 'pending')
-            <p>Your request is awaiting platform review.</p>
+            @if($claim->email_verified_at && $claim->email === auth()->user()->email)
+                <p>Your email is verified. Your request is awaiting platform review.</p>
+            @else
+                <p>Verify your account email to continue. The code is sent to {{ auth()->user()->email }}.</p>
+                <form method="post" action="{{ route('institute.claim.send-code', $school->slug) }}">
+                    @csrf
+                    <button class="button teal">Send verification code</button>
+                </form>
+                <form method="post" action="{{ route('institute.claim.verify-code', $school->slug) }}">
+                    @csrf
+                    <label>Verification code<input name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6"></label>
+                    <button class="button teal">Verify email</button>
+                </form>
+            @endif
+        @elseif($claim?->status === 'rejected' && $school->listing_status !== 'published')
+            <p>Your claim was declined.</p>
         @elseif($school->claim_status === 'claimed')
             <p>This institution has already been claimed.</p>
         @else

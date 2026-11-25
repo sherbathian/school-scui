@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\School;
 use App\Models\User;
+use App\Services\ListingClaimVerification;
 use App\Services\SchoolOrganisations;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
@@ -116,7 +117,7 @@ class InstituteClaimController extends Controller
             throw ValidationException::withMessages(['name' => ['A listing with this name already exists. Search the directory to claim it or contact support.']]);
         }
 
-        return redirect()->route('institute.new')->with('directory_message', 'Your institution was submitted for review.');
+        return redirect()->route('institute.claim', $slug);
     }
 
     public function logout(Request $request, AuthController $auth): RedirectResponse
@@ -128,11 +129,13 @@ class InstituteClaimController extends Controller
 
     public function show(Request $request, string $slug): View|RedirectResponse
     {
-        $school = School::publicDirectory()->where('slug', $slug)->firstOrFail();
         if (! $request->user()) {
+            School::publicDirectory()->where('slug', $slug)->firstOrFail();
             return redirect()->route('institute.register', ['listing' => $slug]);
         }
         abort_unless($request->user()->is_active, 403);
+
+        $school = $this->claimListing($request, $slug);
 
         return view('directory.institute-claim', [
             'school' => $school,
@@ -155,15 +158,48 @@ class InstituteClaimController extends Controller
             $school = School::publicDirectory()->where('slug', $slug)->lockForUpdate()->firstOrFail();
             $duplicate = DB::table('listing_claims')->where('school_id', $school->id)
                 ->where('user_id', $user->id)->where('status', 'pending')->exists();
-            if ($school->claim_status === 'claimed' || $duplicate) {
-                throw ValidationException::withMessages(['claim' => ['This listing has already been claimed or you have a pending request.']]);
+            if ($school->claim_status === 'claimed') {
+                throw ValidationException::withMessages(['claim' => ['This listing has already been claimed.']]);
             }
 
+            if ($duplicate) {
+                return;
+            }
             $this->recordClaim($school, $user, $data);
             $school->forceFill(['claim_status' => 'pending'])->save();
         }, 3);
 
         return redirect()->route('institute.claim', $slug);
+    }
+
+    public function sendCode(Request $request, string $slug, ListingClaimVerification $verification): RedirectResponse
+    {
+        $school = $this->claimListing($request, $slug);
+        $verification->send($school->id, $request->user());
+
+        return redirect()->route('institute.claim', $slug)->with('claim_message', 'Verification code sent.');
+    }
+
+    public function verifyCode(Request $request, string $slug, ListingClaimVerification $verification): RedirectResponse
+    {
+        $school = $this->claimListing($request, $slug);
+        $code = $request->isJson() ? $request->json('code') : $request->post('code');
+        $request->query->remove('code');
+        $request->replace($request->except('code'));
+        validator(['code' => $code], ['code' => ['required', 'string', 'regex:/^[0-9]{6}$/D']])->validate();
+        $verification->verify($school->id, $request->user(), $code);
+
+        return redirect()->route('institute.claim', $slug);
+    }
+
+    private function claimListing(Request $request, string $slug): School
+    {
+        abort_unless($request->user()?->is_active, 403);
+        $school = School::publicDirectory()->where('slug', $slug)->first();
+
+        return $school ?? School::query()->where('slug', $slug)->where('source', 'self_submitted')
+            ->whereIn('id', DB::table('listing_claims')->where('user_id', $request->user()->id)->select('school_id'))
+            ->firstOrFail();
     }
 
     public function queue(Request $request): JsonResponse
@@ -172,9 +208,16 @@ class InstituteClaimController extends Controller
         $status = $filters['status'] ?? 'pending';
 
         return response()->json(DB::table('listing_claims')->join('schools', 'schools.id', '=', 'listing_claims.school_id')
+            ->leftJoin('users', 'users.id', '=', 'listing_claims.user_id')
             ->when($status === 'pending', fn ($query) => $query->whereNull('schools.deleted_at'))
             ->when($status !== 'all', fn ($query) => $query->where('listing_claims.status', $status))
-            ->select('listing_claims.*', 'schools.name as school_name')->orderBy('listing_claims.id')->paginate(25));
+            ->select('listing_claims.*', 'schools.name as school_name', 'users.email as account_email')
+            ->orderBy('listing_claims.id')->paginate(25)->through(function (object $claim): object {
+                $claim->email_verified = $claim->email_verified_at !== null && $claim->email === $claim->account_email;
+                unset($claim->account_email);
+
+                return $claim;
+            }));
     }
 
     public function review(Request $request, int $claim, SchoolOrganisations $organisations): JsonResponse
@@ -193,7 +236,9 @@ class InstituteClaimController extends Controller
 
             if ($details['decision'] === 'verified') {
                 abort_unless($school->status === 'active' && $school->verified_at && $school->claim_status !== 'claimed', 409);
-                abort_unless(User::query()->whereKey($record->user_id)->where('is_active', true)->exists(), 409);
+                $claimant = User::query()->whereKey($record->user_id)->where('is_active', true)->lockForUpdate()->first();
+                abort_unless($claimant && $record->email_verified_at && $record->email === $claimant->email,
+                    409, 'The claimant must verify their account email before approval.');
                 $group = $organisations->ensureFor($school);
                 $groupRecord = DB::table('school_groups')->where('id', $group)->lockForUpdate()->firstOrFail();
                 abort_unless($groupRecord->status === 'active', 409, 'This organisation is suspended.');

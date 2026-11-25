@@ -62,6 +62,7 @@ export default function Claims({ adminName }) {
                 <Detail label="Email" value={selected.email} />
                 <Detail label="Method" value={selected.method} />
                 <Detail label="Status" value={selected.status} />
+                <Detail label="Account email verification" value={selected.email_verified ? 'Verified' : 'Unverified'} />
                 <Detail label="Reviewed at" value={selected.reviewed_at} />
                 <Detail label="Review note" value={selected.review_note} wide />
             </ListingSection>
@@ -69,7 +70,7 @@ export default function Claims({ adminName }) {
                 <ListingSection icon="shield" title="Review decision">
                     <label>Decision<select name="decision" required>
                         <option value="">Select a decision</option>
-                        <option value="verified">Approve verified claim</option>
+                        <option value="verified" disabled={!selected.email_verified}>Approve verified claim</option>
                         <option value="rejected">Decline claim</option>
                     </select></label>
                     <label>Review note<textarea name="review_note" required maxLength={2000} /></label>

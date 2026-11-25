@@ -35,3 +35,5 @@ Tahir approved a dedicated fees.reconciliation.view permission for the parallel 
 The synthetic finance reader defaults to legacy and uses v4 only when explicitly selected in trusted configuration. The parallel comparison stays available during reader rollback, and finance write services remain independent of the switch.
 
 Tahir confirmed a fresh start for IFS with zero opening balances. Operational v4 finance requires explicit production configuration for one PKR branch. A separate write toggle pauses receipt and period changes while preserving authorised period, audit and report access.
+
+Listing claim approval now requires verification of the claimant’s current account email. Pending claims created before rollout also require verification. A Super Admin still reviews institutional affiliation and authority.

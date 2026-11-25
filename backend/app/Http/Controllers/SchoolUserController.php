@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\BranchAuditLog;
 use App\Services\SchoolRoles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ use Spatie\Permission\Models\Role;
 
 class SchoolUserController extends Controller
 {
-    public function __construct(private readonly SchoolRoles $roles) {}
+    public function __construct(private readonly SchoolRoles $roles, private readonly BranchAuditLog $audit) {}
 
     public function index(Request $request, int $school): JsonResponse
     {
@@ -60,13 +61,14 @@ class SchoolUserController extends Controller
             throw ValidationException::withMessages(['email' => ['This user already belongs to the school.']]);
         }
 
-        DB::transaction(function () use ($schoolRecord, $user, $validated, $role): void {
+        DB::transaction(function () use ($request, $schoolRecord, $user, $validated, $role): void {
             $schoolRecord->users()->attach($user, [
                 'role' => $validated['role'],
                 'is_active' => $validated['is_active'] ?? true,
                 'is_primary_contact' => $validated['is_primary_contact'] ?? false,
             ]);
             $user->assignRole($role);
+            $this->audit->record($request->user(), $schoolRecord->id, 'membership.added', $user->id, null, $this->audit->membershipState($schoolRecord->id, $user));
         });
 
         $member = $schoolRecord->users()->whereKey($user->id)->firstOrFail();
@@ -95,7 +97,9 @@ class SchoolUserController extends Controller
             'is_primary_contact' => ['sometimes', 'required', 'boolean'],
         ]);
 
-        DB::transaction(function () use ($member, $schoolRecord, $validated, $role): void {
+        DB::transaction(function () use ($request, $member, $schoolRecord, $validated, $role): void {
+            $before = $this->audit->membershipState($schoolRecord->id, $member);
+            abort_if($before === null, 404);
             if (isset($validated['role'])) {
                 if ($member->isSuperAdmin()) {
                     throw ValidationException::withMessages(['role' => ['The Super Admin role cannot be changed.']]);
@@ -108,7 +112,7 @@ class SchoolUserController extends Controller
             }
 
             $changes = collect($validated)->except(['direct_permissions', 'student_admission_number'])->all();
-            $studentRole = ($role ?? $member->pivot->role) === 'student';
+            $studentRole = ($role ?? $before['role']) === 'student';
             if (! $studentRole || array_key_exists('student_admission_number', $validated)) {
                 $admission = $validated['student_admission_number'] ?? null;
                 $changes['student_id'] = null;
@@ -122,6 +126,7 @@ class SchoolUserController extends Controller
                 }
             }
             $schoolRecord->users()->updateExistingPivot($member->id, $changes);
+            $this->audit->record($request->user(), $schoolRecord->id, 'membership.updated', $member->id, $before, $this->audit->membershipState($schoolRecord->id, $member));
         });
 
         $member = $schoolRecord->users()->whereKey($member->id)->firstOrFail();
@@ -137,10 +142,13 @@ class SchoolUserController extends Controller
         if ($member->isSuperAdmin()) {
             throw ValidationException::withMessages(['user' => ['The Super Admin school access cannot be changed here.']]);
         }
-        DB::transaction(function () use ($member, $schoolRecord): void {
+        DB::transaction(function () use ($request, $member, $schoolRecord): void {
+            $before = $this->audit->membershipState($schoolRecord->id, $member);
+            abort_if($before === null, 404);
             $member->syncRoles([]);
             $member->syncPermissions([]);
             $schoolRecord->users()->detach($member->id);
+            $this->audit->record($request->user(), $schoolRecord->id, 'membership.removed', $member->id, $before, null);
         });
 
         return response()->json([], 204);

@@ -17,3 +17,5 @@
 Open decisions include how to count excused days in student attendance, parent phone sign-up, media storage, the public fee source, free-plan modules and quotas, grace period, pricing, the marketing hostname, and the production database engine. R1-B omits excused-only dates pending a decision. Confirm only the decisions needed for the next increment.
 
 Tahir approved counting active students across non-archived branches under the organisation-wide `max_students` cap. A subscription override takes precedence over the plan cap. An explicit null is unlimited. Commercial values are decided separately.
+
+Tahir approved including the read-only Audit Log page in R5. Platform administrators may view all branches. Other users need an explicit branch grant of audit.view. Financial events are reserved for the billing consolidation brief.

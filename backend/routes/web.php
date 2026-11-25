@@ -148,6 +148,8 @@ Route::get('/admin/dashboard/{branch?}', AdminDashboardController::class)
     ->middleware('auth')->whereNumber('branch')->name('admin.dashboard');
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('/admin/audit-log', \App\Http\Controllers\AdminAuditLogController::class)->name('admin.audit-log');
+
     Route::get('/admin/reports', \App\Http\Controllers\AdminReportController::class)->name('admin.reports.index');
     Route::middleware(\App\Http\Middleware\RequireBranchModule::class.':reports')->group(function (): void {
         Route::get('/admin/reports/{school}/all', \App\Http\Controllers\AdminReportController::class)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Models\User;
+use App\Services\BranchAuditLog;
 use App\Services\SchoolRoles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ use Spatie\Permission\Models\Role;
 
 class SchoolRoleController extends Controller
 {
-    public function __construct(private readonly SchoolRoles $roles) {}
+    public function __construct(private readonly SchoolRoles $roles, private readonly BranchAuditLog $audit) {}
 
     public function index(Request $request, int $school): JsonResponse
     {
@@ -91,13 +92,15 @@ class SchoolRoleController extends Controller
             throw ValidationException::withMessages(['name' => ['The Super Admin role is reserved and cannot be changed.']]);
         }
 
-        $role = DB::transaction(function () use ($school, $validated): Role {
+        $role = DB::transaction(function () use ($request, $school, $validated): Role {
             $role = Role::create([
                 'name' => $validated['name'],
                 'guard_name' => 'web',
                 'team_id' => $school,
             ]);
             $role->syncPermissions($validated['permissions'] ?? []);
+
+            $this->audit->record($request->user(), $school, 'role.created', $role->id, null, $this->audit->roleState($role));
 
             return $role;
         });
@@ -123,7 +126,10 @@ class SchoolRoleController extends Controller
         $this->authorizeDelegation($request, $schoolRecord, $record->permissions->pluck('name')->all());
         $this->authorizeDelegation($request, $schoolRecord, $validated['permissions'] ?? []);
 
-        DB::transaction(function () use ($validated, $record, $school): void {
+        DB::transaction(function () use ($request, $validated, $record, $school, $schoolRecord): void {
+            $record = Role::query()->lockForUpdate()->findOrFail($record->id);
+            $before = $this->audit->roleState($record);
+            $this->authorizeDelegation($request, $schoolRecord, $before['permissions']);
             if (array_key_exists('name', $validated) && ! in_array($record->name, SchoolRoles::BUILT_IN, true)) {
                 $oldName = $record->name;
                 $record->name = $validated['name'];
@@ -136,6 +142,7 @@ class SchoolRoleController extends Controller
             if (array_key_exists('permissions', $validated)) {
                 $record->syncPermissions($validated['permissions']);
             }
+            $this->audit->record($request->user(), $school, 'role.updated', $record->id, $before, $this->audit->roleState($record));
         });
 
         return response()->json(['data' => $this->roleData($record->fresh()->load('permissions:id,name'), $school)]);
@@ -147,17 +154,22 @@ class SchoolRoleController extends Controller
         $this->authorizeRoleManagement($request, $schoolRecord);
         $record = Role::query()->where('team_id', $school)->where('guard_name', 'web')->findOrFail($role);
 
-        if (in_array($record->name, SchoolRoles::BUILT_IN, true)) {
-            throw ValidationException::withMessages(['role' => ['Built-in roles cannot be deleted.']]);
-        }
+        DB::transaction(function () use ($request, $school, $record): void {
+            $record = Role::query()->lockForUpdate()->findOrFail($record->id);
+            if (in_array($record->name, SchoolRoles::BUILT_IN, true)) {
+                throw ValidationException::withMessages(['role' => ['Built-in roles cannot be deleted.']]);
+            }
 
-        $isAssigned = DB::table('model_has_roles')->where('team_id', $school)->where('role_id', $record->id)->exists()
-            || DB::table('school_user')->where('school_id', $school)->where('role', $record->name)->exists();
-        if ($isAssigned) {
-            throw ValidationException::withMessages(['role' => ['Reassign all users before deleting this role.']]);
-        }
+            $isAssigned = DB::table('model_has_roles')->where('team_id', $school)->where('role_id', $record->id)->exists()
+                || DB::table('school_user')->where('school_id', $school)->where('role', $record->name)->exists();
+            if ($isAssigned) {
+                throw ValidationException::withMessages(['role' => ['Reassign all users before deleting this role.']]);
+            }
 
-        $record->delete();
+            $before = $this->audit->roleState($record);
+            $record->delete();
+            $this->audit->record($request->user(), $school, 'role.deleted', $record->id, $before, null);
+        });
 
         return response()->json([], 204);
     }

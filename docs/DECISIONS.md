@@ -27,3 +27,5 @@ Tahir approved branch-local monthly accounting periods with at most one open per
 Tahir approved separate branch-scoped receipt posting and reversal permissions for a synthetic pilot. Both require an explicit grant and the Fees write gate. Production activation and branch currency authority remain separate.
 
 Tahir approved an explicit branch-scoped fees.period.manage grant for calendar reads and writes in the synthetic accounting-period pilot. The Fees gate applies to reads and the Fees write gate applies to changes. Default branch roles receive no grant.
+
+Tahir approved an explicit branch-scoped fees.audit.view grant for the synthetic finance audit pilot. The Fees read gate applies and no role receives a default grant.

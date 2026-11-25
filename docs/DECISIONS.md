@@ -29,3 +29,5 @@ Tahir approved separate branch-scoped receipt posting and reversal permissions f
 Tahir approved an explicit branch-scoped fees.period.manage grant for calendar reads and writes in the synthetic accounting-period pilot. The Fees gate applies to reads and the Fees write gate applies to changes. Default branch roles receive no grant.
 
 Tahir approved an explicit branch-scoped fees.audit.view grant for the synthetic finance audit pilot. The Fees read gate applies and no role receives a default grant.
+
+Tahir approved a dedicated fees.reconciliation.view permission for the parallel synthetic finance report. Fees and paid Reports read eligibility apply. The report keeps legacy and v4 sources separate.

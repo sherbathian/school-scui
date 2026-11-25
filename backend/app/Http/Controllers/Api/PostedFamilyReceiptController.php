@@ -25,7 +25,8 @@ class PostedFamilyReceiptController extends Controller
             return [];
         }
 
-        $fees = $modules->forBranch($branch->id)->firstWhere('slug', 'fees');
+        $catalogue = $modules->forBranch($branch->id);
+        $fees = $catalogue->firstWhere('slug', 'fees');
         if (! ($fees['enabled'] ?? false)) {
             return [];
         }
@@ -40,8 +41,11 @@ class PostedFamilyReceiptController extends Controller
                 'periods' => 'fees.period.manage', 'audit' => 'fees.audit.view',
             ];
 
+            if (BranchFinanceReconciliationReportController::reportsEnabled($branch, $catalogue->firstWhere('slug', 'reports'))) {
+                $grants['reconciliation'] = 'fees.reconciliation.view';
+            }
             $allowed = array_keys(array_filter($grants, fn ($permission, $action) =>
-                (! $fees['read_only'] || in_array($action, ['periods', 'audit'], true))
+                (! $fees['read_only'] || in_array($action, ['periods', 'audit', 'reconciliation'], true))
                 && $user->checkPermissionTo($permission, 'web'), ARRAY_FILTER_USE_BOTH));
 
             return array_map(fn (string $action): string => $action === 'periods' && $fees['read_only']

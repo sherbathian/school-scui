@@ -22,6 +22,7 @@ function usePage(path, revision, refresh) {
     const [page, setPage] = useState(null);
     const [error, setError] = useState('');
     useEffect(() => {
+        if (!url) return;
         const controller = new AbortController();
         setError('');
         request(url, { signal: controller.signal }).then(setPage).catch(error => {
@@ -239,12 +240,60 @@ function Audit({ list }) {
     </section>;
 }
 
+function Reconciliation({ base, list }) {
+    const [month, setMonth] = useState('');
+    const [cutoff, setCutoff] = useState('');
+    const report = list.page?.data;
+
+    return <section className="space-y-3">
+        <h2>Finance reconciliation</h2>
+        <form className="flex flex-wrap items-end gap-2" onSubmit={event => {
+            event.preventDefault();
+            const filters = new URLSearchParams({ month, cutoff });
+            list.setUrl(`${base}/finance-reconciliation?${filters}`);
+        }}>
+            <label>Report month <input type="month" value={month} required onChange={event => setMonth(event.target.value)} /></label>
+            <label>Inclusive cutoff <input type="date" value={cutoff} required onChange={event => setCutoff(event.target.value)} /></label>
+            <button className="primary-button" type="submit">Run reconciliation</button>
+        </form>
+        <Feedback state={list.error && { error: true, text: list.error }} />
+        {report && !list.error && <>
+            <p>{report.month} through {report.cutoff} · {report.currency}</p>
+            <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                    <h3>Legacy invoices and payments</h3>
+                    <p>{report.legacy.collection_basis} {report.legacy.balance_basis}</p>
+                    <dl>
+                        <dt>Collections through cutoff</dt><dd>{money(report.legacy.collected_minor)}</dd>
+                        <dt>Current unpaid invoices</dt><dd>{report.legacy.open_invoice_count_current}</dd>
+                        <dt>Collectible at cutoff</dt><dd>{money(report.legacy.collectible_minor_at_cutoff)}</dd>
+                    </dl>
+                </div>
+                <div>
+                    <h3>v4 receipts and monthly charges</h3>
+                    <p>{report.v4.activity_basis} {report.v4.balance_basis}</p>
+                    {!report.v4.accounting_context_complete && <p role="status">
+                        Provisional totals. Unassigned receipts: {report.v4.unassigned_receipt_count}.
+                        Unassigned reversals: {report.v4.unassigned_reversal_count}.
+                    </p>}
+                    <dl>
+                        <dt>Gross receipts</dt><dd>{money(report.v4.gross_minor)}</dd>
+                        <dt>Reversal offsets</dt><dd>{money(report.v4.reversal_minor)}</dd>
+                        <dt>Net movement</dt><dd>{money(report.v4.net_minor)}</dd>
+                        <dt>Charge balance at cutoff</dt><dd>{money(report.v4.remaining_minor_at_cutoff)}</dd>
+                    </dl>
+                </div>
+            </div>
+        </>}
+    </section>;
+}
+
 function FinanceSection({ branchId, grant, revision, refresh }) {
     const base = `/api/schools/${branchId}`;
     const receipts = `${base}/posted-family-receipts`;
     const periods = `${base}/accounting-periods`;
     const path = { post: `${receipts}/charges`, reverse: receipts, periods, 'periods-read-only': periods, audit: `${base}/finance-audit` }[grant];
-    const list = usePage(path, revision, refresh);
+    const list = usePage(path ?? null, revision, refresh);
 
     switch (grant) {
         case 'post': return <Posting path={receipts} list={list} />;
@@ -252,6 +301,7 @@ function FinanceSection({ branchId, grant, revision, refresh }) {
         case 'periods':
         case 'periods-read-only': return <Periods path={periods} list={list} readOnly={grant === 'periods-read-only'} />;
         case 'audit': return <Audit list={list} />;
+        case 'reconciliation': return <Reconciliation base={base} list={list} />;
         default: return null;
     }
 }

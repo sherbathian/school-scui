@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\BranchAuditEntry;
 use App\Models\School;
+use App\Services\BranchAuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -67,6 +69,56 @@ class AdminListingTest extends TestCase
         $this->travel(1)->hour();
         $this->postJson("{$url}/publish")->assertOk()
             ->assertJsonPath('data.published_at', $publishedAt);
+    }
+
+    public function test_listing_transitions_audit_actual_changes_and_roll_back_with_the_listing(): void
+    {
+        $this->signInAsPlatformAdmin();
+        $actor = auth()->user();
+        $school = School::factory()->create();
+        $url = "/api/admin/listings/{$school->id}";
+        $this->postJson("$url/publish")->assertConflict();
+        foreach (['verify', 'publish', 'suspend'] as $action) {
+            $this->postJson("$url/$action")->assertOk();
+            $this->postJson("$url/$action")->assertOk();
+        }
+        $events = BranchAuditEntry::query()->orderBy('id')->get();
+        $this->assertSame(['listing.verified', 'listing.published', 'listing.suspended'], $events->pluck('action')->all());
+        foreach ($events as $event) {
+            $this->assertSame($actor->id, $event->actor_id);
+            $this->assertSame($school->id, $event->school_id);
+            $this->assertSame((string) $school->id, $event->target_id);
+        }
+        $this->assertSame(['status' => 'draft', 'verified' => false], $events[0]->before);
+        $this->assertSame(['status' => 'draft', 'verified' => true], $events[0]->after);
+
+        $audit = app(BranchAuditLog::class);
+        $this->mock(BranchAuditLog::class, function ($mock) use ($audit): void {
+            $mock->shouldReceive('record')->once()->andReturnUsing(function (...$arguments) use ($audit): void {
+                $audit->record(...$arguments);
+                throw new \RuntimeException('Synthetic audit failure');
+            });
+        });
+        $this->postJson("$url/publish")->assertInternalServerError();
+        $this->assertSame('suspended', $school->fresh()->listing_status);
+        $this->assertSame(3, BranchAuditEntry::query()->count());
+    }
+
+    public function test_listing_audit_requires_view_permission_in_the_listing_branch(): void
+    {
+        $this->signInAsPlatformAdmin();
+        $school = School::factory()->create();
+        $other = School::factory()->create();
+        $this->postJson("/api/admin/listings/{$school->id}/verify")->assertOk();
+        $this->postJson("/api/admin/listings/{$other->id}/verify")->assertOk();
+        $viewer = User::factory()->create(['is_active' => true]);
+        $viewer->schools()->attach($school, ['role' => 'admin', 'is_active' => true]);
+        $this->actingAs($viewer, 'web')->withoutVite()->get('/admin/audit-log')->assertForbidden();
+        setPermissionsTeamId($school->id);
+        $viewer->givePermissionTo('audit.view');
+        setPermissionsTeamId(0);
+        $this->get('/admin/audit-log?action=listing.verified')->assertOk();
+        $this->assertSame([$school->id], app(BranchAuditLog::class)->viewableBranches($viewer)->modelKeys());
     }
 
     public function test_listing_actions_require_platform_admin_access(): void

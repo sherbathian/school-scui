@@ -37,3 +37,5 @@ The synthetic finance reader defaults to legacy and uses v4 only when explicitly
 Tahir confirmed a fresh start for IFS with zero opening balances. Operational v4 finance requires explicit production configuration for one PKR branch. A separate write toggle pauses receipt and period changes while preserving authorised period, audit and report access.
 
 Listing claim approval now requires verification of the claimant’s current account email. Pending claims created before rollout also require verification. A Super Admin still reviews institutional affiliation and authority.
+
+Listing verification, publication and suspension, and claim approvals and declines use the existing branch-scoped Audit Log. Audit payloads contain status flags and identifiers. Competing declines reference the originating approved claim.

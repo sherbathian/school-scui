@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\School;
 use App\Models\User;
+use App\Services\BranchAuditLog;
 use App\Services\ListingClaimVerification;
 use App\Services\SchoolOrganisations;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -220,14 +221,14 @@ class InstituteClaimController extends Controller
             }));
     }
 
-    public function review(Request $request, int $claim, SchoolOrganisations $organisations): JsonResponse
+    public function review(Request $request, int $claim, SchoolOrganisations $organisations, BranchAuditLog $audit): JsonResponse
     {
         $details = $request->validate([
             'decision' => ['required', 'in:verified,rejected'],
             'review_note' => ['required', 'string', 'max:2000'],
         ]);
 
-        DB::transaction(function () use ($request, $claim, $details, $organisations): void {
+        DB::transaction(function () use ($request, $claim, $details, $organisations, $audit): void {
             $claims = DB::table('listing_claims');
             $schoolId = (clone $claims)->where('id', $claim)->value('school_id');
             $school = School::query()->lockForUpdate()->findOrFail($schoolId);
@@ -261,6 +262,10 @@ class InstituteClaimController extends Controller
                 'verified_at' => $details['decision'] === 'verified' ? now() : null,
             ]);
 
+            $action = $details['decision'] === 'verified' ? 'claim.approved' : 'claim.declined';
+            $audit->record($request->user(), $school->id, $action, $claim,
+                ['status' => $record->status], ['status' => $details['decision']]);
+
             User::query()->find($record->user_id)?->notifications()->create([
                 'id' => (string) Str::uuid(),
                 'type' => 'listing.claim.reviewed',
@@ -273,7 +278,12 @@ class InstituteClaimController extends Controller
 
             $remaining = (clone $claims)->where('school_id', $school->id)->where('status', 'pending');
             if ($details['decision'] === 'verified') {
+                $competingIds = (clone $remaining)->orderBy('id')->pluck('id');
                 $remaining->update([...$review, 'status' => 'rejected', 'review_note' => 'Another claim was approved for this listing.']);
+                foreach ($competingIds as $competingId) {
+                    $audit->record($request->user(), $school->id, 'claim.declined', $competingId,
+                        ['status' => 'pending'], ['status' => 'rejected', 'approved_claim_id' => $claim]);
+                }
                 $school->forceFill(['claim_status' => 'claimed'])->save();
             } elseif ($school->claim_status !== 'claimed') {
                 $school->forceFill(['claim_status' => $remaining->exists() ? 'pending' : 'unclaimed'])->save();

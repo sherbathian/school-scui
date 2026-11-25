@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BranchAuditEntry;
 use App\Models\School;
 use App\Models\User;
 use App\Notifications\ListingClaimVerificationCode;
@@ -107,10 +108,23 @@ class InstituteClaimTest extends TestCase
         $code = $this->sendClaimCode($path, $claimant);
         $this->post("$path/verify", ['code' => $code])->assertRedirect($path);
         $this->assertDatabaseMissing('school_group_user', ['school_group_id' => $group, 'user_id' => $claimant->id]);
+        $competitor = User::factory()->create(['is_active' => true]);
+        $this->actingAs($competitor)->post($path, $details)->assertRedirect();
+        $competingClaim = DB::table('listing_claims')->where('user_id', $competitor->id)->value('id');
         $decision = ['decision' => 'verified', 'review_note' => 'Verified through the institution.'];
         $this->actingAs($claimant, 'sanctum')->patchJson("/api/admin/claims/{$claim}", $decision)->assertForbidden();
         $this->actingAs($admin, 'sanctum')->patchJson("/api/admin/claims/{$claim}", $decision)->assertOk();
         $this->patchJson("/api/admin/claims/{$claim}", $decision)->assertConflict();
+        $events = BranchAuditEntry::query()->where('action', 'like', 'claim.%')->orderBy('id')->get();
+        $this->assertSame(['claim.approved', 'claim.declined'], $events->pluck('action')->all());
+        $this->assertSame([(string) $claim, (string) $competingClaim], $events->pluck('target_id')->all());
+        foreach ($events as $event) {
+            $this->assertSame($admin->id, $event->actor_id);
+            $this->assertSame($school->id, $event->school_id);
+            $this->assertSame(['status' => 'pending'], $event->before);
+        }
+        $this->assertSame(['status' => 'verified'], $events[0]->after);
+        $this->assertSame(['status' => 'rejected', 'approved_claim_id' => (int) $claim], $events[1]->after);
         $branch = School::factory()->create(['group_id' => $group]);
 
         $this->assertDatabaseHas('school_group_user', ['school_group_id' => $group, 'user_id' => $claimant->id, 'role' => 'owner']);

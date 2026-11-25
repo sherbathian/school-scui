@@ -25,3 +25,5 @@ The Audit Log sidebar and page use the same explicit branch permission check. Si
 Tahir approved branch-local monthly accounting periods with at most one open period per branch. Closure is final and allowed on the last local day or later. A future open period becomes eligible on its first day. The IANA timezone is fixed once the first period opens. Asia/Karachi is used in synthetic IFS scenarios.
 
 Tahir approved separate branch-scoped receipt posting and reversal permissions for a synthetic pilot. Both require an explicit grant and the Fees write gate. Production activation and branch currency authority remain separate.
+
+Tahir approved an explicit branch-scoped fees.period.manage grant for calendar reads and writes in the synthetic accounting-period pilot. The Fees gate applies to reads and the Fees write gate applies to changes. Default branch roles receive no grant.

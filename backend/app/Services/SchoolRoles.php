@@ -32,7 +32,7 @@ class SchoolRoles
                 }
 
                 $permissions = match ($name) {
-                    'admin' => array_values(array_diff($this->assignablePermissions(), ['audit.view', 'fees.receipt.post', 'fees.receipt.reverse'])),
+                    'admin' => array_values(array_diff($this->assignablePermissions(), ['audit.view', 'fees.receipt.post', 'fees.receipt.reverse', 'fees.period.manage'])),
                     'teacher' => ['students.view', 'guardians.view', 'attendance.view', 'attendance.manage', 'academics.view', 'staff.view'],
                     'account' => ['fees.view', 'fees.manage', 'expenses.view', 'expenses.manage', 'reports.view'],
                     'student' => ['students.view', 'attendance.view', 'fees.view'],

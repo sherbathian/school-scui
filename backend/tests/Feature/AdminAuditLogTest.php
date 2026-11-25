@@ -31,6 +31,8 @@ class AdminAuditLogTest extends TestCase
 
     public function test_view_requires_an_explicit_permission_and_filters_cannot_widen_scope(): void
     {
+        $this->withoutVite();
+
         $actor = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);
         $viewer = User::factory()->create(['is_active' => true]);
         $allowed = School::factory()->create(['status' => 'active']);

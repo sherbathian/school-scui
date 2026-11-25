@@ -82,7 +82,8 @@ Preserve the recorded decisions on branch identity, MySQL, organisation provisio
 | R2 · Non-finance widgets | done | All role widgets are on main, including effective module adoption. |
 | R3 · Report centre v1 | done | All planned reports and the browser page registration fix are on main. |
 | R4 · Organisation student limits | merged | Enforces configured active-student caps on creation, activation and rejoin across an organisation. Commercial plan values remain unset. |
-| R5 · Administrative audit log | in review | Records membership, role and branch module changes. Adds a read-only page and explicit branch permission. |
+| R5 · Administrative audit log | merged | Records membership, role and branch module changes. Adds a read-only page and explicit branch permission. |
+| R5 follow-up · Audit Log navigation | in review | Shows the Audit Log sidebar link for users who can open the page. |
 
 ---
 

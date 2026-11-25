@@ -3,9 +3,12 @@
 namespace App\Services;
 
 use App\Models\BranchAuditEntry;
+use App\Models\School;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class BranchAuditLog
 {
@@ -14,6 +17,31 @@ class BranchAuditLog
         'role.created', 'role.updated', 'role.deleted',
         'module.enabled', 'module.disabled', 'module.reset',
     ];
+
+    public function canView(?User $user): bool
+    {
+        return $user?->is_active && ($user->isSuperAdmin() || $this->viewableBranches($user)->isNotEmpty());
+    }
+
+    /** @return Collection<int, School> */
+    public function viewableBranches(User $user): Collection
+    {
+        $registrar = app(PermissionRegistrar::class);
+        $previousTeam = $registrar->getPermissionsTeamId();
+
+        try {
+            return $user->activeSchools()->orderBy('name')->get(['id', 'name'])
+                ->filter(function (School $branch) use ($user, $registrar): bool {
+                    $registrar->setPermissionsTeamId($branch->id);
+                    $user->unsetRelation('roles')->unsetRelation('permissions');
+
+                    return $user->hasPermissionTo('audit.view');
+                })->values();
+        } finally {
+            $registrar->setPermissionsTeamId($previousTeam);
+            $user->unsetRelation('roles')->unsetRelation('permissions');
+        }
+    }
 
     public function record(User $actor, int $school, string $action, int|string $target, ?array $before, ?array $after): void
     {

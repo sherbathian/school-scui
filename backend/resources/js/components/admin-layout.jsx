@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { NavigationGroup, NavigationIcon, NavigationLink } from './admin-navigation.jsx';
 import { Button } from './ui/button.jsx';
@@ -30,6 +30,7 @@ const platformLinks = [
 ];
 
 export function AdminLayout({ screen, title, adminName, signOut, busy, branchNavigation, platform = true, role, operations = false, schoolAccess = [], children }) {
+    const { canViewAuditLog } = usePage().props;
     const [menuOpen, setMenuOpen] = useState(null);
     const name = adminName?.trim() || 'Administrator';
     const initials = name.split(/\s+/).slice(0, 2).map(word => Array.from(word)[0]).join('').toUpperCase();
@@ -47,6 +48,9 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, branchNav
             </Link>
             <nav className="sidebar-nav" aria-label="Schoolhouse navigation">
                 <NavigationLink icon="modules" href="/admin/dashboard" active={screen === 'dashboard'}>Dashboard</NavigationLink>
+                {canViewAuditLog && <NavigationLink icon="claims" href="/admin/audit-log" active={screen === 'audit-log'}>
+                    Audit Log
+                </NavigationLink>}
                 {!platform && <>
                     {operations && <NavigationLink icon="school" href="/admin/operations" active={screen === 'operations' && !branchNavigation}>Branch Operations</NavigationLink>}
                     {branchNavigation}
@@ -97,7 +101,7 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, branchNav
                 }}><NavigationIcon name="panel" /></Button>
                 <nav aria-label="Breadcrumb">
                     <span>{platform ? 'Platform admin' : role ?? 'School management'}</span><span aria-hidden="true">›</span>
-                    {servicesActive || communityActive || platformActive || directoryActive || ['dashboard', 'index', 'cities', 'areas', 'claims', 'users', 'members', 'roles', 'permissions', 'operations'].includes(screen) ? <span aria-current="page">{title}</span> : <>
+                    {servicesActive || communityActive || platformActive || directoryActive || ['dashboard', 'index', 'cities', 'areas', 'claims', 'users', 'members', 'roles', 'permissions', 'operations', 'audit-log'].includes(screen) ? <span aria-current="page">{title}</span> : <>
                         <Link href="/admin/listings">Listings</Link><span aria-hidden="true">›</span><span aria-current="page">{title}</span>
                     </>}
                 </nav>

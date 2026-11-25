@@ -60,6 +60,37 @@ class AdminAuditLogTest extends TestCase
             ->assertInertia(fn ($page) => $page->has('entries.data', 2));
     }
 
+    public function test_admin_navigation_shares_audit_access_only_for_eligible_users(): void
+    {
+        $this->withoutVite();
+        $platform = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);
+        $viewer = User::factory()->create(['is_active' => true]);
+        $allowed = School::factory()->create(['status' => 'active']);
+        $other = School::factory()->create(['status' => 'active']);
+        $viewer->schools()->attach($allowed, ['role' => 'admin', 'is_active' => true]);
+        $viewer->schools()->attach($other, ['role' => 'admin', 'is_active' => true]);
+
+        $this->get('/admin/login')->assertOk()
+            ->assertInertia(fn ($page) => $page->where('canViewAuditLog', false));
+        $this->actingAs($platform, 'web')->get('/admin/dashboard')->assertOk()
+            ->assertInertia(fn ($page) => $page->where('canViewAuditLog', true));
+
+        $this->actingAs($viewer, 'web')->get('/admin/dashboard')->assertOk()
+            ->assertInertia(fn ($page) => $page->where('canViewAuditLog', false));
+        setPermissionsTeamId($allowed->id);
+        $viewer->givePermissionTo('audit.view');
+        setPermissionsTeamId(null);
+
+        $this->get('/admin/dashboard')->assertOk()
+            ->assertInertia(fn ($page) => $page->where('canViewAuditLog', true));
+        $this->get('/admin/audit-log')->assertOk()
+            ->assertInertia(fn ($page) => $page->where('canViewAuditLog', true));
+        $viewer->schools()->updateExistingPivot($allowed, ['is_active' => false]);
+        $this->get('/admin/dashboard')->assertOk()
+            ->assertInertia(fn ($page) => $page->where('canViewAuditLog', false));
+        $this->get('/admin/audit-log')->assertForbidden();
+    }
+
     public function test_audit_write_failure_rolls_back_the_role_creation(): void
     {
         $actor = User::factory()->create(['is_super_admin' => true, 'is_active' => true]);

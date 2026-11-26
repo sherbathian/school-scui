@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class InstituteClaimController extends Controller
 {
@@ -73,6 +74,28 @@ class InstituteClaimController extends Controller
 
         return $request->routeIs('directory.sign-up.submit', 'directory.sign-in.submit')
             ? redirect()->route('directory.dashboard') : $this->afterSignIn($data['listing'] ?? null);
+    }
+
+    public function dashboard(Request $request): Response
+    {
+        $user = $request->user();
+        if (! $user) {
+            return redirect()->route('directory.sign-in');
+        }
+
+        if ($request->getHost() !== 'taleemfinder.pk' && $user->canEnterSchoolhouse()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        abort_unless($user->is_active, 403);
+
+        $listings = School::query()
+            ->whereIn('id', DB::table('listing_claims')->select('school_id')->where('user_id', $user->id))
+            ->where(fn ($query) => $query->publicDirectory()->orWhere('source', 'self_submitted'))
+            ->orderBy('name')->get(['name', 'slug']);
+
+        return response()->view('directory.dashboard', ['listings' => $listings])
+            ->header('Cache-Control', 'private, no-store');
     }
 
     public function submissions(Request $request): View

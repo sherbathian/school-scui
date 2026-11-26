@@ -9,6 +9,17 @@
         <a class="panel home-resource-link" href="{{ route('directory.collection', 'compare') }}"><strong>Compare institutions</strong><span>Review your current comparison.</span></a>
         <a class="panel home-resource-link" href="{{ route('directory.resources', 'admissions') }}"><strong>Admissions</strong><span>Browse programmes accepting enquiries.</span></a>
     </div>
+    <section class="block">
+        <h2>My listings</h2>
+        <ul>
+            @forelse($listings as $listing)
+                <li><a href="{{ route('institute.claim', $listing->slug) }}">{{ $listing->name }}</a></li>
+            @empty
+                <li>You have no listing submissions or claims yet.</li>
+            @endforelse
+        </ul>
+        <a class="button teal" href="{{ route('institute.new') }}">Add an institution</a>
+    </section>
     <form class="block" method="post" action="{{ route('institute.logout') }}">@csrf<button class="button outline">Sign out</button></form>
 </div>
 @endsection

@@ -15,6 +15,12 @@ Tahir approved updating this Markdown handoff. Ask for his approval before chang
 - The student-account linkage migration was previously applied to local Herd MySQL. See [schema gaps](SCHEMA-GAP-v4.md) and [the MySQL audit](Schoolhouse-MySQL-Schema-Audit.md) for earlier database evidence. This increment adds no migration.
 - The manager-pack ZIP and extracted reference folder remain local. Treat them as planning inputs if Tahir shares them separately.
 
+## R10 · TaleemFinder and Schoolhouse production entry points
+
+| Branch | Behaviour | Status |
+| --- | --- | --- |
+| `r10/two-host-routing` | Public directory login and listing dashboard on `taleemfinder.pk`. Schoolhouse login and dashboard on `admin.taleemfinder.pk`. | Application change ready for review. Hosting laptop deployment and public DNS cutover pending. |
+
 ## Latest increment · Platform administration and IFS Branch Operations
 
 | Area | Shipped behaviour |

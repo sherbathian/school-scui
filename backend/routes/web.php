@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\AdminCommunityController;
 use App\Http\Controllers\Api\AdminDirectoryController;
 use App\Http\Controllers\Api\AdminPlatformController;
@@ -65,14 +66,7 @@ Route::get('/signup', [InstituteClaimController::class, 'registration'])->name('
 Route::post('/signup', [InstituteClaimController::class, 'register'])->middleware('throttle:6,1')->name('directory.sign-up.submit');
 Route::get('/login', [InstituteClaimController::class, 'signInPage'])->name('directory.sign-in');
 Route::post('/login', [InstituteClaimController::class, 'login'])->middleware('throttle:6,1')->name('directory.sign-in.submit');
-Route::get('/dashboard', function (Request $request) {
-    if ($request->user()?->canEnterSchoolhouse()) {
-        return redirect()->route('admin.dashboard');
-    }
-
-    return $request->user() ? response()->view('directory.dashboard')->header('Cache-Control', 'private, no-store')
-        : redirect()->route('directory.sign-in');
-})->name('directory.dashboard');
+Route::get('/dashboard', [InstituteClaimController::class, 'dashboard'])->name('directory.dashboard');
 Route::redirect('/add-school', '/for-schools');
 Route::get('/institute/register', [InstituteClaimController::class, 'registration'])->name('institute.register');
 Route::post('/institute/register', [InstituteClaimController::class, 'register'])->middleware('throttle:6,1');
@@ -125,8 +119,8 @@ $adminPage = function (Request $request, ?int $listing = null) {
     };
 
     if ($administrator) {
-        if ($request->routeIs('admin.login') && $request->user()->canEnterSchoolhouse()) {
-            return redirect()->route('admin.dashboard');
+        if ($request->routeIs('admin.login', 'management.login') && $request->user()->canEnterSchoolhouse()) {
+            return redirect()->route($request->routeIs('management.login') ? 'management.dashboard' : 'admin.dashboard');
         }
 
         Gate::authorize('moderateListings', School::class);
@@ -148,6 +142,21 @@ $adminPage = function (Request $request, ?int $listing = null) {
         ] : null,
     ])->toResponse($request)->header('Cache-Control', 'no-store');
 };
+
+Route::domain('admin.taleemfinder.pk')->group(function () use ($adminPage): void {
+    $entry = fn (Request $request) => redirect()->route(
+        $request->user()?->canEnterSchoolhouse() ? 'management.dashboard' : 'management.login'
+    );
+
+    Route::get('/', $entry);
+    Route::get('/admin/login', $entry);
+    Route::get('/admin/dashboard', $entry);
+    Route::get('/login', $adminPage)->name('management.login');
+    Route::post('/login', [AuthController::class, 'adminLogin'])
+        ->middleware('throttle:6,1');
+    Route::get('/dashboard', AdminDashboardController::class)
+        ->middleware('auth')->name('management.dashboard');
+});
 
 Route::get('/admin/dashboard/widgets/{key}', \App\Http\Controllers\AdminDashboardWidgetController::class)
     ->middleware('auth')->name('admin.dashboard.widget');

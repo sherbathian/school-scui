@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ConfigureProductionPortals;
 use App\Http\Middleware\ShareAdminAuditAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,9 +15,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(ConfigureProductionPortals::class);
         $middleware->statefulApi();
         $middleware->web(append: [ShareAdminAuditAccess::class]);
-        $middleware->redirectGuestsTo(fn (Request $request): ?string => $request->is('api/*') ? null : route($request->is('admin/*') ? 'admin.login' : 'login'));
+        $middleware->redirectGuestsTo(function (Request $request): ?string {
+            if ($request->is('api/*')) {
+                return null;
+            }
+
+            return route(match (true) {
+                $request->routeIs('management.dashboard') => 'management.login',
+                $request->is('admin/*') => 'admin.login',
+                default => 'login',
+            });
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

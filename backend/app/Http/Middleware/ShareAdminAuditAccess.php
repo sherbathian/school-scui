@@ -14,7 +14,7 @@ class ShareAdminAuditAccess
 
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->is('admin/*')) {
+        if ($request->is('admin/*') || $request->route()?->getDomain() === 'admin.taleemfinder.pk') {
             Inertia::share('canViewAuditLog', fn () => $this->audit->canView($request->user()));
         }
 

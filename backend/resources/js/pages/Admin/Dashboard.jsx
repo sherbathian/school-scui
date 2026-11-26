@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { Head, Link, router } from '@inertiajs/react';
 import { lazy, Suspense, useState } from 'react';
 import { api } from '../../admin-api.js';
@@ -35,7 +36,7 @@ export default function Dashboard({ adminName, platform, role, branch, branches,
         setError('');
         try {
             await api('logout', 'POST');
-            window.location.assign('/admin/login');
+            window.location.assign(adminPath('/login'));
         } catch (error) {
             setError(error.message);
             setBusy(false);
@@ -46,11 +47,11 @@ export default function Dashboard({ adminName, platform, role, branch, branches,
         <Head title={`${title} · Schoolhouse`} />
         <div className="page-heading dashboard-heading">
             <div><h1>{title}</h1><p>{branch?.name ?? 'All institutions'} · {date}</p></div>
-            {operations && <Link className="admin-link-button" href={`/admin/branches/${branch.id}/operations`}>Open branch operations</Link>}
+            {operations && <Link className="admin-link-button" href={adminPath(`/branches/${branch.id}/operations`)}>Open branch operations</Link>}
         </div>
         {error && <p id="feedback" role="alert" data-error>{error}</p>}
         {(platform || branches.length > 1) && <BranchPicker branch={branch} branches={branches}
-            onSelect={id => router.visit(id ? `/admin/dashboard/${id}` : '/admin/dashboard')} />}
+            onSelect={id => router.visit(id ? adminPath(`/dashboard/${id}`) : adminPath('/dashboard'))} />}
         <div className="metrics dashboard-metrics" aria-label="Summary">
             {Object.entries(cards).map(([label, value]) => <div className="metric-button" key={label} data-icon={metricIcons[label]}>
                 <span className="metric-icon" aria-hidden="true"><NavigationIcon name={metricIcons[label] ?? 'modules'} /></span>

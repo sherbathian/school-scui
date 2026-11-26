@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { Catalogue } from './Directory.jsx';
 import '../../../css/branch-workspace.css';
 import { Head, Link, router } from '@inertiajs/react';
@@ -92,7 +93,7 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
         setSigningOut(true);
         try {
             await api('logout', 'POST');
-            window.location.assign('/admin/login');
+            window.location.assign(adminPath('/login'));
         } catch (error) {
             setError(error.message);
             setSigningOut(false);
@@ -186,10 +187,10 @@ function Workspace({ branch, branches, adminName, platform = true, schoolAccess,
         <Head title={`${sectionTitle ?? 'Branch Operations'} · Schoolhouse`} />
         <div className="page-heading branch-page-heading">
             <div><h1>{sectionTitle ?? 'Branch Operations'}</h1>{branch && <p>{branch.name}</p>}</div>
-            {platform && branch && activeView !== 'expense-add' && <Link className="admin-link-button" href={`/admin/branches/${branch.id}/modules`}>Branch modules</Link>}
+            {platform && branch && activeView !== 'expense-add' && <Link className="admin-link-button" href={adminPath(`/branches/${branch.id}/modules`)}>Branch modules</Link>}
         </div>
         {(platform || branches.length > 1) && <BranchPicker branch={branch} branches={branches} onSelect={id =>
-            router.visit(id ? `/admin/branches/${id}/operations` : '/admin/operations')} />}
+            router.visit(id ? adminPath(`/branches/${id}/operations`) : adminPath('/operations'))} />}
         {error && <p id="feedback" role="alert" data-error>{error}</p>}
         {branch && !school && !error && <p role="status">Loading branch…</p>}
         {school && !visible.length && <p>No school management modules are enabled for this branch.</p>}

@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { csvFields, loadCsvPages } from './csv-records.js';
 import DataTools from './branch/DataTools.jsx';
 import { api } from '../../admin-api.js';
@@ -82,7 +83,7 @@ function ListingEditor({ listing, submit, busy, onError }) {
     }, [onError]);
     const [city, setCity] = useState(listing.city_id ?? '');
     const [area, setArea] = useState(listing.area_id ?? '');
-    const detailsUrl = listing.id ? `/admin/listings/${listing.id}` : '/admin/listings';
+    const detailsUrl = listing.id ? adminPath(`/listings/${listing.id}`) : adminPath('/listings');
     const profileField = name => {
         const [label, maxLength, type] = profile[name];
         return <Field key={name} {...{ label, name, maxLength, type }} defaultValue={listing[name]} />;
@@ -211,7 +212,7 @@ function Workspace({ run, busy, onError }) {
 
     return <>
         <div className="page-heading listing-page-heading"><div><h1><NavigationIcon name="directory" /> Directory listings</h1><p>Review and manage institute profiles on Taleemfinder.</p></div>
-            <Link className="admin-link-button primary" href="/admin/listings/create"><NavigationIcon name="create" /> New listing</Link></div>
+            <Link className="admin-link-button primary" href={adminPath('/listings/create')}><NavigationIcon name="create" /> New listing</Link></div>
         <DataTools title="Directory listings" rows={[]} fields={listingCsvFields}
             exportFields={[...listingCsvFields, ...csvFields(['id', 'group_id', 'status', 'listing_status', 'verified_at', 'published_at'])]}
             loadExportRows={() => loadCsvPages('admin/listings', filters)} canImport
@@ -256,7 +257,7 @@ function Workspace({ run, busy, onError }) {
             <div className="table-scroll"><table><thead><tr><th>Institute</th><th>Status</th><th>Verification</th><th>Actions</th></tr></thead><tbody>
                 {results?.data.map(item => <tr key={item.id}><td><div className="listing-identity">
                     <span className="listing-type-icon" data-type={item.institute_type}><NavigationIcon name={typeIcons[item.institute_type] ?? 'school'} /></span>
-                    <div><Link className="listing-inline-link" href={`/admin/listings/${item.id}`}>{item.name}</Link><small className="listing-context">
+                    <div><Link className="listing-inline-link" href={adminPath(`/listings/${item.id}`)}>{item.name}</Link><small className="listing-context">
                     {[types[item.institute_type], cities.find(city => String(city.id) === String(item.city_id))?.name].filter(Boolean).join(' · ')}
                 </small></div></div></td>
                     <td><span className="status-pill listing-status" data-status={item.listing_status}><NavigationIcon name={statusIcons[item.listing_status]} />{statuses[item.listing_status]}</span></td>
@@ -264,15 +265,15 @@ function Workspace({ run, busy, onError }) {
                         <NavigationIcon name={item.verified_at ? 'shield' : 'pending'} />{item.verified_at ? 'Verified' : 'Unverified'}
                     </span></td>
                     <td><div className="listing-row-actions">
-                        <Link className="admin-link-button" href={`/admin/listings/${item.id}/edit`}><NavigationIcon name="edit" /> Edit</Link>
-                        <Link className="admin-link-button" href={`/admin/branches/${item.id}/operations`}><NavigationIcon name="school" /> Operations</Link>
+                        <Link className="admin-link-button" href={adminPath(`/listings/${item.id}/edit`)}><NavigationIcon name="edit" /> Edit</Link>
+                        <Link className="admin-link-button" href={adminPath(`/branches/${item.id}/operations`)}><NavigationIcon name="school" /> Operations</Link>
                         <details className="listing-more">
                             <summary className="admin-link-button"><NavigationIcon name="more" /> More</summary>
                             <div className="listing-secondary-actions">
-                        <Link className="admin-link-button" href={`/admin/branches/${item.id}/modules`} aria-label={`Modules for ${item.name}`}><NavigationIcon name="modules" /> Modules</Link>
-                        <Link className="admin-link-button" href={`/admin/directory/listing-assignments?school_id=${item.id}`}><NavigationIcon name="listings" /> Assignments</Link>
-                        <Link className="admin-link-button" href={`/admin/branches/${item.id}/members`}><NavigationIcon name="users" /> Members</Link>
-                        <Link className="admin-link-button" href={`/admin/branches/${item.id}/roles`}><NavigationIcon name="key" /> Roles</Link>
+                        <Link className="admin-link-button" href={adminPath(`/branches/${item.id}/modules`)} aria-label={`Modules for ${item.name}`}><NavigationIcon name="modules" /> Modules</Link>
+                        <Link className="admin-link-button" href={adminPath(`/directory/listing-assignments?school_id=${item.id}`)}><NavigationIcon name="listings" /> Assignments</Link>
+                        <Link className="admin-link-button" href={adminPath(`/branches/${item.id}/members`)}><NavigationIcon name="users" /> Members</Link>
+                        <Link className="admin-link-button" href={adminPath(`/branches/${item.id}/roles`)}><NavigationIcon name="key" /> Roles</Link>
                         <Button variant="outline" disabled={busy} onClick={() => {
                             const active = item.status === 'active';
                             if (active && !window.confirm(`Pause branch access for ${item.name}?`)) return;
@@ -335,7 +336,7 @@ export default function Listings({ administrator, adminName, screen = 'index', l
         const { email, password, remember } = event.currentTarget.elements;
         run(async () => {
             await api('admin/login', 'POST', { email: email.value, password: password.value, remember: remember.checked });
-            window.location.assign('/admin/dashboard');
+            window.location.assign(adminPath('/dashboard'));
         });
     }
 
@@ -344,7 +345,7 @@ export default function Listings({ administrator, adminName, screen = 'index', l
         const data = Object.fromEntries(new FormData(event.currentTarget));
         run(async () => {
             const result = await api(id ? `admin/listings/${id}` : 'admin/listings', id ? 'PATCH' : 'POST', { ...data, ...location });
-            router.visit(`/admin/listings/${result.data.id}`);
+            router.visit(adminPath(`/listings/${result.data.id}`));
         });
     }
 
@@ -369,7 +370,7 @@ export default function Listings({ administrator, adminName, screen = 'index', l
 
     const title = screen === 'create' ? 'Create listing' : screen === 'edit' ? 'Edit listing' : screen === 'details' ? 'Listing details' : 'Directory listings';
     return <AdminLayout {...{ screen, title, adminName, busy }}
-        signOut={() => run(async () => { await api('logout', 'POST'); window.location.assign('/admin/login'); })}>
+        signOut={() => run(async () => { await api('logout', 'POST'); window.location.assign(adminPath('/login')); })}>
         <Head title={title + ' · Schoolhouse'} />
         <p id="feedback" role="status" data-error={feedback?.error || undefined}>{feedback?.message}</p>
         {screen === 'index' ? <Workspace {...{ run, busy, onError }} /> : <>
@@ -378,8 +379,8 @@ export default function Listings({ administrator, adminName, screen = 'index', l
                     {listing && <p>{listing.name}</p>}
                 </div>
                 <div className="listing-page-actions">
-                    <Link className="admin-link-button" href="/admin/listings">All listings</Link>
-                    {screen === 'details' && <Link className="admin-link-button primary" href={`/admin/listings/${listing.id}/edit`}>
+                    <Link className="admin-link-button" href={adminPath('/listings')}>All listings</Link>
+                    {screen === 'details' && <Link className="admin-link-button primary" href={adminPath(`/listings/${listing.id}/edit`)}>
                         <NavigationIcon name="edit" /> Edit listing
                     </Link>}
                 </div>

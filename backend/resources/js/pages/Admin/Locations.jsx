@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { csvBoolean, csvFields } from './csv-records.js';
 import DataTools from './branch/DataTools.jsx';
 import { Head } from '@inertiajs/react';
@@ -107,7 +108,7 @@ function LocationPage({ kind, adminName }) {
 
     return <AdminLayout screen={kind} {...{ title, adminName, busy }} signOut={() => run(async () => {
         await api('logout', 'POST');
-        window.location.assign('/admin/login');
+        window.location.assign(adminPath('/login'));
     })}>
         <Head title={title + ' · Schoolhouse'} />
         {!editor && !details && <><div className="page-heading"><h1>{title}</h1>

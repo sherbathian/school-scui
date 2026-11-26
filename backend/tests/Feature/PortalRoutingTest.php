@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\School;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -70,6 +72,35 @@ class PortalRoutingTest extends TestCase
         $this->get('https://taleemfinder.pk/admin/dashboard/25')
             ->assertRedirect('https://admin.taleemfinder.pk/admin/dashboard/25');
         $this->postJson('https://taleemfinder.pk/api/admin/login')->assertNotFound();
+    }
+
+    public function test_management_pages_use_prefix_free_paths_without_weakening_access(): void
+    {
+        $this->withoutVite();
+        $host = 'https://admin.taleemfinder.pk';
+        $school = School::factory()->create();
+        $otherSchool = School::factory()->create();
+        $teacher = User::factory()->create()->refresh();
+        $teacher->schools()->attach($school, ['role' => 'teacher', 'is_active' => true]);
+
+        $this->get($host.'/operations')->assertRedirect($host.'/login');
+        $this->get($host.'/admin/operations?tab=grades')->assertRedirect($host.'/operations?tab=grades');
+        $this->get($host.'/admin')->assertRedirect($host);
+        $this->get('https://taleemfinder.pk/operations')->assertNotFound();
+        $this->get('https://taleemfinder.pk/directory')->assertOk();
+
+        $this->actingAs($teacher)->get($host.'/operations')->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/BranchWorkspace')->where('branch.id', $school->id));
+        $this->get($host.'/branches/'.$otherSchool->id.'/operations')->assertNotFound();
+        $this->get($host.'/listings/create')->assertForbidden();
+
+        $admin = User::factory()->create(['is_super_admin' => true])->refresh();
+        $this->actingAs($admin)->get($host.'/listings/'.$school->id.'/edit')->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Listings')->where('screen', 'edit'));
+        $this->get($host.'/directory/boards')->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Directory')->where('resource', 'boards'));
+        $this->get($host.'/admin/reports/'.$school->id.'/csv?month=2026-11')
+            ->assertRedirect($host.'/reports/'.$school->id.'/csv?month=2026-11');
     }
 
     public function test_public_dashboard_lists_only_the_signed_in_users_listings(): void

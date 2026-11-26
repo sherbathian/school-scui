@@ -43,3 +43,5 @@ Listing verification, publication and suspension, and claim approvals and declin
 Public school websites use the application-domain path /school-sites/{school}/{page?}. The root uses the published home slug. Public rendering requires an eligible directory listing, the Website module, enabled site settings and an active theme. A subdomain is optional for same-domain publishing. Website availability has no effect on the free directory listing.
 
 The public domain uses the directory login and dashboard. The management hostname uses the existing Schoolhouse authorization for its short login and dashboard paths. Legacy management links on the production hosts redirect to the management portal. Directory accounts view their own submissions and claims through the existing review workflow. Production links use HTTPS because Cloudflare terminates TLS before passing requests to the laptop origin.
+
+Schoolhouse browser pages use prefix-free paths on admin.taleemfinder.pk. Both the production and development routes load the same definitions. Old production bookmarks redirect, including report links with filters. The API retains its existing paths.

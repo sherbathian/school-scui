@@ -22,9 +22,9 @@ final class AdminReportController
         $user = $request->user();
         abort_unless($user->canEnterSchoolhouse(), 403);
         $platform = Gate::forUser($user)->allows('moderateListings', School::class);
-        $print = $request->routeIs('admin.reports.print', 'admin.reports.all.print');
-        $csv = $request->routeIs('admin.reports.csv', 'admin.reports.all.csv');
-        $allBranches = $request->routeIs('admin.reports.all*');
+        $print = $request->routeIs('*admin.reports.print', '*admin.reports.all.print');
+        $csv = $request->routeIs('*admin.reports.csv', '*admin.reports.all.csv');
+        $allBranches = $request->routeIs('*admin.reports.all*');
         $schoolQuery = $platform ? School::query() : $user->activeSchools();
         $group = $school === null ? null : (clone $schoolQuery)->whereKey($school)->value('group_id');
         $comparisonGroups = $platform ? [] : DB::table('school_group_user')

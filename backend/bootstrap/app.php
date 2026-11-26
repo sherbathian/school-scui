@@ -24,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return route(match (true) {
-                $request->routeIs('management.dashboard') => 'management.login',
+                $request->route()?->getDomain() === 'admin.taleemfinder.pk' => 'management.admin.login',
                 $request->is('admin/*') => 'admin.login',
                 default => 'login',
             });

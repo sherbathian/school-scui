@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { api } from '../../admin-api.js';
@@ -262,7 +263,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId, platform = t
 
     return <AdminLayout {...{ screen, title, adminName, busy, platform, schoolAccess, operations }} signOut={() => run(async () => {
         await api('logout', 'POST');
-        window.location.assign('/admin/login');
+        window.location.assign(adminPath('/login'));
     })}>
         <Head title={title + ' · Schoolhouse'} />
         {!editor && !details && <><div className="page-heading"><div><h1>{title}</h1>{branch && <p>{branch.name}</p>}</div>
@@ -270,7 +271,7 @@ function AccessPage({ screen, branch, branches, adminName, adminId, platform = t
         </div>
         {branchScreen && (platform || branches.length > 1) && <label className="mb-4 max-w-sm">Select branch
             <select value={branch?.id ?? ''} disabled={busy} onChange={event =>
-                router.visit(event.target.value ? `/admin/branches/${event.target.value}/${screen}` : `/admin/${screen}`)}>
+                router.visit(event.target.value ? adminPath(`/branches/${event.target.value}/${screen}`) : adminPath(`/${screen}`))}>
                 <option value="">Choose a branch</option>
                 {branches.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>

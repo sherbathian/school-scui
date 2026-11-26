@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { api } from '../../admin-api.js';
@@ -39,7 +40,7 @@ export default function AuditLog({ entries, branches, filters, actions, adminNam
 
     function submit(event) {
         event.preventDefault();
-        router.get('/admin/audit-log', Object.fromEntries(Object.entries(form).filter(([, value]) => value)), {
+        router.get(adminPath('/audit-log'), Object.fromEntries(Object.entries(form).filter(([, value]) => value)), {
             preserveState: true,
             onSuccess: () => setError(''),
             onError: errors => setError(Object.values(errors)[0]),
@@ -49,7 +50,7 @@ export default function AuditLog({ entries, branches, filters, actions, adminNam
     async function signOut() {
         try {
             await api('logout', 'POST');
-            router.visit('/admin/login');
+            router.visit(adminPath('/login'));
         } catch (failure) {
             setError(failure.message);
         }

@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { api } from '../../admin-api.js';
@@ -44,7 +45,7 @@ export default function Claims({ adminName }) {
     async function signOut() {
         try {
             await api('logout', 'POST');
-            window.location.assign('/admin/login');
+            window.location.assign(adminPath('/login'));
         } catch (error) {
             setError(error.message);
         }

@@ -21,6 +21,8 @@ final readonly class WidgetRegistry
     public function layout(User $user, bool $platform, ?School $branch): array
     {
         $descriptors = [];
+        $widgetRoute = request()->routeIs('management.admin.dashboard')
+            ? 'management.admin.dashboard.widget' : 'admin.dashboard.widget';
         foreach ($this->keysFor($user, $platform, $branch) as $key) {
             $definition = $this->find($key)->definition();
             if ($this->allows($definition, $user, $platform, $branch)) {
@@ -29,7 +31,7 @@ final readonly class WidgetRegistry
                 if (! $platform) {
                     $parameters['branch'] = $branch->id;
                 }
-                $descriptors[] = $descriptor + ['endpoint' => route('admin.dashboard.widget', $parameters, false)];
+                $descriptors[] = $descriptor + ['endpoint' => route($widgetRoute, $parameters, false)];
             }
         }
 

@@ -21,6 +21,12 @@ Tahir approved updating this Markdown handoff. Ask for his approval before chang
 | --- | --- | --- |
 | `r10/two-host-routing` | Public directory login and listing dashboard on `taleemfinder.pk`. Schoolhouse login and dashboard on `admin.taleemfinder.pk`. | Application change ready for review. Hosting laptop deployment and public DNS cutover pending. |
 
+## R11 · Prefix-free Schoolhouse pages
+
+| Branch | Behaviour | Status |
+| --- | --- | --- |
+| `r11/prefix-free-admin` | Schoolhouse browser pages use prefix-free paths on the admin hostname. Legacy bookmarks redirect with query parameters. | Ready for review. Ubuntu deployment requires rebuilding the frontend assets. |
+
 ## Latest increment · Platform administration and IFS Branch Operations
 
 | Area | Shipped behaviour |

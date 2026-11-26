@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { api } from '../../admin-api.js';
@@ -47,12 +48,12 @@ function ModulePage({ branch, adminName }) {
     return <AdminLayout screen="modules" title="Branch modules" {...{ adminName, busy }}
         signOut={() => run(async () => {
             await api('logout', 'POST');
-            window.location.assign('/admin/login');
+            window.location.assign(adminPath('/login'));
         })}>
         <Head title={`Branch modules · ${branch.name} · Schoolhouse`} />
         <div className="page-heading">
             <div><h1>Branch modules</h1><p>{branch.name}</p></div>
-            <Link className="admin-link-button" href="/admin/listings">Back to listings</Link>
+            <Link className="admin-link-button" href={adminPath('/listings')}>Back to listings</Link>
         </div>
         <p id="feedback" role="status" data-error={feedback?.error || undefined}>{feedback?.message}</p>
         <section aria-label="Modules">

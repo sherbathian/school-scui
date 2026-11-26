@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { api } from '../../admin-api.js';
@@ -9,7 +10,7 @@ export default function Reports({
 }) {
     const [busy, setBusy] = useState(false);
     const [signOutError, setSignOutError] = useState('');
-    const branchPath = `/admin/reports/${branch.id}`;
+    const branchPath = adminPath(`/reports/${branch.id}`);
     const path = allBranches ? `${branchPath}/all` : branchPath;
     const scopeName = allBranches ? organisationName : branch.name;
     const filterQuery = new URLSearchParams(Object.entries(filters).filter(([, value]) => value != null)).toString();
@@ -38,7 +39,7 @@ export default function Reports({
         setSignOutError('');
         try {
             await api('logout', 'POST');
-            window.location.assign('/admin/login');
+            window.location.assign(adminPath('/login'));
         } catch (error) {
             setSignOutError(error.message);
             setBusy(false);
@@ -69,11 +70,11 @@ export default function Reports({
         <Head title="Reports · Schoolhouse" />
         <div className="page-heading">
             <div><h1>Reports</h1><p>{scopeName}</p></div>
-            <Link className="admin-link-button" href={`/admin/dashboard/${branch.id}`}>Dashboard</Link>
+            <Link className="admin-link-button" href={adminPath(`/dashboard/${branch.id}`)}>Dashboard</Link>
         </div>
         {signOutError && <p role="alert">{signOutError}</p>}
         {(canCompare || branches.length > 1) && <label>Branch <select value={allBranches ? 'all' : branch.id}
-            onChange={event => router.visit(event.target.value === 'all' ? `${branchPath}/all` : `/admin/reports/${event.target.value}`)}>
+            onChange={event => router.visit(event.target.value === 'all' ? `${branchPath}/all` : adminPath(`/reports/${event.target.value}`))}>
             {canCompare && <option value="all">All my branches in this organisation</option>}
             {branches.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select></label>}

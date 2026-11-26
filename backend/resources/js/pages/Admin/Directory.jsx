@@ -1,3 +1,4 @@
+import { adminPath } from '../../admin-path.js';
 import { csvBoolean, loadCsvPages } from './csv-records.js';
 import DataTools from './branch/DataTools.jsx';
 import { serviceResources } from './service-fields.js';
@@ -92,7 +93,7 @@ function DirectoryPage({ resource, schoolId, branches, adminName }) {
 
     return <AdminLayout screen={resource} {...{ title, adminName, busy }} signOut={() => run(async () => {
         await api('logout', 'POST');
-        window.location.assign('/admin/login');
+        window.location.assign(adminPath('/login'));
     })}>
         <Head title={`${title} · Schoolhouse`} />
         {isAssignments
@@ -251,7 +252,7 @@ export function Catalogue({ resource, title, schoolId, branchScoped = false, bus
             <h2>Organisation branches</h2>
             <ul className="mb-4">
                 {options.schools.filter(branch => Number(branch.group_id) === editor.id).map(branch =>
-                    <li key={branch.id}><Link href={`/admin/listings/${branch.id}/edit`}>{branch.name}</Link></li>)}
+                    <li key={branch.id}><Link href={adminPath(`/listings/${branch.id}/edit`)}>{branch.name}</Link></li>)}
             </ul>
             <label>Add an unassigned branch<select name="branch" required defaultValue="">
                 <option value="">Select a branch</option>
@@ -427,7 +428,7 @@ function Assignments({ title, branches, schoolId, busy, run, setFeedback }) {
 
     return <>
         <div className="page-heading"><h1>{title}</h1>
-            {branch && <Link className="admin-link-button" href={`/admin/listings/${branch}/edit`}>Edit listing</Link>}
+            {branch && <Link className="admin-link-button" href={adminPath(`/listings/${branch}/edit`)}>Edit listing</Link>}
         </div>
         <label className="mb-4 max-w-sm">Branch<select value={branch} disabled={busy} onChange={event => setBranch(event.target.value)}>
             <option value="">Choose a branch</option>
@@ -451,7 +452,7 @@ function Assignments({ title, branches, schoolId, busy, run, setFeedback }) {
                     </label>)}
                 </fieldset>
                 {options.length ? <Button type="submit" disabled={busy}>Save {label.toLowerCase()}</Button>
-                    : <Link href={`/admin/directory/${type}`}>Add {label.toLowerCase()} first</Link>}
+                    : <Link href={adminPath(`/directory/${type}`)}>Add {label.toLowerCase()} first</Link>}
             </form>;
         })}
     </>;

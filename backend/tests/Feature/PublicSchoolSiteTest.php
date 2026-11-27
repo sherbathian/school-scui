@@ -12,6 +12,44 @@ class PublicSchoolSiteTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_rich_school_page_content_renders_theme_and_rejects_unsafe_links(): void
+    {
+        $branch = School::factory()->create(['verified_at' => now(), 'listing_status' => 'published']);
+        DB::table('modules')->insert(['slug' => 'website', 'name' => 'Website']);
+        $theme = DB::table('site_themes')->insertGetId(['name' => 'Example', 'slug' => 'example']);
+        DB::table('school_site_settings')->insert([
+            'school_id' => $branch->id, 'site_theme_id' => $theme, 'site_enabled' => true, 'primary_color' => '#135724',
+        ]);
+        $this->actingAs(User::factory()->create(['is_super_admin' => true, 'is_active' => true]), 'sanctum');
+        $url = '/api/admin/services/school-pages';
+        $text = fn (string $text, array $marks = []) => ['type' => 'text', 'text' => $text, 'marks' => $marks];
+        $document = ['type' => 'doc', 'content' => [
+            ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [$text('Admissions')]],
+            ['type' => 'paragraph', 'content' => [
+                $text('<strong>literal</strong>', [['type' => 'bold']]),
+                $text('Apply now', [['type' => 'link', 'attrs' => ['href' => 'https://example.test/apply']]]),
+            ]],
+            ['type' => 'orderedList', 'attrs' => ['start' => 3], 'content' => [
+                ['type' => 'listItem', 'content' => [['type' => 'paragraph', 'content' => [$text('First step')]]]],
+            ]],
+        ]];
+        $payload = ['school_id' => $branch->id, 'title' => 'Draft home', 'slug' => 'home', 'page_type' => 'home',
+            'content' => json_encode(['document' => $document, 'blocks' => [['type' => 'legacy', 'keep' => true]]])];
+        $preview = $this->postJson($url.'/preview', $payload)->assertOk()->json('data.html');
+        $this->assertStringContainsString('#135724', $preview);
+        $this->assertStringContainsString('<strong>&lt;strong&gt;literal&lt;/strong&gt;</strong>', $preview);
+        $this->get('/school-sites/'.$branch->slug)->assertNotFound();
+        $record = $this->postJson($url, $payload + ['is_published' => true])->assertCreated()->json('data.id');
+        $this->get('/school-sites/'.$branch->slug)->assertOk()
+            ->assertSee('<h2>Admissions</h2>', false)
+            ->assertSee('<ol start="3">', false)
+            ->assertSee('href="https://example.test/apply"', false);
+        $document['content'][1]['content'][1]['marks'][0]['attrs']['href'] = 'javascript:alert(1)';
+        $unsafe = ['content' => json_encode(['document' => $document])];
+        $this->patchJson($url.'/'.$record, $unsafe)->assertJsonValidationErrors('content');
+        $this->postJson($url.'/preview', $unsafe + $payload)->assertJsonValidationErrors('content');
+    }
+
     public function test_enabled_branch_serves_only_its_published_pages_and_safe_content(): void
     {
         $branch = School::factory()->create(['status' => 'active', 'verified_at' => now(), 'listing_status' => 'published']);

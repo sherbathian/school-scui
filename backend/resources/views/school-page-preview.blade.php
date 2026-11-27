@@ -40,27 +40,31 @@
 <main class="shell">
     <article>
         <h1>{{ $page->title }}</h1>
-        @foreach ($blocks as $block)
-            @continue(!is_array($block))
-            @switch($block['type'] ?? null)
-                @case('heading')
-                    @if(is_string($block['text'] ?? null)) <h2>{{ $block['text'] }}</h2> @endif
-                    @break
-                @case('paragraph')
-                    @if(is_string($block['text'] ?? null)) <p>{{ $block['text'] }}</p> @endif
-                    @break
-                @case('list')
-                    @if(is_array($block['items'] ?? null))
-                        <ul>
-                            @foreach ($block['items'] as $item)
-                                @if(is_string($item)) <li>{{ $item }}</li> @endif
-                            @endforeach
-                        </ul>
-                    @endif
-                    @break
-            @endswitch
-        @endforeach
-        @if ($blocks === [])
+        @if(\App\Services\SchoolPageDocument::valid($document ?? null))
+            @include('school-pages.node', ['node' => $document])
+        @else
+            @foreach ($blocks as $block)
+                @continue(!is_array($block))
+                @switch($block['type'] ?? null)
+                    @case('heading')
+                        @if(is_string($block['text'] ?? null)) <h2>{{ $block['text'] }}</h2> @endif
+                        @break
+                    @case('paragraph')
+                        @if(is_string($block['text'] ?? null)) <p>{{ $block['text'] }}</p> @endif
+                        @break
+                    @case('list')
+                        @if(is_array($block['items'] ?? null))
+                            <ul>
+                                @foreach ($block['items'] as $item)
+                                    @if(is_string($item)) <li>{{ $item }}</li> @endif
+                                @endforeach
+                            </ul>
+                        @endif
+                        @break
+                @endswitch
+            @endforeach
+        @endif
+        @if ($blocks === [] && ! \App\Services\SchoolPageDocument::valid($document ?? null))
             <p>This page has no content blocks yet.</p>
         @endif
     </article>

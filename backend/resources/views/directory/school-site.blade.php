@@ -1,3 +1,9 @@
+@php
+    $appearance = \App\Services\SchoolPageDocument::appearance($site);
+    $pageUrl = fn (string $slug = 'home') => isset($siteSubdomain)
+        ? route('school-site.host', ['subdomain' => $siteSubdomain, 'page' => $slug === 'home' ? null : $slug], absolute: false)
+        : route('school-site.page', ['school' => $branch->slug, 'page' => $slug === 'home' ? null : $slug]);
+@endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -7,7 +13,6 @@
     @if($page->seo_description)
         <meta name="description" content="{{ $page->seo_description }}">
     @endif
-    @php($appearance = \App\Services\SchoolPageDocument::appearance($site))
     <style>
         :root { color-scheme: light; font: 100%/1.6 "{{ $appearance['font'] }}", system-ui, sans-serif; color: {{ $appearance['primary'] }}; background: #f7faf8; }
         body { margin: 0; }
@@ -29,11 +34,11 @@
 <body>
 <header>
     <div class="wrap masthead">
-        <a class="brand" href="{{ route('school-site.page', ['school' => $branch->slug]) }}">{{ $branch->name }}</a>
+        <a class="brand" href="{{ $pageUrl() }}">{{ $branch->name }}</a>
         @if($navigation->isNotEmpty())
             <nav aria-label="School pages">
                 @foreach($navigation as $item)
-                    <a href="{{ route('school-site.page', ['school' => $branch->slug, 'page' => $item->slug]) }}"
+                    <a href="{{ $pageUrl($item->slug) }}"
                         @if($item->slug === $page->slug) aria-current="page" @endif>{{ $item->title }}</a>
                 @endforeach
             </nav>

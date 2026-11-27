@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\PublicSchoolSiteController;
 use App\Models\School;
 use App\Services\BranchModules;
 use App\Services\SchoolPageDocument;
@@ -329,7 +330,7 @@ class AdminServicesController extends AdminPlatformController
             ],
             'school-site-settings' => [
                 'school_id' => $id('schools'), 'site_theme_id' => $id('site_themes'), 'site_enabled' => ['boolean'],
-                'subdomain' => ['nullable', 'string', 'max:63', 'regex:/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/D', Rule::notIn(['www', 'school', 'app', 'api', 'admin'])],
+                'subdomain' => ['nullable', 'string', 'max:63', 'regex:/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/D', Rule::notIn(PublicSchoolSiteController::RESERVED_SUBDOMAINS)],
                 'primary_color' => $color, 'secondary_color' => $color,
                 'font_family' => ['nullable', Rule::in(['Instrument Sans', 'Inter', 'DM Sans', 'Source Sans 3', 'system-ui'])], 'homepage_sections' => $json,
                 'menu_items' => $json, 'footer_text' => $text(255), 'analytics_id' => $text(40),

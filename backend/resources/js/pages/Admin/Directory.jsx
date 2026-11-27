@@ -1,3 +1,4 @@
+import SchoolPageEditor from './SchoolPageEditor.jsx';
 import { adminPath } from '../../admin-path.js';
 import { csvBoolean, loadCsvPages } from './csv-records.js';
 import DataTools from './branch/DataTools.jsx';
@@ -391,8 +392,10 @@ function RecordForm({ fields, editor, options, busy, save, close, upload, fixedB
                             {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                         </select></label>;
                     }
+                    if (type === 'school-page-content') {
+                        return <SchoolPageEditor key={name} name={name} content={value} disabled={busy} />;
+                    }
                     if (type === 'textarea') return <label key={name}>{label}
-                        {name === 'content' && <small>Use a JSON list of heading, paragraph, or list blocks. Heading and paragraph use text. List uses items.</small>}
                         <textarea name={name} required={required} defaultValue={value} />
                     </label>;
                     const numeric = ['integer', 'money'].includes(type);

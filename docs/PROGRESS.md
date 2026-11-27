@@ -27,6 +27,12 @@ Tahir approved updating this Markdown handoff. Ask for his approval before chang
 | --- | --- | --- |
 | `r11/prefix-free-admin` | Schoolhouse browser pages use prefix-free paths on the admin hostname. Legacy bookmarks redirect with query parameters. | Ready for review. Ubuntu deployment requires rebuilding the frontend assets. |
 
+## R12 · School page content editor
+
+| Branch | Behaviour | Status |
+| --- | --- | --- |
+| `r12/school-page-editor` | Staff can add, edit, reorder, and remove headings, paragraphs, and bullet lists in the School pages form. | Ready for review. Hosting deployment requires rebuilding the frontend assets. |
+
 ## Latest increment · Platform administration and IFS Branch Operations
 
 | Area | Shipped behaviour |

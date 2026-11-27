@@ -25,7 +25,7 @@ export const serviceResources = {
     ]],
     'school-pages': ['School pages', [
         school, ['title', 'Title', 'required'], slug, ['page_type', 'Page type', ['custom', 'home', 'about', 'admissions', 'contact'], 'custom'],
-        ['content', 'Page blocks (JSON)', 'textarea'], ['is_published', 'Published', 'checkbox', false],
+        ['content', 'Page content', 'school-page-content'], ['is_published', 'Published', 'checkbox', false],
         ['show_in_menu', 'Show in menu', 'checkbox', false], sort, ['seo_title', 'SEO title'], ['seo_description', 'SEO description', 'textarea'],
     ]],
     'school-site-settings': ['School site settings', [

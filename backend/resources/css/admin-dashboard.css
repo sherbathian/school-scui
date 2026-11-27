@@ -463,3 +463,22 @@
 }
 
 .dashboard-widget p { margin-block: .4rem; }
+
+@layer components {
+    .school-page-writing {
+        min-height: 16rem;
+        padding: 1rem;
+        overflow-wrap: anywhere;
+        line-height: 1.6;
+    }
+    .school-page-writing:focus { outline: 2px solid var(--green); outline-offset: -2px; }
+    .school-page-writing :is(h2, h3) { display: block; margin: .8em 0 .35em; font-weight: 650; }
+    .school-page-writing h2 { font-size: 1.4rem; }
+    .school-page-writing h3 { font-size: 1.15rem; }
+    .school-page-writing p { margin: 0 0 .55em; }
+    .school-page-writing :is(ul, ol) { padding-inline-start: 1.65rem; }
+    .school-page-writing ul { list-style: disc; }
+    .school-page-writing ol { list-style: decimal; }
+    .school-page-writing a { color: var(--green); text-decoration: underline; }
+    fieldset:has(.school-page-writing) button[aria-pressed="true"] { background: var(--mint); }
+}

@@ -52,6 +52,7 @@ Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('
 Route::prefix('admin/services')->middleware(['auth:sanctum', RestrictPersonalAccessToken::class, AuthorizeAdminServices::class])->whereIn('resource', array_keys(AdminServicesController::RESOURCES))->group(function () {
     Route::get('{resource}', [AdminServicesController::class, 'index']);
     Route::get('{resource}/options', [AdminServicesController::class, 'options']);
+    Route::post('{resource}/preview', [AdminServicesController::class, 'previewPage'])->where('resource', 'school-pages');
     Route::post('{resource}', [AdminServicesController::class, 'store']);
     Route::patch('{resource}/{record}', [AdminServicesController::class, 'update']);
     Route::delete('{resource}/{record}', [AdminServicesController::class, 'destroy']);

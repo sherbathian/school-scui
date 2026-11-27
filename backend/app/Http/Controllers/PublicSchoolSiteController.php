@@ -18,7 +18,7 @@ class PublicSchoolSiteController extends Controller
         $site = DB::table('school_site_settings as settings')
             ->join('site_themes as theme', 'theme.id', '=', 'settings.site_theme_id')
             ->where('settings.school_id', $branch->id)->where('settings.site_enabled', true)
-            ->where('theme.is_active', true)->firstOrFail(['settings.footer_text']);
+            ->where('theme.is_active', true)->firstOrFail(['settings.footer_text', 'settings.primary_color', 'settings.secondary_color', 'settings.font_family']);
         $pages = DB::table('school_pages')->where('school_id', $branch->id)->where('is_published', true);
         $current = (clone $pages)->where('slug', $page)->firstOrFail();
         $navigation = $pages->where('show_in_menu', true)->orderBy('sort_order')->orderBy('id')->get(['title', 'slug']);
@@ -28,7 +28,7 @@ class PublicSchoolSiteController extends Controller
 
         return view('directory.school-site', [
             'branch' => $branch, 'site' => $site, 'page' => $current,
-            'navigation' => $navigation, 'blocks' => is_array($blocks) ? $blocks : [],
+            'navigation' => $navigation, 'document' => $content['document'] ?? null, 'blocks' => is_array($blocks) ? $blocks : [],
         ]);
     }
 }

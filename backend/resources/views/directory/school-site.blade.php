@@ -7,10 +7,11 @@
     @if($page->seo_description)
         <meta name="description" content="{{ $page->seo_description }}">
     @endif
+    @php($appearance = \App\Services\SchoolPageDocument::appearance($site))
     <style>
-        :root { color-scheme: light; font: 100%/1.6 system-ui, sans-serif; color: #18332d; background: #f7faf8; }
+        :root { color-scheme: light; font: 100%/1.6 "{{ $appearance['font'] }}", system-ui, sans-serif; color: {{ $appearance['primary'] }}; background: #f7faf8; }
         body { margin: 0; }
-        a { color: #145b44; text-underline-offset: .2em; }
+        a { color: {{ $appearance['secondary'] }}; text-underline-offset: .2em; }
         a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
         .wrap { width: min(68rem, calc(100% - 2rem)); margin-inline: auto; }
         header { background: #fff; border-bottom: 1px solid #dce6e1; }
@@ -42,33 +43,37 @@
 <main class="wrap">
     <article>
         <h1>{{ $page->title }}</h1>
-        @foreach($blocks as $block)
-            @continue(!is_array($block))
-            @switch($block['type'] ?? null)
-                @case('heading')
-                    @if(is_string($block['text'] ?? null)) <h2>{{ $block['text'] }}</h2> @endif
-                    @break
-                @case('paragraph')
-                    @if(is_string($block['text'] ?? null)) <p>{{ $block['text'] }}</p> @endif
-                    @break
-                @case('list')
-                    @if(is_array($block['items'] ?? null))
-                        <ul>
-                            @foreach($block['items'] as $item)
-                                @if(is_string($item)) <li>{{ $item }}</li> @endif
-                            @endforeach
-                        </ul>
-                    @endif
-                    @break
-                @case('link')
-                    @php($url = $block['url'] ?? null)
-                    @if(is_string($url) && preg_match('~^https?://~i', $url) && filter_var($url, FILTER_VALIDATE_URL)
-                        && is_string($block['text'] ?? null))
-                        <p><a href="{{ $url }}">{{ $block['text'] }}</a></p>
-                    @endif
-                    @break
-            @endswitch
-        @endforeach
+        @if(\App\Services\SchoolPageDocument::valid($document ?? null))
+            @include('school-pages.node', ['node' => $document])
+        @else
+            @foreach($blocks as $block)
+                @continue(!is_array($block))
+                @switch($block['type'] ?? null)
+                    @case('heading')
+                        @if(is_string($block['text'] ?? null)) <h2>{{ $block['text'] }}</h2> @endif
+                        @break
+                    @case('paragraph')
+                        @if(is_string($block['text'] ?? null)) <p>{{ $block['text'] }}</p> @endif
+                        @break
+                    @case('list')
+                        @if(is_array($block['items'] ?? null))
+                            <ul>
+                                @foreach($block['items'] as $item)
+                                    @if(is_string($item)) <li>{{ $item }}</li> @endif
+                                @endforeach
+                            </ul>
+                        @endif
+                        @break
+                    @case('link')
+                        @php($url = $block['url'] ?? null)
+                        @if(is_string($url) && preg_match('~^https?://~i', $url) && filter_var($url, FILTER_VALIDATE_URL)
+                            && is_string($block['text'] ?? null))
+                            <p><a href="{{ $url }}">{{ $block['text'] }}</a></p>
+                        @endif
+                        @break
+                @endswitch
+            @endforeach
+        @endif
     </article>
 </main>
 @if($site->footer_text)

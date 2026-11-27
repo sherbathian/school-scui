@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\School;
 use App\Services\BranchModules;
+use App\Services\SchoolPageDocument;
 use App\Services\SchoolWebsiteAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -99,6 +100,42 @@ class AdminServicesController extends AdminPlatformController
         return response()->json(['data' => $options]);
     }
 
+    public function previewPage(Request $request): JsonResponse
+    {
+        $rules = $this->rules('school-pages');
+        $data = $request->validate([
+            'school_id' => $rules['school_id'],
+            'title' => ['nullable', 'string', 'max:150'],
+            'content' => $rules['content'],
+        ]);
+        $branch = School::query()->findOrFail($data['school_id'], ['id', 'name', 'slug']);
+        abort_if($this->isOwnerWebsiteRequest('school-pages')
+            && ! app(SchoolWebsiteAccess::class)->branchIds($request->user())->containsStrict($branch->id), 403);
+        $content = $this->pageContent($data['content'] ?? null);
+        $html = view('directory.school-site', [
+            'branch' => $branch,
+            'site' => DB::table('school_site_settings as settings')->join('site_themes as theme', 'theme.id', '=', 'settings.site_theme_id')
+                ->where('settings.school_id', $branch->id)->where('theme.is_active', true)->first(['settings.*'])
+                ?? (object) ['footer_text' => null],
+            'page' => (object) ['title' => $data['title'] ?? 'Untitled page', 'seo_title' => null, 'seo_description' => null, 'slug' => ''],
+            'navigation' => collect(),
+            'blocks' => is_array($blocks = $content['blocks'] ?? $content) ? $blocks : [],
+            'document' => $content['document'] ?? null,
+        ])->render();
+
+        return response()->json(['data' => ['html' => $html]])->header('Cache-Control', 'private, no-store');
+    }
+
+    private function pageContent(?string $value): array
+    {
+        $content = $value === null ? [] : json_decode($value, true);
+        if (! is_array($content) || (array_key_exists('document', $content) && ! SchoolPageDocument::valid($content['document']))) {
+            throw ValidationException::withMessages(['content' => 'Enter supported rich text. Links must use HTTP or HTTPS.']);
+        }
+
+        return $content;
+    }
+
     protected function present(object $row, string $resource): object
     {
         if (in_array($resource, ['device-tokens', 'personal-access-tokens'], true)) {
@@ -120,7 +157,10 @@ class AdminServicesController extends AdminPlatformController
                 throw ValidationException::withMessages(['site_theme_id' => 'Choose an active theme.']);
             }
         }
-        foreach (['content', 'homepage_sections', 'menu_items', 'settings_schema'] as $jsonField) {
+        if ($resource === 'school-pages' && isset($data['content'])) {
+            $this->pageContent($data['content']);
+        }
+        foreach (['homepage_sections', 'menu_items', 'settings_schema'] as $jsonField) {
             if (isset($data[$jsonField]) && ! is_array(json_decode($data[$jsonField], true))) {
                 throw ValidationException::withMessages([$jsonField => 'Enter a JSON object or list.']);
             }

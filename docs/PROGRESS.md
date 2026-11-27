@@ -39,6 +39,12 @@ Tahir approved updating this Markdown handoff. Ask for his approval before chang
 | --- | --- | --- |
 | `r13/owner-school-websites` | School Pages and School Setting sit under School Management. Active organisation owners manage their enabled branches’ pages and settings. | Ready for review. Deploy and rebuild the frontend before production acceptance. |
 
+## R14 · Rich-text School Pages
+
+| Branch | Behaviour | Status |
+| --- | --- | --- |
+| `r14/tiptap-school-pages` | Tiptap editor provides rich text, legacy content compatibility, and an unsaved preview with the branch’s site settings. | Ready for review. Install frontend dependencies and rebuild on deployment. |
+
 ## Latest increment · Platform administration and IFS Branch Operations
 
 | Area | Shipped behaviour |

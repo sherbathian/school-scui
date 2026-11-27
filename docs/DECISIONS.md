@@ -49,3 +49,5 @@ Schoolhouse browser pages use prefix-free paths on admin.taleemfinder.pk. Both t
 The School pages form edits headings, paragraphs, and bullet lists with plain-text controls. The editor retains the existing content format and preserves unsupported legacy blocks. Publication and menu visibility remain separate.
 
 Active organisation owners can create, edit, publish, and delete pages and create or edit School Setting for their own branches where Website is enabled. Grace-period writes are blocked. Owners select active themes. Shared themes, module switching, and settings record deletion stay with platform admins.
+
+School Pages uses self-hosted Tiptap for rich text. The server validates structured content and renders supported formatting from escaped text. Existing block data is preserved. Draft preview shares the public rendering template and enforces school website access.

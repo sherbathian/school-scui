@@ -98,6 +98,9 @@ class AdminServicesTest extends TestCase
             ->assertJsonPath('data.schools.0.id', $branch->id)->assertJsonCount(1, 'data.schools');
         $this->getJson("{$root}/school-site-settings/options")->assertOk()
             ->assertJsonPath('data.site_themes.0.id', $theme)->assertJsonCount(1, 'data.site_themes');
+        $this->postJson("{$root}/school-pages/preview", $payload)->assertOk();
+        $this->postJson("{$root}/school-pages/preview", [...$payload, 'school_id' => $foreign->id])->assertForbidden();
+        $this->postJson("{$root}/school-pages/preview", [...$payload, 'school_id' => $disabled->id])->assertForbidden();
         $id = $this->postJson("{$root}/school-pages", $payload)->assertCreated()->json('data.id');
         $this->getJson("{$root}/school-pages")->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $id);
         $this->patchJson("{$root}/school-pages/{$id}", ['title' => 'About our school', 'is_published' => true])->assertOk();

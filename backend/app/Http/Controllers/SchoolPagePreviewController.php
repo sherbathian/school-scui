@@ -28,7 +28,7 @@ class SchoolPagePreviewController extends Controller
 
         return response()->view('school-page-preview', [
             'branch' => $branch, 'page' => $current, 'navigation' => $navigation,
-            'blocks' => is_array($blocks) ? $blocks : [],
+            'document' => $decoded['document'] ?? null, 'blocks' => is_array($blocks) ? $blocks : [],
         ])->header('Cache-Control', 'private, no-store')->header('X-Robots-Tag', 'noindex, nofollow');
     }
 }

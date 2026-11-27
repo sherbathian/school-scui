@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PostedFamilyReceiptController;
 use App\Http\Resources\AdminListingResource;
 use App\Models\School;
 use App\Services\BranchModules;
+use App\Services\SchoolWebsiteAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -161,11 +162,14 @@ Route::get('/services/{resource}', function (Request $request, string $resource)
     if (! Auth::check()) {
         return redirect()->to($loginUrl($request));
     }
-    Gate::authorize('moderateListings', School::class);
+    $platform = Gate::allows('moderateListings', School::class);
+    abort_unless($platform || (in_array($resource, SchoolWebsiteAccess::RESOURCES, true)
+        && app(SchoolWebsiteAccess::class)->branchIds($request->user())->isNotEmpty()), 403);
     Inertia::setRootView('admin.app');
 
     return Inertia::render('Admin/Directory', [
         'resource' => $resource,
+        'platform' => $platform,
         'adminName' => $request->user()->name,
     ])->toResponse($request)->header('Cache-Control', 'no-store');
 })->whereIn('resource', array_keys(AdminServicesController::RESOURCES));

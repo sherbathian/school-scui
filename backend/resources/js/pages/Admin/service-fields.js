@@ -23,12 +23,12 @@ export const serviceResources = {
         ['method', 'Payment method', ['bank_transfer', 'jazzcash', 'easypaisa', 'cash', 'other'], 'bank_transfer'],
         ['reference', 'Reference'], ['recorded_by_user_id', 'Recorded by (account ID)', 'read-only'],
     ]],
-    'school-pages': ['School pages', [
+    'school-pages': ['School Pages', [
         school, ['title', 'Title', 'required'], slug, ['page_type', 'Page type', ['custom', 'home', 'about', 'admissions', 'contact'], 'custom'],
         ['content', 'Page content', 'school-page-content'], ['is_published', 'Published', 'checkbox', false],
         ['show_in_menu', 'Show in menu', 'checkbox', false], sort, ['seo_title', 'SEO title'], ['seo_description', 'SEO description', 'textarea'],
     ]],
-    'school-site-settings': ['School site settings', [
+    'school-site-settings': ['School Setting', [
         school, ['site_theme_id', 'Theme', 'site_themes', undefined, true], ['subdomain', 'Subdomain'],
         ['site_enabled', 'Enable site', 'checkbox', false], ['primary_color', 'Primary color'], ['secondary_color', 'Secondary color'],
         ['font_family', 'Font', ['Instrument Sans', 'Inter', 'DM Sans', 'Source Sans 3', 'system-ui']],

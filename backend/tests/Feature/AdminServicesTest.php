@@ -6,6 +6,7 @@ use App\Models\School;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class AdminServicesTest extends TestCase
@@ -68,6 +69,57 @@ class AdminServicesTest extends TestCase
         $this->postJson("{$root}/school-pages", [...$page, 'school_id' => $second->id])->assertCreated();
         $this->patchJson("{$root}/school-pages/{$id}", ['content' => 'false'])->assertJsonValidationErrors('content');
         $this->deleteJson("{$root}/school-pages/{$id}")->assertNoContent();
+    }
+
+    public function test_school_owners_can_manage_only_their_enabled_branch_websites(): void
+    {
+        $this->withoutVite();
+        $group = DB::table('school_groups')->insertGetId(['name' => 'Owner Group', 'slug' => 'owner-group']);
+        $branch = School::factory()->create(['group_id' => $group]);
+        $disabled = School::factory()->create(['group_id' => $group]);
+        $foreign = School::factory()->create();
+        $owner = User::factory()->create(['is_active' => true]);
+        $teacher = User::factory()->create(['is_active' => true]);
+        $teacher->schools()->attach($branch, ['role' => 'teacher', 'is_active' => true]);
+        DB::table('school_group_user')->insert(['school_group_id' => $group, 'user_id' => $owner->id, 'role' => 'owner', 'is_active' => true]);
+        $module = DB::table('modules')->insertGetId(['slug' => 'website', 'name' => 'Website']);
+        DB::table('school_modules')->insert(['school_id' => $disabled->id, 'module_id' => $module, 'is_enabled' => false]);
+        $theme = DB::table('site_themes')->insertGetId(['name' => 'Active Theme', 'slug' => 'active-theme', 'version' => '1', 'is_active' => true]);
+        $inactiveTheme = DB::table('site_themes')->insertGetId(['name' => 'Inactive Theme', 'slug' => 'inactive-theme', 'version' => '1', 'is_active' => false]);
+        $foreignPage = DB::table('school_pages')->insertGetId(['school_id' => $foreign->id, 'title' => 'Other school', 'slug' => 'other', 'page_type' => 'custom']);
+        $root = '/api/admin/services';
+        $payload = ['school_id' => $branch->id, 'title' => 'About us', 'slug' => 'about', 'page_type' => 'custom'];
+
+        $this->getJson("{$root}/school-pages")->assertUnauthorized();
+        $this->actingAs($owner)->get('/admin/services/school-pages')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Directory')->where('platform', false)->where('canManageSchoolWebsite', true));
+        $this->get('/admin/services/school-site-settings')->assertOk();
+        $this->getJson("{$root}/school-pages/options")->assertOk()
+            ->assertJsonPath('data.schools.0.id', $branch->id)->assertJsonCount(1, 'data.schools');
+        $this->getJson("{$root}/school-site-settings/options")->assertOk()
+            ->assertJsonPath('data.site_themes.0.id', $theme)->assertJsonCount(1, 'data.site_themes');
+        $id = $this->postJson("{$root}/school-pages", $payload)->assertCreated()->json('data.id');
+        $this->getJson("{$root}/school-pages")->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $id);
+        $this->patchJson("{$root}/school-pages/{$id}", ['title' => 'About our school', 'is_published' => true])->assertOk();
+        $this->patchJson("{$root}/school-pages/{$id}", ['school_id' => $foreign->id])->assertForbidden();
+        $this->postJson("{$root}/school-pages", [...$payload, 'school_id' => $disabled->id])->assertForbidden();
+        $this->patchJson("{$root}/school-pages/{$foreignPage}", ['title' => 'Wrong school'])->assertNotFound();
+        $this->deleteJson("{$root}/school-pages/{$foreignPage}")->assertNotFound();
+        $this->deleteJson("{$root}/school-pages/{$id}")->assertNoContent();
+
+        $settings = ['school_id' => $branch->id, 'site_theme_id' => $theme];
+        $this->postJson("{$root}/school-site-settings", [...$settings, 'site_theme_id' => $inactiveTheme])->assertJsonValidationErrors('site_theme_id');
+        $setting = $this->postJson("{$root}/school-site-settings", $settings)->assertCreated()->json('data.id');
+        $this->patchJson("{$root}/school-site-settings/{$setting}", ['primary_color' => '#123456'])->assertOk();
+        $this->deleteJson("{$root}/school-site-settings/{$setting}")->assertForbidden();
+        $this->getJson("{$root}/site-themes")->assertForbidden();
+        $this->actingAs($teacher)->getJson("{$root}/school-pages")->assertForbidden();
+        $this->get('/admin/services/school-site-settings')->assertForbidden();
+
+        DB::table('school_modules')->insert(['school_id' => $branch->id, 'module_id' => $module, 'is_enabled' => false]);
+        $this->actingAs($owner)->patchJson("{$root}/school-site-settings/{$setting}", ['primary_color' => '#000000'])
+            ->assertForbidden();
+        $this->assertDatabaseHas('school_site_settings', ['id' => $setting, 'primary_color' => '#123456']);
     }
 
     public function test_token_metadata_hides_secrets_and_issued_tokens_cannot_access_admin_routes(): void

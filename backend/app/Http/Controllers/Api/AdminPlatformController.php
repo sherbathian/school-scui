@@ -210,7 +210,7 @@ class AdminPlatformController extends Controller
         return response()->json(['data' => $this->present($row, $resource)], $id === null ? 201 : 200);
     }
 
-    private function records(Request $request, string $resource)
+    protected function records(Request $request, string $resource)
     {
         $query = DB::table(static::RESOURCES[$resource]);
         if ($resource === 'notifications') {

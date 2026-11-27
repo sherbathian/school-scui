@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\School;
 use App\Services\BranchModules;
+use App\Services\SchoolWebsiteAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminServicesController extends AdminPlatformController
 {
@@ -49,6 +53,28 @@ class AdminServicesController extends AdminPlatformController
             ->header('Cache-Control', 'no-store');
     }
 
+    protected function records(Request $request, string $resource)
+    {
+        $query = parent::records($request, $resource);
+        if ($this->isOwnerWebsiteRequest($resource)) {
+            $query->whereIn('school_id', app(SchoolWebsiteAccess::class)->branchIds($request->user(), ! $request->isMethodSafe()));
+        }
+
+        return $query;
+    }
+
+    public function destroy(Request $request, string $resource, string $record): Response
+    {
+        abort_if($resource === 'school-site-settings' && $this->isOwnerWebsiteRequest($resource), 403);
+
+        return parent::destroy($request, $resource, $record);
+    }
+
+    private function isOwnerWebsiteRequest(string $resource): bool
+    {
+        return in_array($resource, SchoolWebsiteAccess::RESOURCES, true) && Gate::denies('moderateListings', School::class);
+    }
+
     public function options(string $resource): JsonResponse
     {
         $tables = match ($resource) {
@@ -61,8 +87,12 @@ class AdminServicesController extends AdminPlatformController
             default => [],
         };
         $options = [];
+        $ownerWebsite = $this->isOwnerWebsiteRequest($resource);
         foreach ($tables as $table => $label) {
             $options[$table] = DB::table($table)->when($table === 'schools', fn ($query) => $query->whereNull('deleted_at'))
+                ->when($ownerWebsite && $table === 'schools',
+                    fn ($query) => $query->whereIn('id', app(SchoolWebsiteAccess::class)->branchIds(request()->user())))
+                ->when($ownerWebsite && $table === 'site_themes', fn ($query) => $query->where('is_active', true))
                 ->orderBy($label)->get(['id', $label.' as name']);
         }
 
@@ -81,6 +111,15 @@ class AdminServicesController extends AdminPlatformController
     protected function prepare(Request $request, string $resource, ?object $current, array $data): array
     {
         $values = $data + (array) $current;
+        if ($this->isOwnerWebsiteRequest($resource)) {
+            $school = (int) $values['school_id'];
+            abort_if($current && $school !== (int) $current->school_id, 403);
+            abort_unless(app(SchoolWebsiteAccess::class)->branchIds($request->user(), writing: true)->containsStrict($school), 403);
+            if (isset($data['site_theme_id']) && (int) $data['site_theme_id'] !== (int) $current?->site_theme_id
+                && ! DB::table('site_themes')->where('id', $data['site_theme_id'])->where('is_active', true)->exists()) {
+                throw ValidationException::withMessages(['site_theme_id' => 'Choose an active theme.']);
+            }
+        }
         foreach (['content', 'homepage_sections', 'menu_items', 'settings_schema'] as $jsonField) {
             if (isset($data[$jsonField]) && ! is_array(json_decode($data[$jsonField], true))) {
                 throw ValidationException::withMessages([$jsonField => 'Enter a JSON object or list.']);

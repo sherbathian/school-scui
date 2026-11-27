@@ -18,8 +18,7 @@ const communityLinks = [
 
 const serviceLinks = [
     ['subscription-invoices', 'Subscription invoices'], ['subscription-invoice-lines', 'Invoice lines'],
-    ['subscription-payments', 'Subscription payments'], ['school-pages', 'School pages'],
-    ['school-site-settings', 'School site settings'], ['site-themes', 'Site themes'],
+    ['subscription-payments', 'Subscription payments'], ['site-themes', 'Site themes'],
     ['device-tokens', 'Device registrations'], ['personal-access-tokens', 'Personal access tokens'],
 ];
 
@@ -30,13 +29,24 @@ const platformLinks = [
     ['demo-requests', 'Demo requests'], ['otp-codes', 'OTP activity'], ['notifications', 'Notifications'],
 ];
 
+const websiteLinks = [
+    ['school-pages', 'School Pages'],
+    ['school-site-settings', 'School Setting'],
+];
+
 export function AdminLayout({ screen, title, adminName, signOut, busy, branchNavigation, platform = true, role, operations = false, schoolAccess = [], children }) {
-    const { canViewAuditLog } = usePage().props;
+    const { canViewAuditLog, canManageSchoolWebsite } = usePage().props;
     const [menuOpen, setMenuOpen] = useState(null);
     const name = adminName?.trim() || 'Administrator';
     const initials = name.split(/\s+/).slice(0, 2).map(word => Array.from(word)[0]).join('').toUpperCase();
 
     const servicesActive = serviceLinks.some(([key]) => key === screen);
+    const websiteActive = websiteLinks.some(([key]) => key === screen);
+    const websiteNavigation = (platform || canManageSchoolWebsite) && websiteLinks.map(([key, label]) =>
+        <NavigationLink key={key} icon="directory" href={adminPath(`/services/${key}`)} active={screen === key}>
+            {label}
+        </NavigationLink>);
+
     const communityActive = communityLinks.some(([key]) => key === screen);
     const platformActive = platformLinks.some(([key]) => key === screen);
     const directoryActive = directoryLinks.some(([key]) => key === screen);
@@ -53,7 +63,9 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, branchNav
                     Audit Log
                 </NavigationLink>}
                 {!platform && <>
+                    {canManageSchoolWebsite && <p className="nav-heading">School management</p>}
                     {operations && <NavigationLink icon="school" href={adminPath('/operations')} active={screen === 'operations' && !branchNavigation}>Branch Operations</NavigationLink>}
+                    {websiteNavigation}
                     {branchNavigation}
                     {schoolAccess.includes('members') && <NavigationLink icon="membership" href={adminPath('/members')} active={screen === 'members'}>Branch memberships</NavigationLink>}
                     {schoolAccess.includes('roles') && <NavigationLink icon="shield" href={adminPath('/roles')} active={screen === 'roles'}>Branch roles</NavigationLink>}
@@ -71,6 +83,7 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, branchNav
                 <NavigationLink icon="school" href={adminPath('/operations')} active={screen === 'operations' && !branchNavigation}>
                     Branch Operations
                 </NavigationLink>
+                {websiteNavigation}
                 {branchNavigation}
                 <p className="nav-heading">School access</p>
                 <NavigationLink icon="users" href={adminPath('/users')} active={screen === 'users'}>User accounts</NavigationLink>
@@ -102,7 +115,7 @@ export function AdminLayout({ screen, title, adminName, signOut, busy, branchNav
                 }}><NavigationIcon name="panel" /></Button>
                 <nav aria-label="Breadcrumb">
                     <span>{platform ? 'Platform admin' : role ?? 'School management'}</span><span aria-hidden="true">›</span>
-                    {servicesActive || communityActive || platformActive || directoryActive || ['dashboard', 'index', 'cities', 'areas', 'claims', 'users', 'members', 'roles', 'permissions', 'operations', 'audit-log'].includes(screen) ? <span aria-current="page">{title}</span> : <>
+                    {websiteActive || servicesActive || communityActive || platformActive || directoryActive || ['dashboard', 'index', 'cities', 'areas', 'claims', 'users', 'members', 'roles', 'permissions', 'operations', 'audit-log'].includes(screen) ? <span aria-current="page">{title}</span> : <>
                         <Link href={adminPath('/listings')}>Listings</Link><span aria-hidden="true">›</span><span aria-current="page">{title}</span>
                     </>}
                 </nav>

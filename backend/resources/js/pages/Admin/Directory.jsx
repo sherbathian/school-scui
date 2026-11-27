@@ -69,11 +69,11 @@ const assignmentTypes = [
     ['facilities', 'Facilities'],
 ];
 
-export default function Directory({ resource, schoolId, branches, adminName }) {
-    return <DirectoryPage key={`${resource}-${schoolId ?? ''}`} {...{ resource, schoolId, branches, adminName }} />;
+export default function Directory({ resource, schoolId, branches, adminName, platform = true }) {
+    return <DirectoryPage key={`${resource}-${schoolId ?? ''}`} {...{ resource, schoolId, branches, adminName, platform }} />;
 }
 
-function DirectoryPage({ resource, schoolId, branches, adminName }) {
+function DirectoryPage({ resource, schoolId, branches, adminName, platform }) {
     const isAssignments = resource === 'listing-assignments';
     const title = isAssignments ? 'Listing assignments' : resources[resource][0];
     const [busy, setBusy] = useState(false);
@@ -92,19 +92,19 @@ function DirectoryPage({ resource, schoolId, branches, adminName }) {
         }
     }
 
-    return <AdminLayout screen={resource} {...{ title, adminName, busy }} signOut={() => run(async () => {
+    return <AdminLayout platform={platform} operations={!platform} screen={resource} {...{ title, adminName, busy }} signOut={() => run(async () => {
         await api('logout', 'POST');
         window.location.assign(adminPath('/login'));
     })}>
         <Head title={`${title} · Schoolhouse`} />
         {isAssignments
             ? <Assignments {...{ title, branches, schoolId, busy, run, setFeedback }} />
-            : <Catalogue {...{ title, resource, schoolId, busy, run, setFeedback }} />}
+            : <Catalogue {...{ title, resource, schoolId, busy, run, setFeedback }} ownerWebsite={!platform} />}
         <p id="feedback" role="status" data-error={feedback?.error || undefined}>{feedback?.message}</p>
     </AdminLayout>;
 }
 
-export function Catalogue({ resource, title, schoolId, branchScoped = false, busy, run, setFeedback }) {
+export function Catalogue({ resource, title, schoolId, branchScoped = false, busy, run, setFeedback, ownerWebsite = false }) {
     const fields = resources[resource][1];
     const isPlatform = Object.hasOwn(platformResources, resource);
     const isCommunity = Object.hasOwn(communityResources, resource);
@@ -218,7 +218,7 @@ export function Catalogue({ resource, title, schoolId, branchScoped = false, bus
     }[resource];
     const hasAttachment = row => upload && row[upload[2]]?.startsWith(upload[3]);
 
-    const fixedBranchField = !branchScoped ? undefined : resource !== 'student-transfers' ? 'school_id'
+    const fixedBranchField = ownerWebsite && editor?.id ? 'school_id' : !branchScoped ? undefined : resource !== 'student-transfers' ? 'school_id'
         : editor?.id && String(editor.to_school_id) === String(schoolId) ? 'to_school_id' : 'from_school_id';
 
     const csvEnabled = ['boards', 'education-levels', 'facilities', 'school-groups', 'listing-fees',
@@ -321,7 +321,7 @@ export function Catalogue({ resource, title, schoolId, branchScoped = false, bus
                             {otp && <Button variant="outline" disabled={busy || Boolean(row.consumed_at)} onClick={() => invalidate(row)}>Invalidate</Button>}
                             {notifications && <Button variant="outline" disabled={busy} onClick={() => toggleRead(row)}>Mark {row.read ? 'unread' : 'read'}</Button>}
                             {!otp && !notifications && <Button variant="outline" disabled={busy || !options} onClick={() => setEditor(row)}>Edit</Button>}
-                            {!otp && !row.protected && <Button variant="outline" disabled={busy} onClick={() => remove(row, relationshipValues?.join(' / ') ?? label)}>{personalToken || deviceToken ? 'Revoke' : 'Delete'}</Button>}
+                            {!otp && !row.protected && !(ownerWebsite && resource === 'school-site-settings') && <Button variant="outline" disabled={busy} onClick={() => remove(row, relationshipValues?.join(' / ') ?? label)}>{personalToken || deviceToken ? 'Revoke' : 'Delete'}</Button>}
                         </div></td>
                     </tr>;
                 })}

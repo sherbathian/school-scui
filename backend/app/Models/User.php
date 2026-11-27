@@ -67,6 +67,14 @@ class User extends Authenticatable
         });
     }
 
+    public function ownedActiveSchools(): Builder
+    {
+        return School::query()->where('schools.status', 'active')->whereExists(
+            $this->activeOrganisationMemberships()->where('school_group_user.role', 'owner')
+                ->whereColumn('school_group_user.school_group_id', 'schools.group_id')
+        );
+    }
+
     public function schoolAccessRole(School $school): ?string
     {
         $role = $this->organisationRole($school);

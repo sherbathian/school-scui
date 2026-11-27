@@ -33,6 +33,12 @@ Tahir approved updating this Markdown handoff. Ask for his approval before chang
 | --- | --- | --- |
 | `r12/school-page-editor` | Staff can add, edit, reorder, and remove headings, paragraphs, and bullet lists in the School pages form. | Ready for review. Hosting deployment requires rebuilding the frontend assets. |
 
+## R13 · School Owner website access
+
+| Branch | Behaviour | Status |
+| --- | --- | --- |
+| `r13/owner-school-websites` | School Pages and School Setting sit under School Management. Active organisation owners manage their enabled branches’ pages and settings. | Ready for review. Deploy and rebuild the frontend before production acceptance. |
+
 ## Latest increment · Platform administration and IFS Branch Operations
 
 | Area | Shipped behaviour |

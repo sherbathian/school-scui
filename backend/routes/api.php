@@ -39,6 +39,7 @@ use App\Http\Controllers\SchoolUserController;
 use App\Http\Middleware\RequireBranchModule;
 use App\Http\Middleware\RequireSchoolPermission;
 use App\Http\Middleware\ResolveSchoolPermissionTeam;
+use App\Http\Middleware\AuthorizeAdminServices;
 use App\Http\Middleware\RestrictPersonalAccessToken;
 use App\Models\School;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,14 @@ Route::get('/health', HealthController::class);
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
 Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:6,1');
+
+Route::prefix('admin/services')->middleware(['auth:sanctum', RestrictPersonalAccessToken::class, AuthorizeAdminServices::class])->whereIn('resource', array_keys(AdminServicesController::RESOURCES))->group(function () {
+    Route::get('{resource}', [AdminServicesController::class, 'index']);
+    Route::get('{resource}/options', [AdminServicesController::class, 'options']);
+    Route::post('{resource}', [AdminServicesController::class, 'store']);
+    Route::patch('{resource}/{record}', [AdminServicesController::class, 'update']);
+    Route::delete('{resource}/{record}', [AdminServicesController::class, 'destroy']);
+});
 
 Route::prefix('admin')->middleware(['auth:sanctum', RestrictPersonalAccessToken::class, 'can:moderateListings,'.School::class])->group(function () {
     Route::get('community/{resource}/{record}/download', [AdminCommunityController::class, 'download'])
@@ -57,13 +66,6 @@ Route::prefix('admin')->middleware(['auth:sanctum', RestrictPersonalAccessToken:
         Route::post('{resource}', [AdminCommunityController::class, 'store']);
         Route::patch('{resource}/{record}', [AdminCommunityController::class, 'update']);
         Route::delete('{resource}/{record}', [AdminCommunityController::class, 'destroy']);
-    });
-    Route::prefix('services')->whereIn('resource', array_keys(AdminServicesController::RESOURCES))->group(function () {
-        Route::get('{resource}', [AdminServicesController::class, 'index']);
-        Route::get('{resource}/options', [AdminServicesController::class, 'options']);
-        Route::post('{resource}', [AdminServicesController::class, 'store']);
-        Route::patch('{resource}/{record}', [AdminServicesController::class, 'update']);
-        Route::delete('{resource}/{record}', [AdminServicesController::class, 'destroy']);
     });
     Route::prefix('platform')->whereIn('resource', array_keys(AdminPlatformController::RESOURCES))->group(function () {
         Route::get('{resource}', [AdminPlatformController::class, 'index']);

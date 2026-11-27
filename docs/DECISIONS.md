@@ -47,3 +47,5 @@ The public domain uses the directory login and dashboard. The management hostnam
 Schoolhouse browser pages use prefix-free paths on admin.taleemfinder.pk. Both the production and development routes load the same definitions. Old production bookmarks redirect, including report links with filters. The API retains its existing paths.
 
 The School pages form edits headings, paragraphs, and bullet lists with plain-text controls. The editor retains the existing content format and preserves unsupported legacy blocks. Publication and menu visibility remain separate.
+
+Active organisation owners can create, edit, publish, and delete pages and create or edit School Setting for their own branches where Website is enabled. Grace-period writes are blocked. Owners select active themes. Shared themes, module switching, and settings record deletion stay with platform admins.

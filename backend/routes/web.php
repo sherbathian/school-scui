@@ -9,6 +9,13 @@ use App\Http\Controllers\PublicSchoolSiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::domain('{subdomain}.taleemfinder.pk')
+    ->any('/{page?}', [PublicSchoolSiteController::class, 'forHostname'])
+    ->where([
+        'subdomain' => '(?!(?:'.implode('|', PublicSchoolSiteController::RESERVED_SUBDOMAINS).')\.)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?',
+        'page' => '.*',
+    ])->name('school-site.host');
+
 Route::get('/', [PublicDirectoryController::class, 'home'])->name('directory.home');
 Route::get('/directory', [PublicDirectoryController::class, 'index'])->name('directory.index');
 Route::get('/{category}/{citySlug?}/{areaSlug?}', [PublicDirectoryController::class, 'index'])

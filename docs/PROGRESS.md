@@ -214,3 +214,9 @@ The schema comparison matched the workbook's 119 columns and 19 foreign keys acr
 Subscribed organisations use the plan and active grants together with branch switches and dependency checks. During grace, enabled management modules are read-only. Organisations without a subscription retain the previous module behaviour. Newly verified organisations receive the default plan when one is configured. Limit records can be maintained in admin. Cross-branch usage counting and quota enforcement are pending. Claims currently use manual verification. OTP delivery and marketing-site demo request intake remain pending.
 
 The workbook comparison matched 124 columns and 22 foreign keys across the 14 requested tables. All 100 tests passed on SQLite and disposable MySQL. The frontend build passed and the migration ran on local MySQL.
+
+## R15 · Public school hostnames
+
+| Branch | Behaviour | Status |
+| --- | --- | --- |
+| `r15/school-site-hostnames` | Serve published school pages directly on the configured TaleemFinder subdomain. | Ready for review. Verify the Ubuntu origin before disabling the Cloudflare redirect. |

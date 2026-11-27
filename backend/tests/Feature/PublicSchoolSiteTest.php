@@ -12,6 +12,44 @@ class PublicSchoolSiteTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_school_subdomains_serve_only_their_public_website_pages(): void
+    {
+        $branch = School::factory()->create(['verified_at' => now(), 'listing_status' => 'published']);
+        $other = School::factory()->create(['verified_at' => now(), 'listing_status' => 'published']);
+        $module = DB::table('modules')->insertGetId(['slug' => 'website', 'name' => 'Website']);
+        $theme = DB::table('site_themes')->insertGetId(['name' => 'Example', 'slug' => 'hostname-theme']);
+        $settings = DB::table('school_site_settings')->insertGetId([
+            'school_id' => $branch->id, 'site_theme_id' => $theme, 'site_enabled' => true, 'subdomain' => 'example-school',
+        ]);
+        foreach ([
+            [$branch->id, 'home', 'Example school home', true],
+            [$branch->id, 'about', 'About this school', true],
+            [$branch->id, 'draft', 'Private draft', false],
+            [$other->id, 'foreign', 'Other school page', true],
+        ] as [$id, $slug, $title, $published]) {
+            DB::table('school_pages')->insert([
+                'school_id' => $id, 'title' => $title, 'slug' => $slug, 'is_published' => $published, 'show_in_menu' => true,
+            ]);
+        }
+
+        $host = 'https://example-school.taleemfinder.pk';
+        $this->get($host.'/')->assertOk()->assertSee('Example school home')
+            ->assertSee('href="/about"', false)->assertDontSee('Private draft');
+        $this->get($host.'/about')->assertOk()->assertSee('About this school');
+        foreach (['/draft', '/foreign', '/institutions/'.$other->slug, '/api/health', '/login'] as $path) {
+            $this->get($host.$path)->assertNotFound();
+        }
+        $this->postJson($host.'/login')->assertNotFound();
+        $this->get('https://unknown-school.taleemfinder.pk/')->assertNotFound();
+        $this->get('https://taleemfinder.pk/school-sites/'.$branch->slug)->assertOk();
+        $this->withoutVite()->get('https://admin.taleemfinder.pk/login')->assertOk();
+        DB::table('school_modules')->insert(['school_id' => $branch->id, 'module_id' => $module, 'is_enabled' => false]);
+        $this->get($host.'/')->assertNotFound();
+        DB::table('school_modules')->where('school_id', $branch->id)->update(['is_enabled' => true]);
+        DB::table('school_site_settings')->where('id', $settings)->update(['site_enabled' => false]);
+        $this->get($host.'/')->assertNotFound();
+    }
+
     public function test_rich_school_page_content_renders_theme_and_rejects_unsafe_links(): void
     {
         $branch = School::factory()->create(['verified_at' => now(), 'listing_status' => 'published']);

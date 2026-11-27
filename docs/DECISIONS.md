@@ -45,3 +45,5 @@ Public school websites use the application-domain path /school-sites/{school}/{p
 The public domain uses the directory login and dashboard. The management hostname uses the existing Schoolhouse authorization for its short login and dashboard paths. Legacy management links on the production hosts redirect to the management portal. Directory accounts view their own submissions and claims through the existing review workflow. Production links use HTTPS because Cloudflare terminates TLS before passing requests to the laptop origin.
 
 Schoolhouse browser pages use prefix-free paths on admin.taleemfinder.pk. Both the production and development routes load the same definitions. Old production bookmarks redirect, including report links with filters. The API retains its existing paths.
+
+The School pages form edits headings, paragraphs, and bullet lists with plain-text controls. The editor retains the existing content format and preserves unsupported legacy blocks. Publication and menu visibility remain separate.

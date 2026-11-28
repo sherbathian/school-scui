@@ -116,7 +116,7 @@ class AdminServicesController extends AdminPlatformController
         $html = view('directory.school-site', [
             'branch' => $branch,
             'site' => DB::table('school_site_settings as settings')->join('site_themes as theme', 'theme.id', '=', 'settings.site_theme_id')
-                ->where('settings.school_id', $branch->id)->where('theme.is_active', true)->first(['settings.*'])
+                ->where('settings.school_id', $branch->id)->where('theme.is_active', true)->first(['settings.*', 'theme.slug as theme_slug'])
                 ?? (object) ['footer_text' => null],
             'page' => (object) ['title' => $data['title'] ?? 'Untitled page', 'seo_title' => null, 'seo_description' => null, 'slug' => ''],
             'navigation' => collect(),

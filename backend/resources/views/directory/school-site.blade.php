@@ -1,4 +1,5 @@
 @php
+    $isIfs = ($site->theme_slug ?? null) === 'ifs';
     $appearance = \App\Services\SchoolPageDocument::appearance($site);
     $pageUrl = fn (string $slug = 'home') => isset($siteSubdomain)
         ? route('school-site.host', ['subdomain' => $siteSubdomain, 'page' => $slug === 'home' ? null : $slug], absolute: false)
@@ -30,8 +31,14 @@
         h2 { line-height: 1.25; }
         footer { border-top: 1px solid #dce6e1; padding-block: 1.25rem; overflow-wrap: anywhere; }
     </style>
+    @if($isIfs)
+        @include('school-pages.ifs-styles')
+    @endif
 </head>
-<body>
+<body @class(['ifs' => $isIfs])>
+@if($isIfs)
+    @include('school-pages.ifs')
+@else
 <header>
     <div class="wrap masthead">
         <a class="brand" href="{{ $pageUrl() }}">{{ $branch->name }}</a>
@@ -48,41 +55,12 @@
 <main class="wrap">
     <article>
         <h1>{{ $page->title }}</h1>
-        @if(\App\Services\SchoolPageDocument::valid($document ?? null))
-            @include('school-pages.node', ['node' => $document])
-        @else
-            @foreach($blocks as $block)
-                @continue(!is_array($block))
-                @switch($block['type'] ?? null)
-                    @case('heading')
-                        @if(is_string($block['text'] ?? null)) <h2>{{ $block['text'] }}</h2> @endif
-                        @break
-                    @case('paragraph')
-                        @if(is_string($block['text'] ?? null)) <p>{{ $block['text'] }}</p> @endif
-                        @break
-                    @case('list')
-                        @if(is_array($block['items'] ?? null))
-                            <ul>
-                                @foreach($block['items'] as $item)
-                                    @if(is_string($item)) <li>{{ $item }}</li> @endif
-                                @endforeach
-                            </ul>
-                        @endif
-                        @break
-                    @case('link')
-                        @php($url = $block['url'] ?? null)
-                        @if(is_string($url) && preg_match('~^https?://~i', $url) && filter_var($url, FILTER_VALIDATE_URL)
-                            && is_string($block['text'] ?? null))
-                            <p><a href="{{ $url }}">{{ $block['text'] }}</a></p>
-                        @endif
-                        @break
-                @endswitch
-            @endforeach
-        @endif
+        @include('school-pages.content')
     </article>
 </main>
 @if($site->footer_text)
     <footer><div class="wrap">{{ $site->footer_text }}</div></footer>
+@endif
 @endif
 </body>
 </html>

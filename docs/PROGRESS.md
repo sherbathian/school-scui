@@ -220,3 +220,9 @@ The workbook comparison matched 124 columns and 22 foreign keys across the 14 re
 | Branch | Behaviour | Status |
 | --- | --- | --- |
 | `r15/school-site-hostnames` | Serve published school pages directly on the configured TaleemFinder subdomain. | Ready for review. Verify the Ubuntu origin before disabling the Cloudflare redirect. |
+
+## R16 · Islamic Foundation School website theme
+
+| Branch | Behaviour | Status |
+| --- | --- | --- |
+| `r16/ifs-school-theme` | IFS theme with homepage, published page navigation, admissions links, and approved branch photos. | Ready for review. After deploying, run `php artisan db:seed --class=IfsSiteThemeSeeder --force` in the application container and select **IFS** in School Setting for the Islamic Foundation School branch. |

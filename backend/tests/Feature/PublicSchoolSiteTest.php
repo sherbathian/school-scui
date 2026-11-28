@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\School;
 use App\Models\User;
+use Database\Seeders\IfsSiteThemeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -48,6 +49,47 @@ class PublicSchoolSiteTest extends TestCase
         DB::table('school_modules')->where('school_id', $branch->id)->update(['is_enabled' => true]);
         DB::table('school_site_settings')->where('id', $settings)->update(['site_enabled' => false]);
         $this->get($host.'/')->assertNotFound();
+    }
+
+    public function test_ifs_theme_uses_published_pages_on_both_public_entry_points(): void
+    {
+        $branch = School::factory()->create(['verified_at' => now(), 'listing_status' => 'published']);
+        DB::table('modules')->insert(['slug' => 'website', 'name' => 'Website']);
+        $this->seed(IfsSiteThemeSeeder::class);
+        $theme = DB::table('site_themes')->where('slug', 'ifs')->sole();
+        DB::table('school_site_settings')->insert([
+            'school_id' => $branch->id, 'site_theme_id' => $theme->id, 'site_enabled' => true, 'subdomain' => 'synthetic-ifs',
+        ]);
+
+        foreach (['home' => true, 'admissions' => true, 'gallery' => false] as $slug => $published) {
+            DB::table('school_pages')->insert([
+                'school_id' => $branch->id, 'title' => ucfirst($slug), 'slug' => $slug,
+                'show_in_menu' => true, 'is_published' => $published,
+            ]);
+        }
+
+        foreach (['ApprovedCampus' => true, 'ApprovedClassroom' => true, 'PrivateCampus' => false] as $name => $approved) {
+            DB::table('school_media')->insert([
+                'school_id' => $branch->id, 'kind' => 'photo', 'path' => 'listing-media/'.$name.'.webp',
+                'alt_text' => $name, 'is_approved' => $approved,
+            ]);
+        }
+
+        $host = 'https://synthetic-ifs.taleemfinder.pk';
+        $this->get($host.'/')->assertOk()
+            ->assertSee('class="ifs-hero"', false)
+            ->assertSee('href="/admissions"', false)
+            ->assertDontSee('href="/gallery"', false)
+            ->assertSee('ApprovedCampus')->assertSee('ApprovedClassroom')->assertDontSee('PrivateCampus');
+        $this->get($host.'/admissions')->assertOk()
+            ->assertSee('class="ifs-inner"', false)
+            ->assertDontSee('class="ifs-hero"', false);
+        $this->get('https://taleemfinder.pk/school-sites/'.$branch->slug)->assertOk()
+            ->assertSee('/school-sites/'.$branch->slug.'/admissions');
+
+        $otherTheme = DB::table('site_themes')->insertGetId(['name' => 'Default', 'slug' => 'synthetic-default']);
+        DB::table('school_site_settings')->where('school_id', $branch->id)->update(['site_theme_id' => $otherTheme]);
+        $this->get($host.'/')->assertOk()->assertDontSee('class="ifs-hero"', false);
     }
 
     public function test_rich_school_page_content_renders_theme_and_rejects_unsafe_links(): void

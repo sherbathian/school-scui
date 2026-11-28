@@ -53,3 +53,5 @@ Active organisation owners can create, edit, publish, and delete pages and creat
 School Pages uses self-hosted Tiptap for rich text. The server validates structured content and renders supported formatting from escaped text. Existing block data is preserved. Draft preview shares the public rendering template and enforces school website access.
 
 Configured school subdomains serve the published home at / and published pages at /{page}. Hostname routing uses the same public website eligibility checks as the existing school-site path. School menu links stay on the requested school hostname.
+
+The IFS layout is selected by the active theme slug `ifs`. The explicit, repeatable IFS theme seeder registers the catalogue entry without assigning it to a branch or replacing existing content. The public homepage uses approved branch photo uploads and existing published School Pages. The generated classroom photograph appears only in local previews without approved school photos.

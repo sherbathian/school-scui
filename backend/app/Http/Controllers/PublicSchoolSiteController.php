@@ -38,7 +38,7 @@ class PublicSchoolSiteController extends Controller
             ->where('settings.school_id', $branch->id)->where('settings.site_enabled', true)
             ->where('theme.is_active', true)
             ->when($subdomain !== null, fn ($query) => $query->where('settings.subdomain', $subdomain))
-            ->firstOrFail(['settings.footer_text', 'settings.primary_color', 'settings.secondary_color', 'settings.font_family']);
+            ->firstOrFail(['settings.footer_text', 'settings.primary_color', 'settings.secondary_color', 'settings.font_family', 'theme.slug as theme_slug']);
         $pages = DB::table('school_pages')->where('school_id', $branch->id)->where('is_published', true);
         $current = (clone $pages)->where('slug', $page)->firstOrFail();
         $navigation = $pages->where('show_in_menu', true)->orderBy('sort_order')->orderBy('id')->get(['title', 'slug']);
@@ -46,9 +46,17 @@ class PublicSchoolSiteController extends Controller
         $content = json_decode($current->content ?? 'null', true);
         $blocks = is_array($content) ? ($content['blocks'] ?? $content) : [];
 
+        $photos = $site->theme_slug === 'ifs' && $page === 'home'
+            ? DB::table('school_media')->where('school_id', $branch->id)->where('kind', 'photo')
+                ->where('is_approved', true)->whereNotNull('path')->orderBy('sort_order')->orderBy('id')
+                ->get(['id', 'path', 'caption', 'alt_text'])
+                ->filter(fn ($photo) => preg_match('~\Alisting-media/[A-Za-z0-9]+\.(?:jpe?g|png|webp)\z~', $photo->path))
+                ->take(4)->values()
+            : collect();
+
         return view('directory.school-site', [
             'branch' => $branch, 'site' => $site, 'page' => $current, 'siteSubdomain' => $subdomain,
-            'navigation' => $navigation, 'document' => $content['document'] ?? null, 'blocks' => is_array($blocks) ? $blocks : [],
+            'navigation' => $navigation, 'photos' => $photos, 'document' => $content['document'] ?? null, 'blocks' => is_array($blocks) ? $blocks : [],
         ]);
     }
 }
